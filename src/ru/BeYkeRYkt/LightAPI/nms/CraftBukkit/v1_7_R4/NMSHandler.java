@@ -1,94 +1,66 @@
 package ru.BeYkeRYkt.LightAPI.nms.CraftBukkit.v1_7_R4;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.server.v1_7_R4.Entity;
-import net.minecraft.server.v1_7_R4.EntityHuman;
+import net.minecraft.server.v1_7_R4.Chunk;
+import net.minecraft.server.v1_7_R4.EntityPlayer;
 import net.minecraft.server.v1_7_R4.EnumSkyBlock;
-import net.minecraft.server.v1_7_R4.IWorldAccess;
-import net.minecraft.server.v1_7_R4.PlayerChunkMap;
+import net.minecraft.server.v1_7_R4.Packet;
+import net.minecraft.server.v1_7_R4.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_7_R4.WorldServer;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_7_R4.CraftWorld;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
+import org.bukkit.entity.Player;
 
 import ru.BeYkeRYkt.LightAPI.nms.INMSHandler;
 
 public class NMSHandler implements INMSHandler {
 
     private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
-    private static Method cachedPlayerChunk;
-    private static Field cachedDirtyField;
-    private List<IWorldAccess> worlds = new ArrayList<IWorldAccess>();
+    private List<Chunk> chunks = new ArrayList<Chunk>();
+    private static Field cachedChunkModified;
 
     @Override
-    public void initWorlds() {
-        for (World worlds : Bukkit.getWorlds()) {
-            WorldServer nmsWorld = ((CraftWorld) worlds).getHandle();
-            IWorldAccess access = getLightIWorldAccess(worlds);
-
-            nmsWorld.addIWorldAccess(access);
-            this.worlds.add(access);
-        }
-    }
-
-    @Override
-    public void unloadWorlds() {
-        try {
-            for (World worlds : Bukkit.getWorlds()) {
-                WorldServer nmsWorld = ((CraftWorld) worlds).getHandle();
-
-                for (IWorldAccess access : this.worlds) {
-                    Field field = net.minecraft.server.v1_7_R2.World.class.getDeclaredField("u");
-                    field.setAccessible(true);
-                    ((List<?>) field.get(nmsWorld)).remove(access);
-                }
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void recalculateBlockLighting(World world, int x, int y, int z) {
-        WorldServer nmsWorld = ((CraftWorld) world).getHandle();
-        nmsWorld.t(x, y, z);
-    }
-
-    @Override
-    public void createLight(Location location, int light) {
+    public void createLight(Location location, int light, boolean needUpdate) {
         WorldServer world = ((CraftWorld) location.getWorld()).getHandle();
         world.b(EnumSkyBlock.BLOCK, location.getBlockX(), location.getBlockY(), location.getBlockZ(), light);
 
         Block adjacent = getAdjacentAirBlock(location.getBlock());
         recalculateBlockLighting(location.getWorld(), adjacent.getX(), adjacent.getY(), adjacent.getZ());
-        updateChunk(location);
+        if (needUpdate) {
+            collectChunks(location);
+            updateChunks(location.getWorld(), location);
+        }
     }
 
-    public void updateChunk(Location location) {
-        try {
-            // from: https://gist.github.com/aadnk/5841942
-            // Thanks Comphenix!
-            WorldServer nmsWorld = ((CraftWorld) location.getWorld()).getHandle();
-            PlayerChunkMap map = nmsWorld.getPlayerChunkMap();
+    @Override
+    public void deleteLight(Location location, boolean needUpdate) {
+        recalculateBlockLighting(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
 
+        if (needUpdate) {
+            collectChunks(location);
+            updateChunks(location.getWorld(), location);
+        }
+    }
+
+    private void collectChunks(Location location) {
+        try {
+            WorldServer nmsWorld = ((CraftWorld) location.getChunk().getWorld()).getHandle();
             for (int dX = -1; dX <= 1; dX++) {
                 for (int dZ = -1; dZ <= 1; dZ++) {
-                    Object playerChunk = getPlayerCountMethod().invoke(map, location.getChunk().getX() + dX, location.getChunk().getZ() + dZ, false);
-
-                    if (playerChunk != null) {
-                        Field dirtyField = getDirtyField(playerChunk);
-                        int dirtyCount = (Integer) dirtyField.get(playerChunk);
-                        if (dirtyCount > 0 && dirtyCount != 1 && dirtyCount < 64) {
-                            dirtyField.set(playerChunk, 64);
-                        }
+                    Chunk chunk = nmsWorld.getChunkAt(location.getChunk().getX() + dX, location.getChunk().getZ() + dZ);
+                    Field isModified = getChunkField(chunk);
+                    if (isModified.getBoolean(chunk)) {
+                        // chunk.f(false);
+                        isModified.setBoolean(chunk, false);
+                        chunks.add(chunk);
                     }
                 }
             }
@@ -97,27 +69,26 @@ public class NMSHandler implements INMSHandler {
         }
     }
 
-    @Override
-    public void deleteLight(Location loc) {
-        WorldServer world = ((CraftWorld) loc.getWorld()).getHandle();
-        world.c(EnumSkyBlock.BLOCK, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        updateChunk(loc);
+    private void updateChunks(World world, Location loc) {
+        for (Chunk chunk : chunks) {
+            PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, false, 65535);
+            sendPacket(world, loc, packet);
+        }
+        chunks.clear();
     }
 
-    private static Method getPlayerCountMethod() throws NoSuchMethodException, SecurityException {
-        if (cachedPlayerChunk == null) {
-            cachedPlayerChunk = PlayerChunkMap.class.getDeclaredMethod("a", int.class, int.class, boolean.class);
-            cachedPlayerChunk.setAccessible(true);
+    private void sendPacket(World world, Location loc, Packet packet) {
+        for (Player player : world.getPlayers()) {
+            if (player.getLocation().distance(loc) < 20) {// Dev-Test
+                EntityPlayer nms = ((CraftPlayer) player).getHandle();
+                nms.playerConnection.sendPacket(packet);
+            }
         }
-        return cachedPlayerChunk;
     }
 
-    private static Field getDirtyField(Object playerChunk) throws NoSuchFieldException, SecurityException {
-        if (cachedDirtyField == null) {
-            cachedDirtyField = playerChunk.getClass().getDeclaredField("dirtyCount");
-            cachedDirtyField.setAccessible(true);
-        }
-        return cachedDirtyField;
+    public void recalculateBlockLighting(World world, int x, int y, int z) {
+        WorldServer nmsWorld = ((CraftWorld) world).getHandle();
+        nmsWorld.c(EnumSkyBlock.BLOCK, x, y, z);
     }
 
     public Block getAdjacentAirBlock(Block block) {
@@ -136,75 +107,25 @@ public class NMSHandler implements INMSHandler {
         return block;
     }
 
-    public IWorldAccess getLightIWorldAccess(final org.bukkit.World world) {
-        final PlayerChunkMap map = ((CraftWorld) world).getHandle().getPlayerChunkMap();
-        return new IWorldAccess() {
+    private static Field getChunkField(Object chunk) throws NoSuchFieldException, SecurityException {
+        if (cachedChunkModified == null) {
+            cachedChunkModified = chunk.getClass().getDeclaredField("n");
+            cachedChunkModified.setAccessible(true);
+        }
+        return cachedChunkModified;
+    }
 
-            @Override
-            // markBlockForUpdate
-            public void a(int x, int y, int z) {
-            }
+    @Override
+    public void createLight(List<Location> location, int light, boolean needUpdate) {
+        for (Location loc : location) {
+            createLight(loc, light, needUpdate); // ???
+        }
+    }
 
-            @Override
-            // markBlockForRenderUpdate
-            public void b(int x, int y, int z) {
-                map.flagDirty(x, y, z);
-            }
-
-            @Override
-            // destroyBlockPartially
-            public void b(int arg0, int arg1, int arg2, int arg3, int arg4) {
-            }
-
-            @Override
-            // playAuxSFX
-            public void a(EntityHuman arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
-            }
-
-            @Override
-            // markBlockRangeForRenderUpdate
-            public void a(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-                // Ignore
-            }
-
-            @Override
-            // broadcastSound
-            public void a(int arg0, int arg1, int arg2, int arg3, int arg4) {
-            }
-
-            @Override
-            // playSound
-            public void a(String arg0, double arg1, double arg2, double arg3, float arg4, float arg5) {
-            }
-
-            @Override
-            // playSoundToNearExcept
-            public void a(EntityHuman arg0, String arg1, double arg2, double arg3, double arg4, float arg5, float arg6) {
-            }
-
-            @Override
-            // spawnParticle
-            public void a(String arg0, double arg1, double arg2, double arg3, double arg4, double arg5, double arg6) {
-            }
-
-            @Override
-            // playRecord
-            public void a(String arg0, int arg1, int arg2, int arg3) {
-            }
-
-            @Override
-            // onEntityCreate
-            public void a(Entity arg0) {
-            }
-
-            @Override
-            // onEntityDestroy (probably)
-            public void b(Entity arg0) {
-            }
-
-            @Override
-            public void b() {
-            }
-        };
+    @Override
+    public void deleteLight(List<Location> location, boolean needUpdate) {
+        for (Location loc : location) {
+            deleteLight(loc, needUpdate); // ???
+        }
     }
 }
