@@ -20,7 +20,7 @@ public class CauldronImpl implements BukkitImpl {
     public String getPath() {
         String packageName = LightAPI.getInstance().getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
-        return "ru.BeYkeRYkt.LightAPI.nms.Cauldron." + version + ".NMSHandler";
+        return "ru.BeYkeRYkt.LightAPI.nms.Cauldron." + version + ".LightRegistry";
     }
 
 }

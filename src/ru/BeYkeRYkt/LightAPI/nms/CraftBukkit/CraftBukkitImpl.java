@@ -20,7 +20,7 @@ public class CraftBukkitImpl implements BukkitImpl {
     public String getPath() {
         String packageName = LightAPI.getInstance().getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
-        return "ru.BeYkeRYkt.LightAPI.nms.CraftBukkit." + version + ".NMSHandler";
+        return "ru.BeYkeRYkt.LightAPI.nms.CraftBukkit." + version + ".LightRegistry";
     }
 
 }

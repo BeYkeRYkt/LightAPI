@@ -7,21 +7,21 @@ import java.util.List;
 import net.minecraft.server.v1_7_R2.Chunk;
 import net.minecraft.server.v1_7_R2.EntityPlayer;
 import net.minecraft.server.v1_7_R2.EnumSkyBlock;
-import net.minecraft.server.v1_7_R2.Packet;
 import net.minecraft.server.v1_7_R2.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_7_R2.WorldServer;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_7_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_7_R2.entity.CraftPlayer;
-import org.bukkit.entity.Player;
 
-import ru.BeYkeRYkt.LightAPI.nms.INMSHandler;
+import ru.BeYkeRYkt.LightAPI.events.DeleteLightEvent;
+import ru.BeYkeRYkt.LightAPI.events.SetLightEvent;
+import ru.BeYkeRYkt.LightAPI.nms.ILightRegistry;
 
-public class NMSHandler implements INMSHandler {
+public class LightRegistry implements ILightRegistry {
 
     private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
     private List<Chunk> chunks = new ArrayList<Chunk>();
@@ -29,24 +29,37 @@ public class NMSHandler implements INMSHandler {
 
     @Override
     public void createLight(Location location, int light, boolean needUpdate) {
-        WorldServer world = ((CraftWorld) location.getWorld()).getHandle();
-        world.b(EnumSkyBlock.BLOCK, location.getBlockX(), location.getBlockY(), location.getBlockZ(), light);
+        SetLightEvent event = new SetLightEvent(location, light);
+        Bukkit.getPluginManager().callEvent(event);
 
-        Block adjacent = getAdjacentAirBlock(location.getBlock());
-        recalculateBlockLighting(location.getWorld(), adjacent.getX(), adjacent.getY(), adjacent.getZ());
+        if (event.isCancelled())
+            return;
+
+        WorldServer world = ((CraftWorld) event.getLocation().getWorld()).getHandle();
+        world.b(EnumSkyBlock.BLOCK, event.getLocation().getBlockX(), event.getLocation().getBlockY(), event.getLocation().getBlockZ(), event.getLightLevel());
+
+        Block adjacent = getAdjacentAirBlock(event.getLocation().getBlock());
+        recalculateBlockLighting(event.getLocation().getWorld(), adjacent.getX(), adjacent.getY(), adjacent.getZ());
+        collectChunks(event.getLocation());
+
         if (needUpdate) {
-            collectChunks(location);
-            updateChunks(location.getWorld(), location);
+            sendUpdateChunks();
         }
     }
 
     @Override
     public void deleteLight(Location location, boolean needUpdate) {
-        recalculateBlockLighting(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        DeleteLightEvent event = new DeleteLightEvent(location);
+        Bukkit.getPluginManager().callEvent(event);
+
+        if (event.isCancelled())
+            return;
+
+        recalculateBlockLighting(event.getLocation().getWorld(), event.getLocation().getBlockX(), event.getLocation().getBlockY(), event.getLocation().getBlockZ());
+        collectChunks(event.getLocation());
 
         if (needUpdate) {
-            collectChunks(location);
-            updateChunks(location.getWorld(), location);
+            sendUpdateChunks();
         }
     }
 
@@ -58,31 +71,15 @@ public class NMSHandler implements INMSHandler {
                     Chunk chunk = nmsWorld.getChunkAt(location.getChunk().getX() + dX, location.getChunk().getZ() + dZ);
                     Field isModified = getChunkField(chunk);
                     if (isModified.getBoolean(chunk)) {
-                        // chunk.f(false);
                         isModified.setBoolean(chunk, false);
-                        chunks.add(chunk);
+                        if (!chunks.contains(chunk)) {
+                            chunks.add(chunk);
+                        }
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private void updateChunks(World world, Location loc) {
-        for (Chunk chunk : chunks) {
-            PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, false, 65535);
-            sendPacket(world, loc, packet);
-        }
-        chunks.clear();
-    }
-
-    private void sendPacket(World world, Location loc, Packet packet) {
-        for (Player player : world.getPlayers()) {
-            if (player.getLocation().distance(loc) < 20) {// Dev-Test
-                EntityPlayer nms = ((CraftPlayer) player).getHandle();
-                nms.playerConnection.sendPacket(packet);
-            }
         }
     }
 
@@ -118,14 +115,47 @@ public class NMSHandler implements INMSHandler {
     @Override
     public void createLight(List<Location> location, int light, boolean needUpdate) {
         for (Location loc : location) {
-            createLight(loc, light, needUpdate); // ???
+            createLight(loc, light, false); // ???
+        }
+
+        if (needUpdate) {
+            sendUpdateChunks();
         }
     }
 
     @Override
     public void deleteLight(List<Location> location, boolean needUpdate) {
         for (Location loc : location) {
-            deleteLight(loc, needUpdate); // ???
+            deleteLight(loc, false); // ???
         }
+
+        if (needUpdate) {
+            sendUpdateChunks();
+        }
+    }
+
+    @Override
+    public void sendUpdateChunks() {
+        for (Chunk chunk : chunks) {
+            sendPacket(chunk);
+        }
+        chunks.clear();
+    }
+
+    private void sendPacket(Chunk chunk) {
+        for (Object human : chunk.world.players) {
+            EntityPlayer player = (EntityPlayer) human;
+            Chunk pChunk = player.world.getChunkAtWorldCoords((int) player.getChunkCoordinates().x, player.getChunkCoordinates().z);
+            if (distanceTo(pChunk, chunk) < 3) {
+                PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, false, 65535);
+                player.playerConnection.sendPacket(packet);
+            }
+        }
+    }
+
+    public int distanceTo(Chunk from, Chunk to) {
+        double var2 = to.locX - from.locX;
+        double var4 = to.locZ - from.locZ;
+        return (int) Math.sqrt(var2 * var2 + var4 * var4);
     }
 }

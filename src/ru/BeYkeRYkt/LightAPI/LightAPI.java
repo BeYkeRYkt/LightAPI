@@ -1,11 +1,12 @@
 package ru.BeYkeRYkt.LightAPI;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -17,31 +18,32 @@ import org.bukkit.plugin.java.JavaPlugin;
 import ru.BeYkeRYkt.LightAPI.albionco.updater.Response;
 import ru.BeYkeRYkt.LightAPI.albionco.updater.Updater;
 import ru.BeYkeRYkt.LightAPI.albionco.updater.Version;
-import ru.BeYkeRYkt.LightAPI.events.DeleteLightEvent;
-import ru.BeYkeRYkt.LightAPI.events.SetLightEvent;
 import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
-import ru.BeYkeRYkt.LightAPI.nms.INMSHandler;
+import ru.BeYkeRYkt.LightAPI.nms.ILightRegistry;
 import ru.BeYkeRYkt.LightAPI.nms.Cauldron.CauldronImpl;
 import ru.BeYkeRYkt.LightAPI.nms.CraftBukkit.CraftBukkitImpl;
 
 public class LightAPI extends JavaPlugin implements Listener {
 
-    private static INMSHandler nmsHandler;
+    private static ILightRegistry registry;
     private List<BukkitImpl> support; // Maybe others
                                       // platforms for
                                       // Bukkit. Example
                                       // Glowstone
     private static LightAPI plugin;
+    private static Map<String, ILightRegistry> registryMap;
 
     @Override
     public void onEnable() {
         LightAPI.plugin = this;
+        registryMap = new HashMap<String, ILightRegistry>();
+        
         this.support = new ArrayList<BukkitImpl>();
-        support.add(new CraftBukkitImpl());
-        support.add(new CauldronImpl());
+        addSupportImplement(new CraftBukkitImpl());
+        addSupportImplement(new CauldronImpl());
         // support.add("MCPC-Plus");
         // support.add("Glowstone");
-        reloadInitHandler();
+        reloadInitRegistry();
         getServer().getPluginManager().registerEvents(this, this);
 
         Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
@@ -78,26 +80,46 @@ public class LightAPI extends JavaPlugin implements Listener {
     public void onDisable() {
         LightAPI.plugin = null;
         this.support.clear();
-        LightAPI.nmsHandler = null;
+        registryMap.clear();
+        LightAPI.registry = null;
     }
 
     public static LightAPI getInstance() {
         return plugin;
     }
 
-    public void addSupportImplement(BukkitImpl impl) {
-        if (checkSupport(impl.getNameImpl()) == null) {
-            support.add(impl);
+    public static ILightRegistry getRegistry(String name) {
+        if (hasRegistry(name)) {
+            return getRegistryMap().get(name);
+        } else {
+            ILightRegistry registr = null;
+            try {
+                registr = registry.getClass().newInstance();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            getRegistryMap().put(name, registr);
+            return registr;
         }
     }
 
-    public List<BukkitImpl> getSupportImplements() {
-        return support;
+    private static boolean hasRegistry(String name) {
+        return getRegistryMap().containsKey(name);
     }
 
-    public void reloadInitHandler() {
-        if (nmsHandler != null) {
-            nmsHandler = null;
+    public ILightRegistry getRegistry() {
+        return registry;
+    }
+    
+    public static Map<String, ILightRegistry> getRegistryMap() {
+        return registryMap;
+    }
+
+    public void reloadInitRegistry() {
+        if (registry != null) {
+            registry = null;
         }
         String name = getServer().getName();
         if (checkSupport(name) != null) {
@@ -105,8 +127,8 @@ public class LightAPI extends JavaPlugin implements Listener {
             try {
                 final Class<?> clazz = Class.forName(impl.getPath());
                 // Check if we have a NMSHandler class at that location.
-                if (INMSHandler.class.isAssignableFrom(clazz)) {
-                    LightAPI.nmsHandler = (INMSHandler) clazz.getConstructor().newInstance();
+                if (ILightRegistry.class.isAssignableFrom(clazz)) {
+                    LightAPI.registry = (ILightRegistry) clazz.getConstructor().newInstance();
                 }
             } catch (final Exception e) {
                 e.printStackTrace();
@@ -121,6 +143,16 @@ public class LightAPI extends JavaPlugin implements Listener {
         }
     }
 
+    public void addSupportImplement(BukkitImpl impl) {
+        if (checkSupport(impl.getNameImpl()) == null) {
+            support.add(impl);
+        }
+    }
+
+    public List<BukkitImpl> getSupportImplements() {
+        return support;
+    }
+
     private BukkitImpl checkSupport(String name) {
         for (BukkitImpl impl : support) {
             if (impl.getNameImpl().startsWith(name)) {
@@ -129,65 +161,7 @@ public class LightAPI extends JavaPlugin implements Listener {
         }
         return null;
     }
-
-    public INMSHandler getNMSHandler() {
-        return nmsHandler;
-    }
-
-    public static void createLight(Location location, int lightlevel) {
-        createLight(location, lightlevel, true);
-    }
-
-    public static void createLight(Location location, int lightlevel, boolean needUpdate) {
-        SetLightEvent event = new SetLightEvent(location, lightlevel);
-        Bukkit.getPluginManager().callEvent(event);
-
-        if (event.isCancelled())
-            return;
-
-        nmsHandler.createLight(event.getLocation(), event.getLightLevel(), needUpdate);
-    }
-
-    public static void createLight(List<Location> location, int lightlevel, boolean needUpdate) {
-        // SetLightEvent event = new SetLightEvent(location, lightlevel);
-        // Bukkit.getPluginManager().callEvent(event);
-
-        // if (event.isCancelled())
-        // return;
-
-        // nmsHandler.createLight(event.getLocation(), event.getLightLevel());
-
-        for (Location loc : location) {
-            createLight(loc, lightlevel, needUpdate);// ???
-        }
-    }
-
-    public static void deleteLight(Location location) {
-        deleteLight(location, true);
-    }
-
-    public static void deleteLight(Location location, boolean needUpdate) {
-        DeleteLightEvent event = new DeleteLightEvent(location);
-        Bukkit.getPluginManager().callEvent(event);
-
-        if (event.isCancelled())
-            return;
-        nmsHandler.deleteLight(event.getLocation(), needUpdate);
-    }
-
-    public static void deleteLight(List<Location> location, boolean needUpdate) {
-        // DeleteLightEvent event = new DeleteLightEvent(location);
-        // Bukkit.getPluginManager().callEvent(event);
-
-        // if (event.isCancelled())
-        // return;
-        // nmsHandler.deleteLight(event.getLocation(), needUpdate);
-
-        for (Location loc : location) {
-            deleteLight(loc, needUpdate);
-        }
-    }
-
+    
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         final Player player = event.getPlayer();
@@ -217,8 +191,7 @@ public class LightAPI extends JavaPlugin implements Listener {
                         e.printStackTrace();
                     }
                 }
-            }, 20);
+            }, 60);
         }
     }
-
 }
