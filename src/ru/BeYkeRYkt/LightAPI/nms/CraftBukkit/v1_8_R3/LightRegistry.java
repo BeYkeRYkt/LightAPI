@@ -1,8 +1,8 @@
 package ru.BeYkeRYkt.LightAPI.nms.CraftBukkit.v1_8_R3;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.Chunk;
@@ -12,71 +12,53 @@ import net.minecraft.server.v1_8_R3.EnumSkyBlock;
 import net.minecraft.server.v1_8_R3.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_8_R3.WorldServer;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 
-import ru.BeYkeRYkt.LightAPI.events.DeleteLightEvent;
-import ru.BeYkeRYkt.LightAPI.events.SetLightEvent;
+import ru.BeYkeRYkt.LightAPI.ChunkCoord;
 import ru.BeYkeRYkt.LightAPI.nms.ILightRegistry;
 
 public class LightRegistry implements ILightRegistry {
 
     private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
-    private List<Chunk> chunks = new ArrayList<Chunk>();
     private static Field cachedChunkModified;
+    private List<ChunkCoord> ccip = new CopyOnWriteArrayList<ChunkCoord>();
 
     @Override
-    public void createLight(Location location, int light, boolean needUpdate) {
-        SetLightEvent event = new SetLightEvent(location, light);
-        Bukkit.getPluginManager().callEvent(event);
+    public void createLight(Location location, int light) {
+        WorldServer world = ((CraftWorld) location.getWorld()).getHandle();
+        BlockPosition position = new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        world.a(EnumSkyBlock.BLOCK, position, light);
 
-        if (event.isCancelled())
-            return;
-
-        WorldServer world = ((CraftWorld) event.getLocation().getWorld()).getHandle();
-        BlockPosition position = new BlockPosition(event.getLocation().getBlockX(), event.getLocation().getBlockY(), event.getLocation().getBlockZ());
-        world.a(EnumSkyBlock.BLOCK, position, event.getLightLevel());
-
-        Block adjacent = getAdjacentAirBlock(event.getLocation().getBlock());
-        recalculateBlockLighting(event.getLocation().getWorld(), adjacent.getX(), adjacent.getY(), adjacent.getZ());
-        collectChunks(event.getLocation());
-
-        if (needUpdate) {
-            sendUpdateChunks();
-        }
+        Block adjacent = getAdjacentAirBlock(location.getBlock());
+        recalculateBlockLighting(location.getWorld(), adjacent.getX(), adjacent.getY(), adjacent.getZ());
+        collectChunks(location);
     }
 
     @Override
-    public void deleteLight(Location location, boolean needUpdate) {
-        DeleteLightEvent event = new DeleteLightEvent(location);
-        Bukkit.getPluginManager().callEvent(event);
-
-        if (event.isCancelled())
-            return;
-
-        recalculateBlockLighting(event.getLocation().getWorld(), event.getLocation().getBlockX(), event.getLocation().getBlockY(), event.getLocation().getBlockZ());
-        collectChunks(event.getLocation());
-
-        if (needUpdate) {
-            sendUpdateChunks();
-        }
+    public void deleteLight(Location location) {
+        recalculateBlockLighting(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        collectChunks(location);
     }
 
-    private void collectChunks(Location location) {
+    @Override
+    public void collectChunks(Location location) {
         try {
             WorldServer nmsWorld = ((CraftWorld) location.getChunk().getWorld()).getHandle();
             for (int dX = -1; dX <= 1; dX++) {
                 for (int dZ = -1; dZ <= 1; dZ++) {
-                    Chunk chunk = nmsWorld.getChunkAt(location.getChunk().getX() + dX, location.getChunk().getZ() + dZ);
-                    Field isModified = getChunkField(chunk);
-                    if (isModified.getBoolean(chunk)) {
-                        chunk.f(false);
-                        if (!chunks.contains(chunk)) {
-                            chunks.add(chunk);
+                    if (nmsWorld.chunkProviderServer.isChunkLoaded(location.getChunk().getX() + dX, location.getChunk().getZ() + dZ)) {
+                        Chunk chunk = nmsWorld.getChunkAt(location.getChunk().getX() + dX, location.getChunk().getZ() + dZ);
+                        Field isModified = getChunkField(chunk);
+                        if (isModified.getBoolean(chunk)) {
+                            ChunkCoord cCoord = new ChunkCoord(location.getWorld(), chunk.locX, chunk.locZ);
+                            if (!ccip.contains(cCoord)) {
+                                ccip.add(cCoord);
+                            }
+                            chunk.f(false);
                         }
                     }
                 }
@@ -117,33 +99,13 @@ public class LightRegistry implements ILightRegistry {
     }
 
     @Override
-    public void createLight(List<Location> location, int light, boolean needUpdate) {
-        for (Location loc : location) {
-            createLight(loc, light, false); // ???
-        }
-
-        if (needUpdate) {
-            sendUpdateChunks();
-        }
-    }
-
-    @Override
-    public void deleteLight(List<Location> location, boolean needUpdate) {
-        for (Location loc : location) {
-            deleteLight(loc, false); // ???
-        }
-
-        if (needUpdate) {
-            sendUpdateChunks();
-        }
-    }
-
-    @Override
     public void sendUpdateChunks() {
-        for (Chunk chunk : chunks) {
+        while (!ccip.isEmpty()) {
+            ChunkCoord coords = ccip.get(0);
+            Chunk chunk = ((CraftWorld) coords.getWorld()).getHandle().getChunkAt(coords.getX(), coords.getZ());
             sendPacket(chunk);
+            ccip.remove(0);
         }
-        chunks.clear();
     }
 
     private void sendPacket(Chunk chunk) {
@@ -158,6 +120,8 @@ public class LightRegistry implements ILightRegistry {
     }
 
     public int distanceTo(Chunk from, Chunk to) {
+        if (!from.world.getWorldData().getName().equals(to.world.getWorldData().getName()))
+            return 100;
         double var2 = to.locX - from.locX;
         double var4 = to.locZ - from.locZ;
         return (int) Math.sqrt(var2 * var2 + var4 * var4);

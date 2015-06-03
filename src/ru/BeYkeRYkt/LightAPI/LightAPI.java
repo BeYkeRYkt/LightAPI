@@ -1,12 +1,12 @@
 package ru.BeYkeRYkt.LightAPI;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,6 +18,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import ru.BeYkeRYkt.LightAPI.albionco.updater.Response;
 import ru.BeYkeRYkt.LightAPI.albionco.updater.Updater;
 import ru.BeYkeRYkt.LightAPI.albionco.updater.Version;
+import ru.BeYkeRYkt.LightAPI.events.DeleteLightEvent;
+import ru.BeYkeRYkt.LightAPI.events.SetLightEvent;
 import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
 import ru.BeYkeRYkt.LightAPI.nms.ILightRegistry;
 import ru.BeYkeRYkt.LightAPI.nms.Cauldron.CauldronImpl;
@@ -31,13 +33,11 @@ public class LightAPI extends JavaPlugin implements Listener {
                                       // Bukkit. Example
                                       // Glowstone
     private static LightAPI plugin;
-    private static Map<String, ILightRegistry> registryMap;
 
     @Override
     public void onEnable() {
         LightAPI.plugin = this;
-        registryMap = new HashMap<String, ILightRegistry>();
-        
+
         this.support = new ArrayList<BukkitImpl>();
         addSupportImplement(new CraftBukkitImpl());
         addSupportImplement(new CauldronImpl());
@@ -45,6 +45,13 @@ public class LightAPI extends JavaPlugin implements Listener {
         // support.add("Glowstone");
         reloadInitRegistry();
         getServer().getPluginManager().registerEvents(this, this);
+
+        try {
+            Metrics metrics = new Metrics(this);
+            metrics.start();
+        } catch (IOException e) {}
+
+        Bukkit.getScheduler().runTaskTimer(this, new LightUpdater(this), 0, 2);
 
         Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
 
@@ -80,7 +87,6 @@ public class LightAPI extends JavaPlugin implements Listener {
     public void onDisable() {
         LightAPI.plugin = null;
         this.support.clear();
-        registryMap.clear();
         LightAPI.registry = null;
     }
 
@@ -88,33 +94,8 @@ public class LightAPI extends JavaPlugin implements Listener {
         return plugin;
     }
 
-    public static ILightRegistry getRegistry(String name) {
-        if (hasRegistry(name)) {
-            return getRegistryMap().get(name);
-        } else {
-            ILightRegistry registr = null;
-            try {
-                registr = registry.getClass().newInstance();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-            getRegistryMap().put(name, registr);
-            return registr;
-        }
-    }
-
-    private static boolean hasRegistry(String name) {
-        return getRegistryMap().containsKey(name);
-    }
-
     public ILightRegistry getRegistry() {
         return registry;
-    }
-    
-    public static Map<String, ILightRegistry> getRegistryMap() {
-        return registryMap;
     }
 
     public void reloadInitRegistry() {
@@ -161,7 +142,42 @@ public class LightAPI extends JavaPlugin implements Listener {
         }
         return null;
     }
-    
+
+    public static void createLight(Location location, int lightlevel) {
+        SetLightEvent event = new SetLightEvent(location, lightlevel);
+        Bukkit.getPluginManager().callEvent(event);
+
+        if (event.isCancelled())
+            return;
+        registry.createLight(location, lightlevel);
+    }
+
+    public static void deleteLight(Location location) {
+        DeleteLightEvent event = new DeleteLightEvent(location);
+        Bukkit.getPluginManager().callEvent(event);
+
+        if (event.isCancelled())
+            return;
+
+        registry.deleteLight(location);
+    }
+
+    public static void createLight(List<Location> list, int lightlevel) {
+        for (Location location : list) {
+            createLight(location, lightlevel);
+        }
+    }
+
+    public static void deleteLight(List<Location> list) {
+        for (Location location : list) {
+            deleteLight(location);
+        }
+    }
+
+    public static void updateChunks(Location loc) {
+        registry.collectChunks(loc);
+    }
+
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         final Player player = event.getPlayer();
