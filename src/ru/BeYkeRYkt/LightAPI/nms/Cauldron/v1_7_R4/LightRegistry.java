@@ -4,17 +4,17 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import net.minecraft.server.v1_7_R2.Chunk;
-import net.minecraft.server.v1_7_R2.EntityPlayer;
-import net.minecraft.server.v1_7_R2.EnumSkyBlock;
-import net.minecraft.server.v1_7_R2.PacketPlayOutMapChunk;
-import net.minecraft.server.v1_7_R2.WorldServer;
+import net.minecraft.server.v1_7_R4.Chunk;
+import net.minecraft.server.v1_7_R4.EntityPlayer;
+import net.minecraft.server.v1_7_R4.EnumSkyBlock;
+import net.minecraft.server.v1_7_R4.PacketPlayOutMapChunk;
+import net.minecraft.server.v1_7_R4.WorldServer;
 
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_7_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_7_R4.CraftWorld;
 
 import ru.BeYkeRYkt.LightAPI.ChunkCoord;
 import ru.BeYkeRYkt.LightAPI.nms.ILightRegistry;
