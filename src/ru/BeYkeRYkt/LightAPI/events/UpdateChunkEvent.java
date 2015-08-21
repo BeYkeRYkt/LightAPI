@@ -1,18 +1,19 @@
 package ru.BeYkeRYkt.LightAPI.events;
 
-import org.bukkit.Location;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class DeleteLightEvent extends Event implements Cancellable {
+import ru.BeYkeRYkt.LightAPI.ChunkCoord;
+
+public class UpdateChunkEvent extends Event implements Cancellable {
 
 	private boolean cancel;
 	private static final HandlerList handlers = new HandlerList();
-	private Location loc;
+	private ChunkCoord cCoord;
 
-	public DeleteLightEvent(Location loc) {
-		this.loc = loc;
+	public UpdateChunkEvent(ChunkCoord cCoord) {
+		this.cCoord = cCoord;
 	}
 
 	@Override
@@ -34,19 +35,11 @@ public class DeleteLightEvent extends Event implements Cancellable {
 		this.cancel = arg0;
 	}
 
-	/**
-	 * @return the loc
-	 */
-	public Location getLocation() {
-		return loc;
+	public ChunkCoord getChunkCoord() {
+		return cCoord;
 	}
 
-	/**
-	 * @param loc
-	 *            the loc to set
-	 */
-	public void setLocation(Location loc) {
-		this.loc = loc;
+	public void setChunkCoord(ChunkCoord cCoord) {
+		this.cCoord = cCoord;
 	}
-
 }
