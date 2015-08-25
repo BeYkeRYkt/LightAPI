@@ -1,1 +1,0 @@
-java -jar SpecialSource-1.7.4-SNAPSHOT-shaded.jar --in-jar cauldron-api-1.7.10-SNAPSHOT.jar --out-jar cauldron-remapped.jar --srg-in mcp/conf/

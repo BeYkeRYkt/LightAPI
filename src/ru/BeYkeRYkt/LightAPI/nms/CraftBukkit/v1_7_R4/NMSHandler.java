@@ -16,7 +16,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_7_R4.CraftWorld;
 
-import ru.BeYkeRYkt.LightAPI.ChunkCoord;
+import ru.BeYkeRYkt.LightAPI.ChunkInfo;
 import ru.BeYkeRYkt.LightAPI.nms.INMSHandler;
 
 public class NMSHandler implements INMSHandler {
@@ -39,8 +39,8 @@ public class NMSHandler implements INMSHandler {
 	}
 
 	@Override
-	public List<ChunkCoord> collectChunks(Location location) {
-		List<ChunkCoord> list = new CopyOnWriteArrayList<ChunkCoord>();
+	public List<ChunkInfo> collectChunks(Location location) {
+		List<ChunkInfo> list = new CopyOnWriteArrayList<ChunkInfo>();
 		try {
 			WorldServer nmsWorld = ((CraftWorld) location.getChunk().getWorld()).getHandle();
 			for (int dX = -1; dX <= 1; dX++) {
@@ -49,7 +49,7 @@ public class NMSHandler implements INMSHandler {
 						Chunk chunk = nmsWorld.getChunkAt(location.getChunk().getX() + dX, location.getChunk().getZ() + dZ);
 						Field isModified = getChunkField(chunk);
 						if (isModified.getBoolean(chunk)) {
-							ChunkCoord cCoord = new ChunkCoord(location.getWorld(), chunk.locX, chunk.locZ);
+							ChunkInfo cCoord = new ChunkInfo(location.getWorld(), chunk.locX, chunk.locZ);
 							list.add(cCoord);
 							isModified.setBoolean(chunk, false);
 						}
@@ -91,17 +91,6 @@ public class NMSHandler implements INMSHandler {
 		return cachedChunkModified;
 	}
 
-	private void sendPacket(Chunk chunk) {
-		for (Object human : chunk.world.players) {
-			EntityPlayer player = (EntityPlayer) human;
-			Chunk pChunk = player.world.getChunkAtWorldCoords(player.getChunkCoordinates().x, player.getChunkCoordinates().z);
-			if (distanceTo(pChunk, chunk) < 5) {
-				PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, false, 65535);
-				player.playerConnection.sendPacket(packet);
-			}
-		}
-	}
-
 	public int distanceTo(Chunk from, Chunk to) {
 		if (!from.world.getWorldData().getName().equals(to.world.getWorldData().getName()))
 			return 100;
@@ -111,8 +100,16 @@ public class NMSHandler implements INMSHandler {
 	}
 
 	@Override
-	public void updateChunk(ChunkCoord cCoord) {
-		Chunk chunk = ((CraftWorld) cCoord.getWorld()).getHandle().getChunkAt(cCoord.getX(), cCoord.getZ());
-		sendPacket(chunk);
+	public void updateChunk(ChunkInfo cCoord) {
+		Chunk chunk = ((CraftWorld) cCoord.getWorld()).getHandle().getChunkAt(cCoord.getChunkX(), cCoord.getChunkZ());
+
+		for (Object human : chunk.world.players) {
+			EntityPlayer player = (EntityPlayer) human;
+			Chunk pChunk = player.world.getChunkAtWorldCoords(player.getChunkCoordinates().x, player.getChunkCoordinates().z);
+			if (distanceTo(pChunk, chunk) < 5) {
+				PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, false, 65535);
+				player.playerConnection.sendPacket(packet);
+			}
+		}
 	}
 }

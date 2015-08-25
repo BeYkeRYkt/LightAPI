@@ -14,16 +14,16 @@ import ru.BeYkeRYkt.LightAPI.utils.LightUpdater;
 
 public class LightRegistry {
 
-	private boolean autoUpdate;
+	private boolean autoSend;
 	private int id;
 	private Plugin plugin;
 	private INMSHandler handler;
-	private List<ChunkCoord> chunkList;
+	private List<ChunkInfo> chunkList;
 
 	public LightRegistry(INMSHandler handler, Plugin plugin) {
 		this.handler = handler;
 		this.plugin = plugin;
-		this.chunkList = new CopyOnWriteArrayList<ChunkCoord>();
+		this.chunkList = new CopyOnWriteArrayList<ChunkInfo>();
 	}
 
 	public void createLight(Location location, int light) {
@@ -44,63 +44,67 @@ public class LightRegistry {
 		handler.deleteLight(location);
 	}
 
-	public List<ChunkCoord> collectChunks(Location loc) {
-		List<ChunkCoord> list = handler.collectChunks(loc);
-		for (ChunkCoord cCoord : list) {
-			if (ChunkCache.CHUNK_COORD_CACHE.contains(cCoord)) {
+	public List<ChunkInfo> collectChunks(Location loc) {
+		List<ChunkInfo> list = handler.collectChunks(loc);
+		for (ChunkInfo cCoord : list) {
+			if (ChunkCache.CHUNK_INFO_CACHE.contains(cCoord)) {
 				list.remove(cCoord);
 			} else {
-				ChunkCache.CHUNK_COORD_CACHE.add(cCoord);
-				getChunkCoordsList().add(cCoord);
+				if (!ChunkCache.CHUNK_INFO_CACHE.contains(cCoord)) {
+					ChunkCache.CHUNK_INFO_CACHE.add(cCoord);
+				}
+				if (!getChunkCoordsList().contains(cCoord)) {
+					getChunkCoordsList().add(cCoord);
+				}
 			}
 		}
 		return list;
 	}
 
-	public void updateChunks(List<ChunkCoord> list) {
-		for (ChunkCoord cCoord : list) {
-			updateChunk(cCoord);
+	public void sendChunks(List<ChunkInfo> list) {
+		for (ChunkInfo cCoord : list) {
+			sendChunk(cCoord);
 		}
 	}
 
-	public void updateChunk(ChunkCoord cCoord) {
+	public void sendChunk(ChunkInfo cCoord) {
 		UpdateChunkEvent event = new UpdateChunkEvent(cCoord);
 		getPlugin().getServer().getPluginManager().callEvent(event);
 		if (event.isCancelled()) {
 			return;
 		}
 
-		handler.updateChunk(event.getChunkCoord());
+		handler.updateChunk(event.getChunkInfo());
 
-		if (getChunkCoordsList().contains(cCoord)) {
-			getChunkCoordsList().remove(cCoord);
+		if (getChunkCoordsList().contains(event.getChunkInfo())) {
+			getChunkCoordsList().remove(event.getChunkInfo());
 		}
 
-		if (ChunkCache.CHUNK_COORD_CACHE.contains(cCoord)) {
-			ChunkCache.CHUNK_COORD_CACHE.remove(cCoord);
+		if (ChunkCache.CHUNK_INFO_CACHE.contains(event.getChunkInfo())) {
+			ChunkCache.CHUNK_INFO_CACHE.remove(event.getChunkInfo());
 		}
 	}
 
 	public void sendChunkChanges() {
-		updateChunks(getChunkCoordsList());
+		sendChunks(getChunkCoordsList());
 	}
 
-	public boolean isAutoUpdate() {
-		return autoUpdate;
+	public boolean isAutoSend() {
+		return autoSend;
 	}
 
-	public void startAutoUpdate(int delay) {
-		if (!isAutoUpdate()) {
-			autoUpdate = true;
+	public void startAutoSend(int delay) {
+		if (!isAutoSend()) {
 			id = getPlugin().getServer().getScheduler().runTaskTimer(getPlugin(), new LightUpdater(this), 0, delay).getTaskId();
+			autoSend = true;
 		}
 	}
 
-	public void stopAutoUpdate() {
-		if (isAutoUpdate()) {
-			autoUpdate = false;
+	public void stopAutoSend() {
+		if (isAutoSend()) {
 			getPlugin().getServer().getScheduler().cancelTask(id);
 			id = 0;
+			autoSend = false;
 		}
 	}
 
@@ -108,7 +112,7 @@ public class LightRegistry {
 		return plugin;
 	}
 
-	public List<ChunkCoord> getChunkCoordsList() {
+	public List<ChunkInfo> getChunkCoordsList() {
 		return chunkList;
 	}
 }

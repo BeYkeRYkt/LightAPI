@@ -5,6 +5,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChunkCache {
 
-	public static List<ChunkCoord> CHUNK_COORD_CACHE = new CopyOnWriteArrayList<ChunkCoord>();
+	public static List<ChunkInfo> CHUNK_INFO_CACHE = new CopyOnWriteArrayList<ChunkInfo>();
 
 }

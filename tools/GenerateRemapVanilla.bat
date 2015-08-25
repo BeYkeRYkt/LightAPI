@@ -1,1 +1,0 @@
-java -jar SpecialSource-1.7.4-SNAPSHOT-shaded.jar --in-jar minecraft_server.1.7.10.jar --out-jar minecraft-server-pkgmcp-1.7.10.jar --srg-in mcp/conf/

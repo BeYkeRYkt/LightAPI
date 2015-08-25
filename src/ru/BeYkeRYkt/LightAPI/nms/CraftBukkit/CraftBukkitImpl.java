@@ -4,7 +4,7 @@ import ru.BeYkeRYkt.LightAPI.LightAPI;
 import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
 
 /**
- * For CraftBukkit/Spigot cores
+ * For CraftBukkit core
  * 
  * @author DinDev
  *
@@ -22,5 +22,4 @@ public class CraftBukkitImpl implements BukkitImpl {
 		String version = packageName.substring(packageName.lastIndexOf('.') + 1);
 		return "ru.BeYkeRYkt.LightAPI.nms.CraftBukkit." + version + ".NMSHandler";
 	}
-
 }

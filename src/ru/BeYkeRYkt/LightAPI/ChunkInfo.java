@@ -2,28 +2,28 @@ package ru.BeYkeRYkt.LightAPI;
 
 import org.bukkit.World;
 
-public class ChunkCoord {
+public class ChunkInfo {
 
 	private World world;
-	private int x;
-	private int z;
+	private int chunkX;
+	private int chunkZ;
 
-	public ChunkCoord(World world, int x, int z) {
+	public ChunkInfo(World world, int chunkX, int chunkZ) {
 		this.world = world;
-		this.x = x;
-		this.z = z;
+		this.chunkX = chunkX;
+		this.chunkZ = chunkZ;
 	}
 
 	public World getWorld() {
 		return world;
 	}
 
-	public int getX() {
-		return x;
+	public int getChunkX() {
+		return chunkX;
 	}
 
-	public int getZ() {
-		return z;
+	public int getChunkZ() {
+		return chunkZ;
 	}
 
 	@Override
@@ -31,8 +31,8 @@ public class ChunkCoord {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((world == null) ? 0 : world.hashCode());
-		result = prime * result + x;
-		result = prime * result + z;
+		result = prime * result + chunkX;
+		result = prime * result + chunkZ;
 		return result;
 	}
 
@@ -44,15 +44,15 @@ public class ChunkCoord {
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof ChunkCoord)) {
+		if (!(obj instanceof ChunkInfo)) {
 			return false;
 		}
-		ChunkCoord other = (ChunkCoord) obj;
+		ChunkInfo other = (ChunkInfo) obj;
 		return toString().equals(other.toString());
 	}
 
 	@Override
 	public String toString() {
-		return "ChunkCoord [world=" + world.getName() + ", x=" + x + ", z=" + z + "]";
+		return "ChunkInfo [world=" + world.getName() + ", x=" + chunkX + ", z=" + chunkZ + "]";
 	}
 }

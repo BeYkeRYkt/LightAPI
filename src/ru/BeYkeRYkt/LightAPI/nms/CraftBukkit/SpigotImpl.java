@@ -1,25 +1,25 @@
-package ru.BeYkeRYkt.LightAPI.nms.Cauldron;
+package ru.BeYkeRYkt.LightAPI.nms.CraftBukkit;
 
 import ru.BeYkeRYkt.LightAPI.LightAPI;
 import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
 
 /**
- * For Cauldron cores
+ * For Spigot core
  * 
  * @author DinDev
  *
  */
-public class CauldronImpl implements BukkitImpl {
+public class SpigotImpl implements BukkitImpl {
 
 	@Override
 	public String getNameImpl() {
-		return "Cauldron-MCPC-Plus";
+		return "Spigot";
 	}
 
 	@Override
 	public String getPath() {
 		String packageName = LightAPI.getInstance().getServer().getClass().getPackage().getName();
 		String version = packageName.substring(packageName.lastIndexOf('.') + 1);
-		return "ru.BeYkeRYkt.LightAPI.nms.Cauldron." + version + ".LightRegistry";
+		return "ru.BeYkeRYkt.LightAPI.nms.CraftBukkit." + version + ".NMSHandler";
 	}
 }

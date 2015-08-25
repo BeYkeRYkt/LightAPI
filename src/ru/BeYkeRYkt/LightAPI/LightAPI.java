@@ -23,6 +23,8 @@ import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
 import ru.BeYkeRYkt.LightAPI.nms.INMSHandler;
 import ru.BeYkeRYkt.LightAPI.nms.Cauldron.CauldronImpl;
 import ru.BeYkeRYkt.LightAPI.nms.CraftBukkit.CraftBukkitImpl;
+import ru.BeYkeRYkt.LightAPI.nms.CraftBukkit.SpigotImpl;
+import ru.BeYkeRYkt.LightAPI.nms.PaperSpigot.PaperSpigotImpl;
 import ru.BeYkeRYkt.LightAPI.utils.Metrics;
 
 public class LightAPI extends JavaPlugin implements Listener {
@@ -33,14 +35,19 @@ public class LightAPI extends JavaPlugin implements Listener {
 										// Bukkit. Example
 										// Glowstone
 	private static LightAPI plugin;
+	private static CommandSender console = Bukkit.getConsoleSender();
 
 	@Override
 	public void onEnable() {
 		LightAPI.plugin = this;
 
 		this.support = new ArrayList<BukkitImpl>();
-		addSupportImplement(new CraftBukkitImpl());
-		addSupportImplement(new CauldronImpl());
+
+		addSupportImplement(new CauldronImpl()); // Cauldron
+		addSupportImplement(new PaperSpigotImpl()); // PaperSpigot
+		addSupportImplement(new SpigotImpl()); // Spigot
+		addSupportImplement(new CraftBukkitImpl()); // CraftBukkit
+
 		if (!reloadInitHandler()) {
 			return;
 		}
@@ -65,8 +72,8 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 					Response response = updater.getResult();
 					if (response == Response.SUCCESS) {
-						log(getServer().getConsoleSender(), ChatColor.GREEN + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.GREEN + "!");
-						log(getServer().getConsoleSender(), ChatColor.GREEN + "Changes: ");
+						log(console, ChatColor.GREEN + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.GREEN + "!");
+						log(console, ChatColor.GREEN + "Changes: ");
 						getServer().getConsoleSender().sendMessage(updater.getChanges());// for
 						// normal
 						// view
@@ -78,8 +85,12 @@ public class LightAPI extends JavaPlugin implements Listener {
 		}, 60);
 	}
 
-	public void log(CommandSender sender, String message) {
+	private static void log(CommandSender sender, String message) {
 		sender.sendMessage(ChatColor.YELLOW + "<Light" + ChatColor.RED + "API" + ChatColor.YELLOW + ">: " + ChatColor.WHITE + message);
+	}
+
+	public void logConsole(String message) {
+		log(console, message);
 	}
 
 	@Override
@@ -98,7 +109,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 	}
 
 	public static LightRegistry getRegistry() {
-		getInstance().getLogger().severe("It's method is deprecated");
+		log(console, "getRegistry: It's method is deprecated");
 		return null;
 	}
 
@@ -106,9 +117,9 @@ public class LightAPI extends JavaPlugin implements Listener {
 		if (handler != null) {
 			handler = null;
 		}
-		String name = getServer().getName();
-		if (checkSupport(name) != null) {
-			BukkitImpl impl = checkSupport(name);
+		String version = getServer().getVersion();
+		BukkitImpl impl = checkSupport(version);
+		if (impl != null) {
 			try {
 				final Class<?> clazz = Class.forName(impl.getPath());
 				// Check if we have a NMSHandler class at that location.
@@ -117,14 +128,14 @@ public class LightAPI extends JavaPlugin implements Listener {
 				}
 			} catch (final Exception e) {
 				e.printStackTrace();
-				this.getLogger().severe("Could not find support for this " + name + " version.");
+				log(console, "Could not find support for this " + version + " version.");
 				this.setEnabled(false);
 				return false;
 			}
-			this.getLogger().info("Loading support for " + impl.getNameImpl() + " " + Bukkit.getVersion());
+			log(console, "Loading support for " + impl.getNameImpl() + " " + Bukkit.getVersion());
 			return true;
 		} else {
-			this.getLogger().severe("Could not find support for this Bukkit implementation.");
+			log(console, "Could not find support for this Bukkit implementation.");
 			this.setEnabled(false);
 			return false;
 		}
@@ -142,7 +153,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 	private BukkitImpl checkSupport(String name) {
 		for (BukkitImpl impl : support) {
-			if (impl.getNameImpl().startsWith(name)) {
+			if (name.contains(impl.getNameImpl())) {
 				return impl;
 			}
 		}
@@ -151,27 +162,27 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 	@Deprecated
 	public static void createLight(Location location, int lightlevel) {
-		getInstance().getLogger().severe("It's method is deprecated");
+		log(console, "createLight: It's method is deprecated");
 	}
 
 	@Deprecated
 	public static void deleteLight(Location location) {
-		getInstance().getLogger().severe("It's method is deprecated");
+		log(console, "deleteLight: It's method is deprecated");
 	}
 
 	@Deprecated
 	public static void createLight(List<Location> list, int lightlevel) {
-		getInstance().getLogger().severe("It's method is deprecated");
+		log(console, "createLight: It's method is deprecated");
 	}
 
 	@Deprecated
 	public static void deleteLight(List<Location> list) {
-		getInstance().getLogger().severe("It's method is deprecated");
+		log(console, "deleteLight: It's method is deprecated");
 	}
 
 	@Deprecated
 	public static void updateChunks(Location loc) {
-		getInstance().getLogger().severe("It's method is deprecated");
+		log(console, "updateChunks: It's method is deprecated");
 	}
 
 	@EventHandler

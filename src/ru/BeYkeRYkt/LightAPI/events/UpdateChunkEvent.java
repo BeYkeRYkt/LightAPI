@@ -4,15 +4,15 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import ru.BeYkeRYkt.LightAPI.ChunkCoord;
+import ru.BeYkeRYkt.LightAPI.ChunkInfo;
 
 public class UpdateChunkEvent extends Event implements Cancellable {
 
 	private boolean cancel;
 	private static final HandlerList handlers = new HandlerList();
-	private ChunkCoord cCoord;
+	private ChunkInfo cCoord;
 
-	public UpdateChunkEvent(ChunkCoord cCoord) {
+	public UpdateChunkEvent(ChunkInfo cCoord) {
 		this.cCoord = cCoord;
 	}
 
@@ -35,11 +35,11 @@ public class UpdateChunkEvent extends Event implements Cancellable {
 		this.cancel = arg0;
 	}
 
-	public ChunkCoord getChunkCoord() {
+	public ChunkInfo getChunkInfo() {
 		return cCoord;
 	}
 
-	public void setChunkCoord(ChunkCoord cCoord) {
+	public void setChunkInfo(ChunkInfo cCoord) {
 		this.cCoord = cCoord;
 	}
 }

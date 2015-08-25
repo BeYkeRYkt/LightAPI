@@ -1,4 +1,4 @@
-package ru.BeYkeRYkt.LightAPI.nms.CraftBukkit.v1_8_R3;
+package ru.BeYkeRYkt.LightAPI.nms.PaperSpigot.v1_8_R3;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -21,6 +21,12 @@ import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import ru.BeYkeRYkt.LightAPI.ChunkInfo;
 import ru.BeYkeRYkt.LightAPI.nms.INMSHandler;
 
+/**
+ * Implementation by DenAbr
+ * 
+ * @author DinDev
+ *
+ */
 public class NMSHandler implements INMSHandler {
 
 	private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
@@ -68,7 +74,7 @@ public class NMSHandler implements INMSHandler {
 	public void recalculateBlockLighting(World world, int x, int y, int z) {
 		WorldServer nmsWorld = ((CraftWorld) world).getHandle();
 		BlockPosition pos = new BlockPosition(x, y, z);
-		nmsWorld.c(EnumSkyBlock.BLOCK, pos);
+		nmsWorld.updateLight(EnumSkyBlock.BLOCK, pos);
 	}
 
 	public Block getAdjacentAirBlock(Block block) {
