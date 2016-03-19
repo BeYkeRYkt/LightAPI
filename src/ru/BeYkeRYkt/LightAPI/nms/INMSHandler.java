@@ -1,18 +1,26 @@
-package ru.BeYkeRYkt.LightAPI.nms;
+package ru.beykerykt.lightapi.nms;
 
+import java.util.Collection;
 import java.util.List;
 
-import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 
-import ru.BeYkeRYkt.LightAPI.ChunkInfo;
+import ru.beykerykt.lightapi.chunks.ChunkInfo;
 
 public interface INMSHandler {
 
-	public void createLight(Location location, int light);
+	// Lights...
+	public void createLight(World world, int x, int y, int z, int light);
 
-	public void deleteLight(Location location);
+	public void deleteLight(World world, int x, int y, int z);
 
-	public List<ChunkInfo> collectChunks(Location loc);
+	public void recalculateLight(World world, int x, int y, int z);
 
-	public void updateChunk(ChunkInfo cCoord);
+	// Chunks...
+	public List<ChunkInfo> collectChunks(World world, int chunkX, int chunkZ);
+
+	public void sendChunkUpdate(World world, int chunkX, int chunkZ, Collection<? extends Player> players);
+
+	public void sendChunkUpdate(World world, int chunkX, int chunkZ, Player player);
 }

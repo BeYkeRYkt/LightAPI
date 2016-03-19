@@ -1,7 +1,7 @@
-package ru.BeYkeRYkt.LightAPI.nms.PaperSpigot;
+package ru.beykerykt.lightapi.nms.PaperSpigot;
 
-import ru.BeYkeRYkt.LightAPI.LightAPI;
-import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
+import ru.beykerykt.lightapi.LightAPI;
+import ru.beykerykt.lightapi.nms.IBukkitImpl;
 
 /**
  * 
@@ -10,7 +10,7 @@ import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
  * @author DinDev
  *
  */
-public class PaperSpigotImpl implements BukkitImpl {
+public class PaperSpigotImpl implements IBukkitImpl {
 
 	@Override
 	public String getNameImpl() {
@@ -21,6 +21,6 @@ public class PaperSpigotImpl implements BukkitImpl {
 	public String getPath() {
 		String packageName = LightAPI.getInstance().getServer().getClass().getPackage().getName();
 		String version = packageName.substring(packageName.lastIndexOf('.') + 1);
-		return "ru.BeYkeRYkt.LightAPI.nms.PaperSpigot." + version + ".NMSHandler";
+		return "ru.beykerykt.lightapi.nms.PaperSpigot." + version + ".NMSHandler";
 	}
 }

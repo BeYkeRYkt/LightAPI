@@ -1,4 +1,4 @@
-package ru.beykerykt.lightapi.nms.PaperSpigot.v1_8_R3;
+package ru.beykerykt.lightapi.nms.CraftBukkit.v1_9_R1;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -6,16 +6,16 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_9_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_9_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
-import net.minecraft.server.v1_8_R3.Chunk;
-import net.minecraft.server.v1_8_R3.EntityPlayer;
-import net.minecraft.server.v1_8_R3.PacketPlayOutMapChunk;
-import net.minecraft.server.v1_8_R3.BlockPosition;
-import net.minecraft.server.v1_8_R3.EnumSkyBlock;
-import net.minecraft.server.v1_8_R3.WorldServer;
+import net.minecraft.server.v1_9_R1.BlockPosition;
+import net.minecraft.server.v1_9_R1.Chunk;
+import net.minecraft.server.v1_9_R1.EntityPlayer;
+import net.minecraft.server.v1_9_R1.EnumSkyBlock;
+import net.minecraft.server.v1_9_R1.PacketPlayOutMapChunk;
+import net.minecraft.server.v1_9_R1.WorldServer;
 import ru.beykerykt.lightapi.chunks.ChunkInfo;
 import ru.beykerykt.lightapi.nms.INMSHandler;
 
@@ -39,7 +39,7 @@ public class NMSHandler implements INMSHandler {
 	public void recalculateLight(World world, int x, int y, int z) {
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
 		BlockPosition position = new BlockPosition(x, y, z);
-		worldServer.updateLight(EnumSkyBlock.BLOCK, position);
+		worldServer.c(EnumSkyBlock.BLOCK, position);
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class NMSHandler implements INMSHandler {
 			WorldServer nmsWorld = ((CraftWorld) world).getHandle();
 			for (int dX = -1; dX <= 1; dX++) {
 				for (int dZ = -1; dZ <= 1; dZ++) {
-					if (nmsWorld.chunkProviderServer.isChunkLoaded(chunkX + dX, chunkZ + dZ)) {
+					if (nmsWorld.getChunkProviderServer().isChunkLoaded(chunkX + dX, chunkZ + dZ)) {
 						Chunk chunk = nmsWorld.getChunkAt(chunkX + dX, chunkZ + dZ);
 						Field isModified = getChunkField(chunk);
 						if (isModified.getBoolean(chunk)) {
@@ -90,7 +90,7 @@ public class NMSHandler implements INMSHandler {
 
 	private static Field getChunkField(Object chunk) throws NoSuchFieldException, SecurityException {
 		if (cachedChunkModified == null) {
-			cachedChunkModified = chunk.getClass().getDeclaredField("q");
+			cachedChunkModified = chunk.getClass().getDeclaredField("r");
 			cachedChunkModified.setAccessible(true);
 		}
 		return cachedChunkModified;

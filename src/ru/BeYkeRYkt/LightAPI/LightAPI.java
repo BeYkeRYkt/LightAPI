@@ -1,65 +1,71 @@
-package ru.BeYkeRYkt.LightAPI;
+package ru.beykerykt.lightapi;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import ru.BeYkeRYkt.LightAPI.albionco.updater.Response;
-import ru.BeYkeRYkt.LightAPI.albionco.updater.Updater;
-import ru.BeYkeRYkt.LightAPI.albionco.updater.Version;
-import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
-import ru.BeYkeRYkt.LightAPI.nms.INMSHandler;
-import ru.BeYkeRYkt.LightAPI.nms.Cauldron.CauldronImpl;
-import ru.BeYkeRYkt.LightAPI.nms.CraftBukkit.CraftBukkitImpl;
-import ru.BeYkeRYkt.LightAPI.nms.CraftBukkit.SpigotImpl;
-import ru.BeYkeRYkt.LightAPI.nms.PaperSpigot.PaperSpigotImpl;
-import ru.BeYkeRYkt.LightAPI.utils.Metrics;
+import ru.beykerykt.lightapi.chunks.Chunks;
+import ru.beykerykt.lightapi.light.Lights;
+import ru.beykerykt.lightapi.nms.NMSHelper;
+import ru.beykerykt.lightapi.updater.Response;
+import ru.beykerykt.lightapi.updater.Updater;
+import ru.beykerykt.lightapi.updater.Version;
+import ru.beykerykt.lightapi.utils.Metrics;
 
 public class LightAPI extends JavaPlugin implements Listener {
 
-	private static INMSHandler handler;
-	private List<BukkitImpl> support; // Maybe others
-										// platforms for
-										// Bukkit. Example
-										// Glowstone
 	private static LightAPI plugin;
-	private static CommandSender console = Bukkit.getConsoleSender();
+	private int chunk_update_delay_ticks;
+	private int chunk_max_iterations_per_tick;
+	private int ligthing_update_delay_ticks;
+	private int lighting_max_iterations_per_tick;
 
 	@Override
 	public void onEnable() {
-		LightAPI.plugin = this;
-
-		this.support = new ArrayList<BukkitImpl>();
-
-		addSupportImplement(new CauldronImpl()); // Cauldron
-		addSupportImplement(new PaperSpigotImpl()); // PaperSpigot
-		addSupportImplement(new SpigotImpl()); // Spigot
-		addSupportImplement(new CraftBukkitImpl()); // CraftBukkit
-
-		if (!reloadInitHandler()) {
-			return;
+		// Config
+		try {
+			FileConfiguration fc = getConfig();
+			if (!new File(getDataFolder(), "config.yml").exists()) {
+				fc.options().header("LightAPI v" + getDescription().getVersion() + " Configuration" + "\nby BeYkeRYkt");
+				fc.set("chunk.update-delay-ticks", 5);
+				fc.set("chunk.max-iterations-per-tick", 20);
+				// fc.set("lighting.async-calculation-lighting", true);
+				fc.set("lighting.update-delay-ticks", 2);
+				fc.set("lighting.max-iterations-per-tick", 20);
+				saveConfig();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
+		// Init components
+		this.chunk_update_delay_ticks = getConfig().getInt("chunk.update-delay-ticks");
+		this.chunk_max_iterations_per_tick = getConfig().getInt("chunk.max-iterations-per-tick");
+		this.ligthing_update_delay_ticks = getConfig().getInt("lighting.update-delay-ticks");
+		this.lighting_max_iterations_per_tick = getConfig().getInt("lighting.max-iterations-per-tick");
+		LightAPI.plugin = this;
+		NMSHelper.init();
+		Chunks.init();
+		Lights.init();
 		getServer().getPluginManager().registerEvents(this, this);
 
 		try {
 			Metrics metrics = new Metrics(this);
 			metrics.start();
 		} catch (IOException e) {
+			// nothing...
 		}
 
+		// Starting updater
 		Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
 			@Override
 			public void run() {
@@ -72,11 +78,9 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 					Response response = updater.getResult();
 					if (response == Response.SUCCESS) {
-						log(console, ChatColor.GREEN + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.GREEN + "!");
-						log(console, ChatColor.GREEN + "Changes: ");
-						getServer().getConsoleSender().sendMessage(updater.getChanges());// for
-						// normal
-						// view
+						log(Bukkit.getConsoleSender(), ChatColor.GREEN + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.GREEN + "!");
+						log(Bukkit.getConsoleSender(), ChatColor.GREEN + "Changes: ");
+						getServer().getConsoleSender().sendMessage(updater.getChanges());// for normal view
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -85,104 +89,18 @@ public class LightAPI extends JavaPlugin implements Listener {
 		}, 60);
 	}
 
-	private static void log(CommandSender sender, String message) {
-		sender.sendMessage(ChatColor.YELLOW + "<Light" + ChatColor.RED + "API" + ChatColor.YELLOW + ">: " + ChatColor.WHITE + message);
-	}
-
-	public void logConsole(String message) {
-		log(console, message);
-	}
-
 	@Override
 	public void onDisable() {
-		LightAPI.plugin = null;
-		this.support.clear();
-		LightAPI.handler = null;
+		Lights.shutdown();
+		Chunks.shutdown();
 	}
 
 	public static LightAPI getInstance() {
 		return plugin;
 	}
 
-	public static LightRegistry getRegistry(Plugin plugin) {
-		return new LightRegistry(handler, plugin);
-	}
-
-	public static LightRegistry getRegistry() {
-		log(console, "getRegistry: It's method is deprecated");
-		return null;
-	}
-
-	public boolean reloadInitHandler() {
-		if (handler != null) {
-			handler = null;
-		}
-		String version = getServer().getVersion();
-		BukkitImpl impl = checkSupport(version);
-		if (impl != null) {
-			try {
-				final Class<?> clazz = Class.forName(impl.getPath());
-				// Check if we have a NMSHandler class at that location.
-				if (INMSHandler.class.isAssignableFrom(clazz)) {
-					LightAPI.handler = (INMSHandler) clazz.getConstructor().newInstance();
-				}
-			} catch (final Exception e) {
-				e.printStackTrace();
-				log(console, "Could not find support for this " + version + " version.");
-				this.setEnabled(false);
-				return false;
-			}
-			log(console, "Loading support for " + impl.getNameImpl() + " " + Bukkit.getVersion());
-			return true;
-		} else {
-			log(console, "Could not find support for this Bukkit implementation.");
-			this.setEnabled(false);
-			return false;
-		}
-	}
-
-	public void addSupportImplement(BukkitImpl impl) {
-		if (checkSupport(impl.getNameImpl()) == null) {
-			support.add(impl);
-		}
-	}
-
-	public List<BukkitImpl> getSupportImplements() {
-		return support;
-	}
-
-	private BukkitImpl checkSupport(String name) {
-		for (BukkitImpl impl : support) {
-			if (name.contains(impl.getNameImpl())) {
-				return impl;
-			}
-		}
-		return null;
-	}
-
-	@Deprecated
-	public static void createLight(Location location, int lightlevel) {
-		log(console, "createLight: It's method is deprecated");
-	}
-
-	@Deprecated
-	public static void deleteLight(Location location) {
-		log(console, "deleteLight: It's method is deprecated");
-	}
-
-	@Deprecated
-	public static void createLight(List<Location> list, int lightlevel) {
-		log(console, "createLight: It's method is deprecated");
-	}
-
-	@Deprecated
-	public static void deleteLight(List<Location> list) {
-		log(console, "deleteLight: It's method is deprecated");
-	}
-
-	@Deprecated
-	public static void updateChunks(Location loc) {
-		log(console, "updateChunks: It's method is deprecated");
+	public void log(CommandSender sender, String message) {
+		sender.sendMessage(ChatColor.YELLOW + "<Light" + ChatColor.RED + "API" + ChatColor.YELLOW + ">: " + ChatColor.WHITE + message);
 	}
 
 	@EventHandler
@@ -205,10 +123,8 @@ public class LightAPI extends JavaPlugin implements Listener {
 						if (response == Response.SUCCESS) {
 							log(player, ChatColor.GREEN + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.GREEN + "!");
 							log(player, ChatColor.GREEN + "Changes: ");
-							player.sendMessage(updater.getChanges());// for
-																		// normal
-																		// view
-							player.playSound(player.getLocation(), Sound.LEVEL_UP, 1, 1);
+							player.sendMessage(updater.getChanges());// for normal view
+							// player.playSound(player.getLocation(), Sound.LEVEL_UP, 1, 1);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -218,7 +134,19 @@ public class LightAPI extends JavaPlugin implements Listener {
 		}
 	}
 
-	public INMSHandler getNMSHandler() {
-		return handler;
+	public int getChunkUpdateDelayTicks() {
+		return chunk_update_delay_ticks;
+	}
+
+	public int getChunkMaxIterationsPerTick() {
+		return chunk_max_iterations_per_tick;
+	}
+
+	public int getLigthingUpdateDelayTicks() {
+		return ligthing_update_delay_ticks;
+	}
+
+	public int getLightingMaxIterationsPerTick() {
+		return lighting_max_iterations_per_tick;
 	}
 }

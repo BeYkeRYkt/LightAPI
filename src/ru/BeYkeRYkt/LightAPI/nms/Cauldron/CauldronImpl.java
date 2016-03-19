@@ -1,7 +1,7 @@
-package ru.BeYkeRYkt.LightAPI.nms.Cauldron;
+package ru.beykerykt.lightapi.nms.Cauldron;
 
-import ru.BeYkeRYkt.LightAPI.LightAPI;
-import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
+import ru.beykerykt.lightapi.LightAPI;
+import ru.beykerykt.lightapi.nms.IBukkitImpl;
 
 /**
  * For Cauldron cores
@@ -9,7 +9,7 @@ import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
  * @author DinDev
  *
  */
-public class CauldronImpl implements BukkitImpl {
+public class CauldronImpl implements IBukkitImpl {
 
 	@Override
 	public String getNameImpl() {
@@ -20,6 +20,6 @@ public class CauldronImpl implements BukkitImpl {
 	public String getPath() {
 		String packageName = LightAPI.getInstance().getServer().getClass().getPackage().getName();
 		String version = packageName.substring(packageName.lastIndexOf('.') + 1);
-		return "ru.BeYkeRYkt.LightAPI.nms.Cauldron." + version + ".LightRegistry";
+		return "ru.beykerykt.lightapi.nms.Cauldron." + version + ".NMSHandler";
 	}
 }

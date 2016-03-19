@@ -1,4 +1,4 @@
-package ru.BeYkeRYkt.LightAPI.albionco.updater;
+package ru.beykerykt.lightapi.updater;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

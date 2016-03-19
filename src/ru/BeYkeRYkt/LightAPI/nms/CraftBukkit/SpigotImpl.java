@@ -1,7 +1,7 @@
-package ru.BeYkeRYkt.LightAPI.nms.CraftBukkit;
+package ru.beykerykt.lightapi.nms.CraftBukkit;
 
-import ru.BeYkeRYkt.LightAPI.LightAPI;
-import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
+import ru.beykerykt.lightapi.LightAPI;
+import ru.beykerykt.lightapi.nms.IBukkitImpl;
 
 /**
  * For Spigot core
@@ -9,7 +9,7 @@ import ru.BeYkeRYkt.LightAPI.nms.BukkitImpl;
  * @author DinDev
  *
  */
-public class SpigotImpl implements BukkitImpl {
+public class SpigotImpl implements IBukkitImpl {
 
 	@Override
 	public String getNameImpl() {
@@ -20,6 +20,6 @@ public class SpigotImpl implements BukkitImpl {
 	public String getPath() {
 		String packageName = LightAPI.getInstance().getServer().getClass().getPackage().getName();
 		String version = packageName.substring(packageName.lastIndexOf('.') + 1);
-		return "ru.BeYkeRYkt.LightAPI.nms.CraftBukkit." + version + ".NMSHandler";
+		return "ru.beykerykt.lightapi.nms.CraftBukkit." + version + ".NMSHandler";
 	}
 }

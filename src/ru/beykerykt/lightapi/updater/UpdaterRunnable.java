@@ -1,4 +1,4 @@
-package ru.BeYkeRYkt.LightAPI.albionco.updater;
+package ru.beykerykt.lightapi.updater;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
