@@ -26,32 +26,39 @@ public class LightAPI extends JavaPlugin implements Listener {
 	private static LightAPI plugin;
 	private int chunk_update_delay_ticks;
 	private int chunk_max_iterations_per_tick;
+	private int chunk_waiting_delay_ticks;
 	private int ligthing_update_delay_ticks;
 	private int lighting_max_iterations_per_tick;
+	private int lighting_waiting_delay_ticks;
+	private int configVer = 1;
+	private int max_light_level;
 
 	@Override
 	public void onEnable() {
 		// Config
 		try {
 			FileConfiguration fc = getConfig();
-			if (!new File(getDataFolder(), "config.yml").exists()) {
-				fc.options().header("LightAPI v" + getDescription().getVersion() + " Configuration" + "\nby BeYkeRYkt");
-				fc.set("chunk.update-delay-ticks", 5);
-				fc.set("chunk.max-iterations-per-tick", 20);
-				// fc.set("lighting.async-calculation-lighting", true);
-				fc.set("lighting.update-delay-ticks", 2);
-				fc.set("lighting.max-iterations-per-tick", 20);
-				saveConfig();
+			File file = new File(getDataFolder(), "config.yml");
+			if (file.exists()) {
+				if (fc.getInt("version") < configVer) {
+					file.delete(); // got a better idea?
+					generateConfig(file);
+				}
+			} else {
+				generateConfig(file);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		// Init components
+		this.max_light_level = getConfig().getInt("max-light-level");
 		this.chunk_update_delay_ticks = getConfig().getInt("chunk.update-delay-ticks");
 		this.chunk_max_iterations_per_tick = getConfig().getInt("chunk.max-iterations-per-tick");
+		this.chunk_waiting_delay_ticks = getConfig().getInt("chunk.waiting-delay-ticks");
 		this.ligthing_update_delay_ticks = getConfig().getInt("lighting.update-delay-ticks");
 		this.lighting_max_iterations_per_tick = getConfig().getInt("lighting.max-iterations-per-tick");
+		this.lighting_waiting_delay_ticks = getConfig().getInt("lighting.waiting-delay-ticks");
 		LightAPI.plugin = this;
 		NMSHelper.init();
 		Chunks.init();
@@ -87,6 +94,23 @@ public class LightAPI extends JavaPlugin implements Listener {
 				}
 			}
 		}, 60);
+	}
+
+	private void generateConfig(File file) {
+		FileConfiguration fc = getConfig();
+		if (!file.exists()) {
+			fc.options().header("LightAPI v" + getDescription().getVersion() + " Configuration" + "\nby BeYkeRYkt");
+			fc.set("version", configVer);
+			fc.set("max-light-level", 15);
+			fc.set("chunk.update-delay-ticks", 5);
+			fc.set("chunk.max-iterations-per-tick", 20);
+			fc.set("chunk.waiting-delay-ticks", 2);
+			// fc.set("lighting.async-calculation-lighting", true);
+			fc.set("lighting.update-delay-ticks", 2);
+			fc.set("lighting.max-iterations-per-tick", 20);
+			fc.set("lighting.waiting-delay-ticks", 2);
+			saveConfig();
+		}
 	}
 
 	@Override
@@ -148,5 +172,17 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 	public int getLightingMaxIterationsPerTick() {
 		return lighting_max_iterations_per_tick;
+	}
+
+	public int getChunkWaitingDelayTicks() {
+		return chunk_waiting_delay_ticks;
+	}
+
+	public int getLightingWaitingDelayTicks() {
+		return lighting_waiting_delay_ticks;
+	}
+
+	public int getMaxLightLevel() {
+		return max_light_level;
 	}
 }

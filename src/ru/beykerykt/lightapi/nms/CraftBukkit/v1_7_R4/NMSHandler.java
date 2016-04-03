@@ -12,8 +12,8 @@ import org.bukkit.entity.Player;
 
 import net.minecraft.server.v1_7_R4.Chunk;
 import net.minecraft.server.v1_7_R4.EntityPlayer;
-import net.minecraft.server.v1_7_R4.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_7_R4.EnumSkyBlock;
+import net.minecraft.server.v1_7_R4.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_7_R4.WorldServer;
 import ru.beykerykt.lightapi.chunks.ChunkInfo;
 import ru.beykerykt.lightapi.nms.INMSHandler;

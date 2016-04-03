@@ -12,37 +12,46 @@ import ru.beykerykt.lightapi.nms.NMSHelper;
 public class Lights {
 
 	private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
-	private static int maxlevel = 15;
 	private static LightRequestMachine machine;
 
 	public static void init() {
 		if (machine == null || !machine.isStarted()) {
 			machine = new LightRequestMachine();
-			machine.start(LightAPI.getInstance().getLigthingUpdateDelayTicks(), LightAPI.getInstance().getLightingMaxIterationsPerTick());
+			machine.start(LightAPI.getInstance().getLigthingUpdateDelayTicks(), LightAPI.getInstance().getLightingMaxIterationsPerTick(), LightAPI.getInstance().getLightingWaitingDelayTicks());
 		}
 	}
 
 	public static void shutdown() {
-		if (machine != null || machine.isStarted()) {
+		if (machine != null && machine.isStarted()) {
 			machine.shutdown();
 		}
 	}
 
+	public static LightDataRequest generateRequest(World world, int x, int y, int z, int light, RequestType type) {
+		return new LightDataRequest(world, x, y, z, light, type);
+	}
+
+	public static boolean addRequestToQueue(LightDataRequest request) {
+		return machine.addToQueue(request);
+	}
+
 	public static LightDataRequest createLight(World world, int x, int y, int z, int light, boolean async) {
-		if (light > 15) {
-			light = maxlevel;
+		if (light > LightAPI.getInstance().getMaxLightLevel()) {
+			light = LightAPI.getInstance().getMaxLightLevel();
+		}
+
+		if (async) {
+			LightDataRequest request = generateRequest(world, x, y, z, light, RequestType.CREATE_AND_RECALCULATE);
+			if (addRequestToQueue(request)) {
+				return request;
+			}
+			return null;
 		}
 
 		Block adjacent = getAdjacentAirBlock(world.getBlockAt(x, y, z));
 		int lx = adjacent.getX();
 		int ly = adjacent.getY();
 		int lz = adjacent.getZ();
-		if (async) {
-			LightDataRequest request = new LightDataRequest(world, x, y, z, light, RequestType.CREATE);
-			machine.addToQueue(request);
-			recalculateLight(world, lx, ly, lz, true);
-			return request;
-		}
 		NMSHelper.createLight(world, x, y, z, light);
 		NMSHelper.recalculateLight(world, lx, ly, lz);
 		return null;
@@ -54,9 +63,11 @@ public class Lights {
 
 	public static LightDataRequest deleteLight(World world, int x, int y, int z, boolean async) {
 		if (async) {
-			LightDataRequest request = new LightDataRequest(world, x, y, z, 0, RequestType.DELETE);
-			machine.addToQueue(request);
-			return request;
+			LightDataRequest request = generateRequest(world, x, y, z, 0, RequestType.DELETE);
+			if (addRequestToQueue(request)) {
+				return request;
+			}
+			return null;
 		}
 		NMSHelper.deleteLight(world, x, y, z);
 		return null;
@@ -68,9 +79,11 @@ public class Lights {
 
 	public static LightDataRequest recalculateLight(World world, int x, int y, int z, boolean async) {
 		if (async) {
-			LightDataRequest request = new LightDataRequest(world, x, y, z, 0, RequestType.RECALCULATE);
-			machine.addToQueue(request);
-			return request;
+			LightDataRequest request = generateRequest(world, x, y, z, 0, RequestType.RECALCULATE);
+			if (addRequestToQueue(request)) {
+				return request;
+			}
+			return null;
 		}
 		NMSHelper.recalculateLight(world, x, y, z);
 		return null;

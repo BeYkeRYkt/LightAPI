@@ -10,22 +10,32 @@ public class ChunkRequestMachine extends RequestSteamMachine {
 	@Override
 	public void run() {
 		super.run();
-		ChunkCache.sendChunkUpdates();
+
+		while (!ChunkCache.CHUNK_INFO_QUEUE.isEmpty()) {
+			ChunkInfo info = ChunkCache.CHUNK_INFO_QUEUE.get(0);
+			NMSHelper.sendChunkUpdate(info.getWorld(), info.getX(), info.getZ(), info.getReceivers());
+			ChunkCache.CHUNK_INFO_QUEUE.remove(0);
+		}
 	}
 
 	@Override
-	public synchronized boolean process(DataRequest request) {
-		if (!request.isReady()) {
+	public boolean process(DataRequest request) {
+		if (!request.isReadyForSend()) {
 			return false;
 		}
-		LightDataRequest r = (LightDataRequest) request;
-		int chunkX = r.getX() >> 4;
-		int chunkZ = r.getZ() >> 4;
-		for (ChunkInfo info : NMSHelper.collectChunks(r.getWorld(), chunkX, chunkZ)) {
-			if (!ChunkCache.CHUNK_INFO_CACHE.contains(info)) {
-				ChunkCache.CHUNK_INFO_CACHE.add(info);
+		if (request instanceof LightDataRequest) {
+			LightDataRequest r = (LightDataRequest) request;
+			int chunkX = r.getX() >> 4;
+			int chunkZ = r.getZ() >> 4;
+			for (ChunkInfo info : NMSHelper.collectChunks(r.getWorld(), chunkX, chunkZ)) {
+				if (ChunkCache.CHUNK_INFO_QUEUE.contains(info)) {
+					int index = ChunkCache.CHUNK_INFO_QUEUE.indexOf(info);
+					ChunkCache.CHUNK_INFO_QUEUE.remove(index);
+				}
+				ChunkCache.CHUNK_INFO_QUEUE.add(info);
 			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 }

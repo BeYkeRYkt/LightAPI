@@ -9,17 +9,21 @@ import ru.beykerykt.lightapi.LightAPI;
 public abstract class RequestSteamMachine implements Runnable {
 
 	private boolean isStarted;
+	private boolean needUpdate;
 	private int id;
 	protected CopyOnWriteArrayList<DataRequest> REQUEST_QUEUE;
-	protected int maxIterationsPerTick = 20;
-	protected int iteratorCount = 0;
+	protected int maxIterationsPerTick;
+	protected int iteratorCount;
+	protected int waitingTicks;
 
-	public void start(int ticks, int maxIterationsPerTick) {
+	public void start(int ticks, int maxIterationsPerTick, int waitingTicks) {
 		if (!isStarted) {
 			REQUEST_QUEUE = new CopyOnWriteArrayList<DataRequest>();
 			this.maxIterationsPerTick = maxIterationsPerTick;
+			this.waitingTicks = waitingTicks;
 			id = Bukkit.getScheduler().runTaskTimerAsynchronously(LightAPI.getInstance(), this, 0, ticks).getTaskId();
 			isStarted = true;
+			needUpdate = false;
 		}
 	}
 
@@ -29,6 +33,7 @@ public abstract class RequestSteamMachine implements Runnable {
 			REQUEST_QUEUE = null;
 			Bukkit.getScheduler().cancelTask(id);
 			isStarted = false;
+			needUpdate = false;
 		}
 	}
 
@@ -36,23 +41,36 @@ public abstract class RequestSteamMachine implements Runnable {
 		return isStarted;
 	}
 
-	public synchronized boolean addToQueue(DataRequest request) {
-		if (request == null && REQUEST_QUEUE.contains(request)) {
+	public boolean addToQueue(DataRequest request) {
+		if (request == null || REQUEST_QUEUE.contains(request)) {
 			return false;
 		}
 		REQUEST_QUEUE.add(request);
+		if (!needUpdate) {
+			needUpdate = true;
+		}
 		return true;
 	}
 
 	@Override
 	public void run() {
-		iteratorCount = 0;
-		while (!REQUEST_QUEUE.isEmpty() && iteratorCount < maxIterationsPerTick) {
-			DataRequest request = REQUEST_QUEUE.get(0);
-			if (process(request)) {
+		if (needUpdate) {
+			needUpdate = false;
+			iteratorCount = 0;
+
+			while (!REQUEST_QUEUE.isEmpty() && iteratorCount < maxIterationsPerTick) {
+				final DataRequest request = REQUEST_QUEUE.get(0);
+				if (request != null && !process(request)) {
+					Bukkit.getScheduler().runTaskLater(LightAPI.getInstance(), new Runnable() {
+						@Override
+						public void run() {
+							process(request);
+						}
+					}, waitingTicks);
+				}
+				iteratorCount++;
 				REQUEST_QUEUE.remove(0);
 			}
-			iteratorCount++;
 		}
 	}
 

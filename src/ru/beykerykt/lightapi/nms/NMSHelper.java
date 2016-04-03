@@ -13,6 +13,7 @@ import ru.beykerykt.lightapi.chunks.ChunkInfo;
 import ru.beykerykt.lightapi.nms.Cauldron.CauldronImpl;
 import ru.beykerykt.lightapi.nms.CraftBukkit.CraftBukkitImpl;
 import ru.beykerykt.lightapi.nms.CraftBukkit.SpigotImpl;
+import ru.beykerykt.lightapi.nms.Paper.PaperImpl;
 import ru.beykerykt.lightapi.nms.PaperSpigot.PaperSpigotImpl;
 
 public class NMSHelper {
@@ -55,6 +56,7 @@ public class NMSHelper {
 	private static void initDefaultImpl() {
 		addSupportImplement(new CauldronImpl()); // Cauldron
 		addSupportImplement(new PaperSpigotImpl()); // PaperSpigot
+		addSupportImplement(new PaperImpl()); // New PaperSpigot
 		addSupportImplement(new SpigotImpl()); // Spigot
 		addSupportImplement(new CraftBukkitImpl()); // CraftBukkit
 	}
@@ -117,10 +119,6 @@ public class NMSHelper {
 
 	public static void sendChunkUpdate(World world, int chunkX, int chunkZ) {
 		sendChunkUpdate(world, chunkX, chunkZ, world.getPlayers());
-	}
-
-	public static void sendChunkUpdate(ChunkInfo info) {
-		sendChunkUpdate(info.getWorld(), info.getX(), info.getZ(), info.getReceivers());
 	}
 
 	public static void sendChunkUpdate(World world, int chunkX, int chunkZ, Player player) {

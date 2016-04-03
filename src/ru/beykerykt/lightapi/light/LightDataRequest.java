@@ -9,7 +9,8 @@ public class LightDataRequest implements DataRequest {
 	public enum RequestType {
 		CREATE,
 		DELETE,
-		RECALCULATE;
+		RECALCULATE,
+		CREATE_AND_RECALCULATE;
 	}
 
 	private boolean ready;
@@ -55,12 +56,12 @@ public class LightDataRequest implements DataRequest {
 	}
 
 	@Override
-	public boolean isReady() {
+	public boolean isReadyForSend() {
 		return ready;
 	}
 
 	@Override
-	public void setReady(boolean ready) {
+	public void setReadyForSend(boolean ready) {
 		this.ready = ready;
 	}
 
