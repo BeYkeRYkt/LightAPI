@@ -45,7 +45,6 @@ public class NMSHelper {
 			} catch (final Exception e) {
 				// e.printStackTrace();
 				LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Could not find support for this " + version + " version.");
-				Bukkit.getPluginManager().disablePlugin(LightAPI.getInstance());
 			}
 			LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Loading support for " + impl.getNameImpl() + " " + Bukkit.getVersion());
 		} else {

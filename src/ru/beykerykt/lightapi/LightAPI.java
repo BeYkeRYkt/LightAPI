@@ -61,6 +61,11 @@ public class LightAPI extends JavaPlugin implements Listener {
 		this.lighting_waiting_delay_ticks = getConfig().getInt("lighting.waiting-delay-ticks");
 		LightAPI.plugin = this;
 		NMSHelper.init();
+		if (!NMSHelper.isInitialized()) {
+			Bukkit.getPluginManager().disablePlugin(this);
+			return;
+		}
+
 		Chunks.init();
 		Lights.init();
 		getServer().getPluginManager().registerEvents(this, this);
@@ -131,7 +136,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		final Player player = event.getPlayer();
 
-		if (player.isOp() || player.hasPermission("lightapi.updater")) {
+		if (player.hasPermission("lightapi.updater")) {
 			Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
 
 				@Override
