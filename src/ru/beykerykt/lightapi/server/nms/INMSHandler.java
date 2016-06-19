@@ -18,13 +18,13 @@ public interface INMSHandler {
 	public void recalculateLight(World world, int x, int y, int z);
 
 	// Chunks...
-	public List<ChunkInfo> collectChunks(World world, int chunkX, int chunkZ);
+	public List<ChunkInfo> collectChunks(World world, int x, int y, int z);
 
 	public void sendChunkUpdate(World world, int chunkX, int chunkZ, Collection<? extends Player> players);
 
 	public void sendChunkUpdate(World world, int chunkX, int chunkZ, Player player);
 
-	public void sendChunkUpdate(World world, int x, int y, int z, Collection<? extends Player> players);
+	public void sendChunkUpdate(World world, int chunkX, int y, int chunkZ, Collection<? extends Player> players);
 
-	public void sendChunkUpdate(World world, int x, int y, int z, Player player);
+	public void sendChunkUpdate(World world, int chunkX, int y, int chunkZ, Player player);
 }
