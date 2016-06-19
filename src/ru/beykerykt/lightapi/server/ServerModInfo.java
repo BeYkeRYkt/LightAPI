@@ -8,18 +8,18 @@ import ru.beykerykt.lightapi.server.nms.INMSHandler;
 public class ServerModInfo {
 	
 	private String modName; 
-	private Map<String, Class<INMSHandler>> versions;
+	private Map<String, Class<? extends INMSHandler>> versions;
 	
 	public ServerModInfo(String modname) {
 		this.modName = modname;
-		this.versions = new ConcurrentHashMap<String, Class<INMSHandler>>();
+		this.versions = new ConcurrentHashMap<String, Class<? extends INMSHandler>>();
 	}
 	
 	public String getModName() {
 		return modName;
 	}
 	
-	public Map<String, Class<INMSHandler>> getVersions() {
+	public Map<String, Class<? extends INMSHandler>> getVersions() {
 		return versions;
 	}
 }
