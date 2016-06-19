@@ -8,7 +8,7 @@ import org.bukkit.Bukkit;
 import ru.beykerykt.lightapi.LightAPI;
 import ru.beykerykt.lightapi.server.nms.INMSHandler;
 
-public class ServerManager {
+public class ServerModManager {
 
 	// private static List<ServerModInfo> supportImpl = new CopyOnWriteArrayList<>();
 	private static Map<String, ServerModInfo> supportImpl;
