@@ -53,18 +53,13 @@ public class RequestSteamMachine implements Runnable {
 	}
 
 	@Override
-	public void run() {
-		for(ChunkInfo info: ChunkCache.CHUNK_INFO_QUEUE){
-			ServerModManager.getNMSHandler().sendChunkUpdate(info.getWorld(), info.getChunkX(), info.getChunkYHeight(), info.getChunkZ(), info.getReceivers());
-			ChunkCache.CHUNK_INFO_QUEUE.remove(info);
-		}
-		
+	public void run() {		
 		if (needUpdate) {
 			needUpdate = false;
 			iteratorCount = 0;
 
 			while (!REQUEST_QUEUE.isEmpty() && iteratorCount < maxIterationsPerTick) {
-				final DataRequest request = REQUEST_QUEUE.get(0);
+				DataRequest request = REQUEST_QUEUE.get(0);
 				//if (request != null && !request.process()) {
 				//	Bukkit.getScheduler().runTaskLater(LightAPI.getInstance(), new Runnable() {
 				//		@Override
@@ -77,6 +72,11 @@ public class RequestSteamMachine implements Runnable {
 				iteratorCount++;
 				REQUEST_QUEUE.remove(0);
 			}
+		}
+		
+		for(ChunkInfo info: ChunkCache.CHUNK_INFO_QUEUE){
+			ServerModManager.getNMSHandler().sendChunkUpdate(info.getWorld(), info.getChunkX(), info.getChunkYHeight(), info.getChunkZ(), info.getReceivers());
+			ChunkCache.CHUNK_INFO_QUEUE.remove(info);
 		}
 	}
 }
