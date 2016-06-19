@@ -6,7 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import ru.beykerykt.lightapi.server.ServerManager;
+import ru.beykerykt.lightapi.server.ServerModManager;
 import ru.beykerykt.lightapi.server.ServerModInfo;
 import ru.beykerykt.lightapi.utils.Metrics;
 
@@ -20,23 +20,25 @@ public class LightAPI extends JavaPlugin{
 		
 		ServerModInfo craftbukkit = new ServerModInfo("CraftBukkit");
 		//craftbukkit.getVersions().put("v1_7_R4", NMSHandler.class);
-		ServerManager.registerServerMod(craftbukkit);
+		ServerModManager.registerServerMod(craftbukkit);
 		
 		ServerModInfo spigot = new ServerModInfo("Spigot");
-		ServerManager.registerServerMod(spigot);
+		ServerModManager.registerServerMod(spigot);
 		
 		ServerModInfo paperspigot = new ServerModInfo("PaperSpigot");
-		ServerManager.registerServerMod(paperspigot);
+		ServerModManager.registerServerMod(paperspigot);
 		
 		ServerModInfo paper = new ServerModInfo("Paper");
-		ServerManager.registerServerMod(paper);
+		ServerModManager.registerServerMod(paper);
 		
 		ServerModInfo tacospigot = new ServerModInfo("TacoSpigot");
-		ServerManager.registerServerMod(tacospigot);
+		ServerModManager.registerServerMod(tacospigot);
 	}
 	
 	@Override
 	public void onEnable() {
+		ServerModManager.init();
+		
 		try {
 			Metrics metrics = new Metrics(this);
 			metrics.start();
