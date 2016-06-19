@@ -1,12 +1,10 @@
-package ru.beykerykt.lightapi.nms;
+package ru.beykerykt.lightapi.server.nms;
 
 import java.util.Collection;
 import java.util.List;
 
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-
-import ru.beykerykt.lightapi.chunks.ChunkInfo;
 
 public interface INMSHandler {
 
