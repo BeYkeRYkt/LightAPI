@@ -11,14 +11,10 @@ import ru.beykerykt.lightapi.server.nms.INMSHandler;
 public class ServerModManager {
 
 	// private static List<ServerModInfo> supportImpl = new CopyOnWriteArrayList<>();
-	private static Map<String, ServerModInfo> supportImpl;
+	private static Map<String, ServerModInfo> supportImpl = new ConcurrentHashMap<String, ServerModInfo>();
 	private static INMSHandler handler;
 
 	public static void init() {
-		if (supportImpl == null) {
-			supportImpl = new ConcurrentHashMap<String, ServerModInfo>();
-		}
-
 		if (handler != null) {
 			handler = null;
 		}
