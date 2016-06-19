@@ -55,7 +55,7 @@ public class NMSHandler_v1_9_R2 implements INMSHandler {
 						Chunk chunk = nmsWorld.getChunkAt(chunkX + dX, chunkZ + dZ);
 						Field isModified = getChunkField(chunk);
 						if (isModified.getBoolean(chunk)) {
-							ChunkInfo cCoord = new ChunkInfo(world, chunk.locX, chunk.locZ, world.getPlayers());
+							ChunkInfo cCoord = new ChunkInfo(world, chunk.locX, y, chunk.locZ, world.getPlayers());
 							list.add(cCoord);
 							chunk.f(false);
 						}
