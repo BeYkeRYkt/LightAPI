@@ -103,7 +103,7 @@ public class NMSHandler_v1_9_R2 implements INMSHandler {
 			human.playerConnection.sendPacket(packet);
 		}
 	}
-	
+
 	private static Field getChunkField(Object chunk) throws NoSuchFieldException, SecurityException {
 		if (cachedChunkModified == null) {
 			cachedChunkModified = chunk.getClass().getDeclaredField("r");

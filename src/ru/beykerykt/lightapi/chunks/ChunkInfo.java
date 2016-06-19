@@ -16,15 +16,15 @@ public class ChunkInfo {
 	public ChunkInfo(World world, int chunkX, int chunkZ, Collection<? extends Player> players) {
 		this(world, chunkX, 256, chunkZ, players);
 	}
-	
-	public ChunkInfo(World world, int chunkX, int chunk_y_height ,int chunkZ, Collection<? extends Player> players) {
+
+	public ChunkInfo(World world, int chunkX, int chunk_y_height, int chunkZ, Collection<? extends Player> players) {
 		this.world = world;
 		this.x = chunkX;
 		this.y = chunk_y_height;
 		this.z = chunkZ;
 		this.receivers = players;
 	}
-	
+
 	public World getWorld() {
 		return world;
 	}
@@ -36,8 +36,8 @@ public class ChunkInfo {
 	public int getChunkZ() {
 		return z;
 	}
-	
-	public int getChunkYHeight(){
+
+	public int getChunkYHeight() {
 		return y;
 	}
 

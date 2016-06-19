@@ -22,7 +22,7 @@ public class ServerModManager {
 		// Init handler...
 		// String version = Bukkit.getVersion();
 		String modName = Bukkit.getVersion().split("-")[1];
-		if(!supportImpl.containsKey(modName)){
+		if (!supportImpl.containsKey(modName)) {
 			modName = Bukkit.getName();
 		}
 		ServerModInfo impl = supportImpl.get(modName);
