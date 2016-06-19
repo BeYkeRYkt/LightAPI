@@ -106,7 +106,7 @@ public class NMSHandler_v1_9_R2 implements INMSHandler {
 
 	private static Field getChunkField(Object chunk) throws NoSuchFieldException, SecurityException {
 		if (cachedChunkModified == null) {
-			cachedChunkModified = chunk.getClass().getDeclaredField("r");
+			cachedChunkModified = chunk.getClass().getDeclaredField("s");
 			cachedChunkModified.setAccessible(true);
 		}
 		return cachedChunkModified;
