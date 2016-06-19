@@ -30,7 +30,7 @@ public class ServerModManager {
 			try {
 				String folder_version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
 				if (impl.getVersions().containsKey(folder_version)) {
-					final Class<INMSHandler> clazz = impl.getVersions().get(folder_version);
+					final Class<? extends INMSHandler> clazz = impl.getVersions().get(folder_version);
 					// Check if we have a NMSHandler class at that location.
 					if (INMSHandler.class.isAssignableFrom(clazz)) {
 						handler = clazz.getConstructor().newInstance();
