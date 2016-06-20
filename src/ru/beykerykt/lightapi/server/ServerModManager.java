@@ -35,14 +35,19 @@ public class ServerModManager {
 					if (INMSHandler.class.isAssignableFrom(clazz)) {
 						handler = clazz.getConstructor().newInstance();
 					}
+				} else {
+					throw new Exception("Unknown version."); // ?
 				}
-			} catch (final Exception e) {
+			} catch (Exception e) {
 				// e.printStackTrace();
 				LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Could not find support for this " + Bukkit.getVersion() + " version.");
+				return;
 			}
 			LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Loading support for " + impl.getModName() + " " + Bukkit.getVersion());
+			return;
 		} else {
 			LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Could not find support for this Bukkit implementation.");
+			return;
 		}
 	}
 
