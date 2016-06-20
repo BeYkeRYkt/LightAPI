@@ -40,6 +40,10 @@ public class ChunkInfo {
 	public int getChunkYHeight() {
 		return y;
 	}
+	
+	public void setChunkYHeight(int y) {
+		this.y = y;
+	}
 
 	public Collection<? extends Player> getReceivers() {
 		return receivers;
@@ -85,5 +89,10 @@ public class ChunkInfo {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "ChunkInfo [world=" + world + ", x=" + x + ", y=" + y + ", z=" + z + "]";
 	}
 }
