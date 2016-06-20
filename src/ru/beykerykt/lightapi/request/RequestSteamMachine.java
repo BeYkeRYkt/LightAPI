@@ -60,14 +60,6 @@ public class RequestSteamMachine implements Runnable {
 
 			while (!REQUEST_QUEUE.isEmpty() && iteratorCount < maxIterationsPerTick) {
 				DataRequest request = REQUEST_QUEUE.get(0);
-				// if (request != null && !request.process()) {
-				// Bukkit.getScheduler().runTaskLater(LightAPI.getInstance(), new Runnable() {
-				// @Override
-				// public void run() {
-				// request.process();
-				// }
-				// }, waitingTicks);
-				// }
 				request.process();
 				iteratorCount++;
 				REQUEST_QUEUE.remove(0);
