@@ -30,6 +30,7 @@ import ru.beykerykt.lightapi.server.ServerModInfo;
 import ru.beykerykt.lightapi.server.ServerModManager;
 import ru.beykerykt.lightapi.server.nms.craftbukkit.CraftBukkit_v1_10_R1;
 import ru.beykerykt.lightapi.server.nms.craftbukkit.CraftBukkit_v1_8_R3;
+import ru.beykerykt.lightapi.server.nms.craftbukkit.CraftBukkit_v1_9_R1;
 import ru.beykerykt.lightapi.server.nms.craftbukkit.CraftBukkit_v1_9_R2;
 import ru.beykerykt.lightapi.server.nms.paperspigot.PaperSpigot_v1_8_R3;
 import ru.beykerykt.lightapi.updater.Response;
@@ -53,12 +54,14 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 		ServerModInfo craftbukkit = new ServerModInfo("CraftBukkit");
 		craftbukkit.getVersions().put("v1_8_R3", CraftBukkit_v1_8_R3.class);
+		craftbukkit.getVersions().put("v1_9_R1", CraftBukkit_v1_9_R1.class);
 		craftbukkit.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
 		craftbukkit.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
 		ServerModManager.registerServerMod(craftbukkit);
 
 		ServerModInfo spigot = new ServerModInfo("Spigot");
 		spigot.getVersions().put("v1_8_R3", CraftBukkit_v1_8_R3.class);
+		spigot.getVersions().put("v1_9_R1", CraftBukkit_v1_9_R1.class);
 		spigot.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
 		spigot.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
 		ServerModManager.registerServerMod(spigot);
@@ -68,12 +71,14 @@ public class LightAPI extends JavaPlugin implements Listener {
 		ServerModManager.registerServerMod(paperspigot);
 
 		ServerModInfo paper = new ServerModInfo("Paper");
+		paper.getVersions().put("v1_9_R1", CraftBukkit_v1_9_R1.class);
 		paper.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
 		paper.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
 		ServerModManager.registerServerMod(paper);
 
 		ServerModInfo tacospigot = new ServerModInfo("TacoSpigot");
 		// tacospigot.getVersions().put("v1_8_R3", PaperSpigot_v1_8_R3.class); - call errors with anti-xray - obfuscate
+		tacospigot.getVersions().put("v1_9_R1", CraftBukkit_v1_9_R1.class);
 		tacospigot.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
 		tacospigot.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
 		ServerModManager.registerServerMod(tacospigot);
