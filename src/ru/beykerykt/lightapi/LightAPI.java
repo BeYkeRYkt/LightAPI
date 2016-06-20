@@ -45,6 +45,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 	private int configVer = 2;
 	private int update_delay_ticks;
 	private int max_iterations_per_tick;
+	private boolean enableUpdater;
 
 	@SuppressWarnings("static-access")
 	@Override
@@ -103,6 +104,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 		}
 
 		// Init config
+		this.enableUpdater = getConfig().getBoolean("enable-updater");
 		this.update_delay_ticks = getConfig().getInt("update-delay-ticks");
 		this.max_iterations_per_tick = getConfig().getInt("max-iterations-per-tick");
 
@@ -111,28 +113,30 @@ public class LightAPI extends JavaPlugin implements Listener {
 		machine.start(2, 40); // TEST
 		getServer().getPluginManager().registerEvents(this, this);
 
-		// Starting updater
-		Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
-			@Override
-			public void run() {
-				Version version = Version.parse(getDescription().getVersion());
-				String repo = "BeYkeRYkt/LightAPI";
+		if (enableUpdater) {
+			// Starting updater
+			Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
+				@Override
+				public void run() {
+					Version version = Version.parse(getDescription().getVersion());
+					String repo = "BeYkeRYkt/LightAPI";
 
-				Updater updater;
-				try {
-					updater = new Updater(version, repo);
+					Updater updater;
+					try {
+						updater = new Updater(version, repo);
 
-					Response response = updater.getResult();
-					if (response == Response.SUCCESS) {
-						log(Bukkit.getConsoleSender(), ChatColor.GREEN + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.GREEN + "!");
-						log(Bukkit.getConsoleSender(), ChatColor.GREEN + "Changes: ");
-						getServer().getConsoleSender().sendMessage(updater.getChanges());// for normal view
+						Response response = updater.getResult();
+						if (response == Response.SUCCESS) {
+							log(Bukkit.getConsoleSender(), ChatColor.GREEN + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.GREEN + "!");
+							log(Bukkit.getConsoleSender(), ChatColor.GREEN + "Changes: ");
+							getServer().getConsoleSender().sendMessage(updater.getChanges());// for normal view
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
 				}
-			}
-		}, 60);
+			}, 60);
+		}
 
 		// init metrics
 		try {
@@ -278,6 +282,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 		if (!file.exists()) {
 			fc.options().header("LightAPI v" + getDescription().getVersion() + " Configuration" + "\nby BeYkeRYkt");
 			fc.set("version", configVer);
+			fc.set("enable-updater", true);
 			fc.set("update-delay-ticks", 2);
 			fc.set("max-iterations-per-tick", 40);
 			saveConfig();
@@ -304,30 +309,32 @@ public class LightAPI extends JavaPlugin implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		final Player player = event.getPlayer();
 
-		if (player.hasPermission("lightapi.updater")) {
-			Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
+		if (enableUpdater) {
+			if (player.hasPermission("lightapi.updater")) {
+				Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
 
-				@Override
-				public void run() {
-					Version version = Version.parse(getDescription().getVersion());
-					String repo = "BeYkeRYkt/LightAPI";
+					@Override
+					public void run() {
+						Version version = Version.parse(getDescription().getVersion());
+						String repo = "BeYkeRYkt/LightAPI";
 
-					Updater updater;
-					try {
-						updater = new Updater(version, repo);
+						Updater updater;
+						try {
+							updater = new Updater(version, repo);
 
-						Response response = updater.getResult();
-						if (response == Response.SUCCESS) {
-							log(player, ChatColor.GREEN + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.GREEN + "!");
-							log(player, ChatColor.GREEN + "Changes: ");
-							player.sendMessage(updater.getChanges());// for normal view
-							// player.playSound(player.getLocation(), Sound.LEVEL_UP, 1, 1);
+							Response response = updater.getResult();
+							if (response == Response.SUCCESS) {
+								log(player, ChatColor.GREEN + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.GREEN + "!");
+								log(player, ChatColor.GREEN + "Changes: ");
+								player.sendMessage(updater.getChanges());// for normal view
+								// player.playSound(player.getLocation(), Sound.LEVEL_UP, 1, 1);
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
 						}
-					} catch (Exception e) {
-						e.printStackTrace();
 					}
-				}
-			}, 60);
+				}, 60);
+			}
 		}
 	}
 }
