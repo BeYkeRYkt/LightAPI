@@ -87,8 +87,8 @@ public class SetLightEvent extends Event implements Cancellable {
 	public boolean isAsync() {
 		return async;
 	}
-	
-	public void setAsync(boolean flag){
+
+	public void setAsync(boolean flag) {
 		this.async = flag;
 	}
 }

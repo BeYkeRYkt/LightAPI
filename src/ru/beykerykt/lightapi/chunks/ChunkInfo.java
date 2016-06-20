@@ -40,7 +40,7 @@ public class ChunkInfo {
 	public int getChunkYHeight() {
 		return y;
 	}
-	
+
 	public void setChunkYHeight(int y) {
 		this.y = y;
 	}

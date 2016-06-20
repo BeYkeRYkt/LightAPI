@@ -107,7 +107,7 @@ public class PaperSpigot_v1_8_R3 implements INMSHandler {
 			human.playerConnection.sendPacket(packet);
 		}
 	}
-	
+
 	private static Field getChunkField(Object chunk) throws NoSuchFieldException, SecurityException {
 		if (cachedChunkModified == null) {
 			cachedChunkModified = chunk.getClass().getDeclaredField("q");
