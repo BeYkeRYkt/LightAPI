@@ -265,7 +265,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 	}
 
 	public static boolean updateChunk(Location location, Collection<? extends Player> players) {
-		return updateChunks(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), players);
+		return updateChunk(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), players);
 	}
 
 	public static boolean updateChunk(World world, int x, int y, int z, Collection<? extends Player> players) {
