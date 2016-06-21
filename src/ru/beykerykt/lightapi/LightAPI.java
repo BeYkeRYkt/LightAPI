@@ -228,8 +228,13 @@ public class LightAPI extends JavaPlugin implements Listener {
 		}
 		return null;
 	}
+	
+	@Deprecated
+	public static boolean updateChunks(ChunkInfo info){
+		return updateChunk(info);
+	}
 
-	public static boolean updateChunks(ChunkInfo info) {
+	public static boolean updateChunk(ChunkInfo info) {
 		if (getInstance().isEnabled()) {
 			UpdateChunkEvent event = new UpdateChunkEvent(info);
 			Bukkit.getPluginManager().callEvent(event);
