@@ -228,9 +228,9 @@ public class LightAPI extends JavaPlugin implements Listener {
 		}
 		return null;
 	}
-	
+
 	@Deprecated
-	public static boolean updateChunks(ChunkInfo info){
+	public static boolean updateChunks(ChunkInfo info) {
 		return updateChunk(info);
 	}
 
@@ -258,7 +258,9 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 	public static boolean updateChunks(World world, int x, int y, int z, Collection<? extends Player> players) {
 		if (getInstance().isEnabled()) {
-			ServerModManager.getNMSHandler().sendChunkUpdate(world, x >> 4, y, z >> 4, players);
+			for (ChunkInfo info : collectChunks(world, x >> 4, y, z >> 4)) {
+				updateChunk(info);
+			}
 			return true;
 		}
 		return false;
