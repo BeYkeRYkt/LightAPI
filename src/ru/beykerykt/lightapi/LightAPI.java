@@ -255,7 +255,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 	public static boolean updateChunks(World world, int x, int y, int z, Collection<? extends Player> players) {
 		if (getInstance().isEnabled()) {
-			for (ChunkInfo info : collectChunks(world, x >> 4, y, z >> 4)) {
+			for (ChunkInfo info : collectChunks(world, x, y, z)) {
 				info.setReceivers(players);
 				updateChunk(info);
 			}
