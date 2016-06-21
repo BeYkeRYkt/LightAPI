@@ -266,6 +266,18 @@ public class LightAPI extends JavaPlugin implements Listener {
 		return false;
 	}
 
+	public static boolean updateChunk(Location location, Collection<? extends Player> players) {
+		return updateChunks(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), players);
+	}
+
+	public static boolean updateChunk(World world, int x, int y, int z, Collection<? extends Player> players) {
+		if (getInstance().isEnabled()) {
+			ServerModManager.getNMSHandler().sendChunkUpdate(world, x >> 4, y, z >> 4, players);
+			return true;
+		}
+		return false;
+	}
+
 	private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
 
 	public static Block getAdjacentAirBlock(Block block) {
