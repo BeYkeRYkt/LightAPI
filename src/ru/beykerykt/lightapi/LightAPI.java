@@ -216,10 +216,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 	}
 
 	public static List<ChunkInfo> collectChunks(Location location) {
-		if (getInstance().isEnabled()) {
-			return ServerModManager.getNMSHandler().collectChunks(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
-		}
-		return null;
+		return collectChunks(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
 	}
 
 	public static List<ChunkInfo> collectChunks(final World world, final int x, final int y, final int z) {
@@ -259,6 +256,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 	public static boolean updateChunks(World world, int x, int y, int z, Collection<? extends Player> players) {
 		if (getInstance().isEnabled()) {
 			for (ChunkInfo info : collectChunks(world, x >> 4, y, z >> 4)) {
+				info.setReceivers(players);
 				updateChunk(info);
 			}
 			return true;
