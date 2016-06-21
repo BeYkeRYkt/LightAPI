@@ -40,13 +40,13 @@ public class ServerModManager {
 				}
 			} catch (Exception e) {
 				// e.printStackTrace();
-				LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Could not find support for this " + Bukkit.getVersion() + " version.");
+				LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Could not find handler for this " + Bukkit.getVersion() + " version.");
 				return;
 			}
-			LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Loading support for " + impl.getModName() + " " + Bukkit.getVersion());
+			LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Loading handler for " + impl.getModName() + " " + Bukkit.getVersion());
 			return;
 		} else {
-			LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Could not find support for this Bukkit implementation.");
+			LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Could not find handler for this Bukkit implementation.");
 			return;
 		}
 	}
