@@ -110,7 +110,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 		// init nms
 		ServerModManager.init();
-		machine.start(2, 40); // TEST
+		machine.start(LightAPI.getInstance().getUpdateDelayTicks(), LightAPI.getInstance().getMaxIterationsPerTick()); // TEST
 		getServer().getPluginManager().registerEvents(this, this);
 
 		if (enableUpdater) {
