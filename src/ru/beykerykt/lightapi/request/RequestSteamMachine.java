@@ -66,9 +66,10 @@ public class RequestSteamMachine implements Runnable {
 			}
 		}
 
-		for (ChunkInfo info : ChunkCache.CHUNK_INFO_QUEUE) {
+		while (!ChunkCache.CHUNK_INFO_QUEUE.isEmpty()) {
+			ChunkInfo info = ChunkCache.CHUNK_INFO_QUEUE.get(0);
 			ServerModManager.getNMSHandler().sendChunkUpdate(info.getWorld(), info.getChunkX(), info.getChunkYHeight(), info.getChunkZ(), info.getReceivers());
-			ChunkCache.CHUNK_INFO_QUEUE.remove(info);
+			ChunkCache.CHUNK_INFO_QUEUE.remove(0);
 		}
 	}
 }
