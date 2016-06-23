@@ -34,6 +34,7 @@ import ru.beykerykt.lightapi.server.nms.craftbukkit.CraftBukkit_v1_9_R1;
 import ru.beykerykt.lightapi.server.nms.craftbukkit.CraftBukkit_v1_9_R2;
 import ru.beykerykt.lightapi.server.nms.paperspigot.PaperSpigot_v1_8_R3;
 import ru.beykerykt.lightapi.updater.Response;
+import ru.beykerykt.lightapi.updater.UpdateType;
 import ru.beykerykt.lightapi.updater.Updater;
 import ru.beykerykt.lightapi.updater.Version;
 import ru.beykerykt.lightapi.utils.Metrics;
@@ -127,8 +128,9 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 						Response response = updater.getResult();
 						if (response == Response.SUCCESS) {
-							log(Bukkit.getConsoleSender(), ChatColor.GREEN + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.GREEN + "!");
-							log(Bukkit.getConsoleSender(), ChatColor.GREEN + "Changes: ");
+							log(Bukkit.getConsoleSender(), ChatColor.WHITE + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.WHITE + "!");
+							log(Bukkit.getConsoleSender(), ChatColor.WHITE + "Update type: " + UpdateType.compareVersion(updater.getVersion().toString()).getName());
+							log(Bukkit.getConsoleSender(), ChatColor.WHITE + "Changes: ");
 							getServer().getConsoleSender().sendMessage(updater.getChanges());// for normal view
 						}
 					} catch (Exception e) {
@@ -341,8 +343,9 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 							Response response = updater.getResult();
 							if (response == Response.SUCCESS) {
-								log(player, ChatColor.GREEN + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.GREEN + "!");
-								log(player, ChatColor.GREEN + "Changes: ");
+								log(player, ChatColor.WHITE + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.WHITE + "!");
+								log(player, ChatColor.WHITE + "Update type: " + UpdateType.compareVersion(updater.getVersion().toString()).getName());
+								log(player, ChatColor.WHITE + "Changes: ");
 								player.sendMessage(updater.getChanges());// for normal view
 								// player.playSound(player.getLocation(), Sound.LEVEL_UP, 1, 1);
 							}

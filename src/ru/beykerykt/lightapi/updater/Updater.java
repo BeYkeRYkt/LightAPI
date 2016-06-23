@@ -338,4 +338,15 @@ public class Updater {
 	public String getChanges() {
 		return body;
 	}
+
+	public Version getVersion() {
+		waitForThread();
+		if (version == null) {
+			log(Level.INFO, "Latest version is undefined, return message.");
+			return null;
+		}
+
+		log(Level.INFO, "Somebody queried the latest version");
+		return version;
+	}
 }
