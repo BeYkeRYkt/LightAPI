@@ -1,6 +1,10 @@
 package ru.beykerykt.lightapi.request;
 
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
 
@@ -13,27 +17,32 @@ public class RequestSteamMachine implements Runnable {
 
 	private boolean isStarted;
 	private boolean needUpdate;
-	private int id;
 	protected CopyOnWriteArrayList<DataRequest> REQUEST_QUEUE = new CopyOnWriteArrayList<DataRequest>();
 	protected int maxIterationsPerTick;
 	protected int iteratorCount;
 
+	// THREADS
+	private ScheduledFuture<?> sch;
+	private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+	private Runnable queueR;
+
 	public void start(int ticks, int maxIterationsPerTick) {
 		if (!isStarted) {
-			this.maxIterationsPerTick = maxIterationsPerTick;
-			id = Bukkit.getScheduler().runTaskTimerAsynchronously(LightAPI.getInstance(), this, 0, ticks).getTaskId();
 			isStarted = true;
 			needUpdate = false;
+			this.maxIterationsPerTick = maxIterationsPerTick;
+			iteratorCount = 0;
+			sch = executor.scheduleWithFixedDelay(this, 0, 50 * ticks, TimeUnit.MILLISECONDS);
 		}
 	}
 
 	public void shutdown() {
 		if (isStarted) {
-			REQUEST_QUEUE.clear();
-			this.maxIterationsPerTick = 0;
-			Bukkit.getScheduler().cancelTask(id);
 			isStarted = false;
 			needUpdate = false;
+			REQUEST_QUEUE.clear();
+			maxIterationsPerTick = 0;
+			iteratorCount = 0;
 		}
 	}
 
@@ -52,24 +61,51 @@ public class RequestSteamMachine implements Runnable {
 		return true;
 	}
 
+	public Runnable getQueueTask() {
+		if (queueR == null) {
+			queueR = new Runnable() {
+				@Override
+				public void run() {
+					synchronized (this) {
+						iteratorCount = 0;
+						while (!REQUEST_QUEUE.isEmpty() && iteratorCount < maxIterationsPerTick) {
+							DataRequest request = REQUEST_QUEUE.get(0);
+							request.process();
+							iteratorCount++;
+							REQUEST_QUEUE.remove(0);
+						}
+						notify();
+					}
+				}
+			};
+		}
+		return queueR;
+	}
+
 	@Override
 	public void run() {
+		if (!ChunkCache.CHUNK_INFO_QUEUE.isEmpty()) {
+			needUpdate = true;
+		}
+
 		if (needUpdate) {
 			needUpdate = false;
-			iteratorCount = 0;
+			Runnable queue = getQueueTask();
+			try {
+				synchronized (queue) {
+					Bukkit.getScheduler().runTaskAsynchronously(LightAPI.getInstance(), queue);
+					queue.wait();
 
-			while (!REQUEST_QUEUE.isEmpty() && iteratorCount < maxIterationsPerTick) {
-				DataRequest request = REQUEST_QUEUE.get(0);
-				request.process();
-				iteratorCount++;
-				REQUEST_QUEUE.remove(0);
+					while (!ChunkCache.CHUNK_INFO_QUEUE.isEmpty()) {
+						ChunkInfo info = ChunkCache.CHUNK_INFO_QUEUE.get(0);
+						ServerModManager.getNMSHandler().sendChunkUpdate(info.getWorld(), info.getChunkX(), info.getChunkYHeight(), info.getChunkZ(), info.getReceivers());
+						ChunkCache.CHUNK_INFO_QUEUE.remove(0);
+					}
+				}
+			} catch (InterruptedException ex) {
+				ex.printStackTrace();
 			}
 		}
 
-		while (!ChunkCache.CHUNK_INFO_QUEUE.isEmpty()) {
-			ChunkInfo info = ChunkCache.CHUNK_INFO_QUEUE.get(0);
-			ServerModManager.getNMSHandler().sendChunkUpdate(info.getWorld(), info.getChunkX(), info.getChunkYHeight(), info.getChunkZ(), info.getReceivers());
-			ChunkCache.CHUNK_INFO_QUEUE.remove(0);
-		}
 	}
 }
