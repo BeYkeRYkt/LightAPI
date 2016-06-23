@@ -43,6 +43,7 @@ public class RequestSteamMachine implements Runnable {
 			REQUEST_QUEUE.clear();
 			maxIterationsPerTick = 0;
 			iteratorCount = 0;
+			sch.cancel(false);
 		}
 	}
 
