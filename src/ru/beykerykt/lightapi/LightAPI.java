@@ -303,7 +303,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 			fc.set("version", configVer);
 			fc.set("enable-updater", true);
 			fc.set("update-delay-ticks", 2);
-			fc.set("max-iterations-per-tick", 40);
+			fc.set("max-iterations-per-tick", 400);
 			saveConfig();
 		}
 	}
