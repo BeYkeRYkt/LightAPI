@@ -129,7 +129,11 @@ public class LightAPI extends JavaPlugin implements Listener {
 						Response response = updater.getResult();
 						if (response == Response.SUCCESS) {
 							log(Bukkit.getConsoleSender(), ChatColor.WHITE + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.WHITE + "!");
-							log(Bukkit.getConsoleSender(), ChatColor.WHITE + "Update type: " + UpdateType.compareVersion(updater.getVersion().toString()).getName());
+							UpdateType update = UpdateType.compareVersion(updater.getVersion().toString());
+							log(Bukkit.getConsoleSender(), ChatColor.WHITE + "Update type: " + update.getName());
+							if (update == UpdateType.MAJOR) {
+								log(Bukkit.getConsoleSender(), ChatColor.RED + "WARNING ! A MAJOR UPDATE! Not updating plugins may produce errors after starting the server! Notify developers about update.");
+							}
 							log(Bukkit.getConsoleSender(), ChatColor.WHITE + "Changes: ");
 							getServer().getConsoleSender().sendMessage(updater.getChanges());// for normal view
 						}
@@ -344,7 +348,11 @@ public class LightAPI extends JavaPlugin implements Listener {
 							Response response = updater.getResult();
 							if (response == Response.SUCCESS) {
 								log(player, ChatColor.WHITE + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.WHITE + "!");
-								log(player, ChatColor.WHITE + "Update type: " + UpdateType.compareVersion(updater.getVersion().toString()).getName());
+								UpdateType update = UpdateType.compareVersion(updater.getVersion().toString());
+								log(player, ChatColor.WHITE + "Update type: " + update.getName());
+								if (update == UpdateType.MAJOR) {
+									log(player, ChatColor.RED + "WARNING ! A MAJOR UPDATE! Not updating plugins may produce errors after starting the server! Notify developers about update.");
+								}
 								log(player, ChatColor.WHITE + "Changes: ");
 								player.sendMessage(updater.getChanges());// for normal view
 								// player.playSound(player.getLocation(), Sound.LEVEL_UP, 1, 1);
