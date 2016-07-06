@@ -399,6 +399,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 					version.addExtra(update);
 					player.spigot().sendMessage(version);
 
+					player.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
 					player.sendMessage(ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
 
 					TextComponent text = new TextComponent(" | ");
