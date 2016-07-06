@@ -431,7 +431,9 @@ public class LightAPI extends JavaPlugin implements Listener {
 				} else {
 					if (args[0].equalsIgnoreCase("update")) {
 						if (player.hasPermission("lightapi.updater") || player.isOp()) {
-							runUpdater(player, 2);
+							if (enableUpdater) {
+								runUpdater(player, 2);
+							}
 						} else {
 							log(player, ChatColor.RED + "You don't have permission!");
 						}
