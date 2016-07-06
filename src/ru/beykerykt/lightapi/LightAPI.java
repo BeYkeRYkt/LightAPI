@@ -366,6 +366,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 					if (response == Response.SUCCESS) {
 						log(sender, ChatColor.WHITE + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.WHITE + "!");
 						UpdateType update = UpdateType.compareVersion(updater.getVersion().toString());
+						log(sender, ChatColor.WHITE + "Repository: " + repo);
 						log(sender, ChatColor.WHITE + "Update type: " + update.getName());
 						if (update == UpdateType.MAJOR) {
 							log(sender, ChatColor.RED + "WARNING ! A MAJOR UPDATE! Not updating plugins may produce errors after starting the server! Notify developers about update.");

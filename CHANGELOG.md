@@ -1,3 +1,4 @@
+* 2016-07-06 BeYkeRYkt updater: add info about repository
 * 2016-07-06 BeYkeRYkt updater: add view changelog option
 * 2016-07-06 BeYkeRYkt smm: remove unused code
 * 2016-07-06 BeYkeRYkt Fix License
