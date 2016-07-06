@@ -1,14 +1,4 @@
-### cmd: add enableUpdater checker (HEAD -> 3.0)
->Wed, 6 Jul 2016 14:57:45 +0900
-
->Author: BeYkeRYkt (beykerykt@gmail.com)
-
->Commiter: BeYkeRYkt (beykerykt@gmail.com)
-
-
-
-
-### LightAPI: add commands, update updater
+### LightAPI: add commands, update updater (HEAD -> 3.0)
 >Wed, 6 Jul 2016 14:52:49 +0900
 
 >Author: BeYkeRYkt (beykerykt@gmail.com)
