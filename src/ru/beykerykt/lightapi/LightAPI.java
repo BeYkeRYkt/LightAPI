@@ -78,6 +78,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 	private boolean enableUpdater;
 	private String repo = "BeYkeRYkt/LightAPI";
 	private int delayUpdate = 40;
+	private boolean viewChangelog;
 
 	@SuppressWarnings("static-access")
 	@Override
@@ -136,11 +137,12 @@ public class LightAPI extends JavaPlugin implements Listener {
 		}
 
 		// Init config
+		this.update_delay_ticks = getConfig().getInt("update-delay-ticks");
+		this.max_iterations_per_tick = getConfig().getInt("max-iterations-per-tick");
 		this.enableUpdater = getConfig().getBoolean("updater.enable");
 		this.repo = getConfig().getString("updater.repo");
 		this.delayUpdate = getConfig().getInt("updater.update-delay-ticks");
-		this.update_delay_ticks = getConfig().getInt("update-delay-ticks");
-		this.max_iterations_per_tick = getConfig().getInt("max-iterations-per-tick");
+		this.viewChangelog = getConfig().getBoolean("updater.view-changelog");
 
 		// init nms
 		ServerModManager.init();
@@ -318,6 +320,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 			fc.set("updater.enable", true);
 			fc.set("updater.repo", "BeYkeRYkt/LightAPI");
 			fc.set("updater.update-delay-ticks", 40);
+			fc.set("updater.view-changelog", false);
 			saveConfig();
 		}
 	}
@@ -367,9 +370,10 @@ public class LightAPI extends JavaPlugin implements Listener {
 						if (update == UpdateType.MAJOR) {
 							log(sender, ChatColor.RED + "WARNING ! A MAJOR UPDATE! Not updating plugins may produce errors after starting the server! Notify developers about update.");
 						}
-						log(sender, ChatColor.WHITE + "Changes: ");
-						sender.sendMessage(updater.getChanges());// for normal view
-						// player.playSound(player.getLocation(), Sound.LEVEL_UP, 1, 1);
+						if (viewChangelog) {
+							log(sender, ChatColor.WHITE + "Changes: ");
+							sender.sendMessage(updater.getChanges());// for normal view
+						}
 					} else if (response == Response.REPO_NOT_FOUND) {
 						log(sender, ChatColor.RED + "Repo not found! Check that your repo exists!");
 					} else if (response == Response.REPO_NO_RELEASES) {
