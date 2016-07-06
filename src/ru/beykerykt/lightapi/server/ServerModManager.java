@@ -33,7 +33,6 @@ import ru.beykerykt.lightapi.server.nms.INMSHandler;
 
 public class ServerModManager {
 
-	// private static List<ServerModInfo> supportImpl = new CopyOnWriteArrayList<>();
 	private static Map<String, ServerModInfo> supportImpl = new ConcurrentHashMap<String, ServerModInfo>();
 	private static INMSHandler handler;
 
@@ -43,7 +42,6 @@ public class ServerModManager {
 		}
 
 		// Init handler...
-		// String version = Bukkit.getVersion();
 		String modName = Bukkit.getVersion().split("-")[1];
 		if (!supportImpl.containsKey(modName)) {
 			modName = Bukkit.getName();
@@ -62,7 +60,6 @@ public class ServerModManager {
 					throw new Exception("Unknown version."); // ?
 				}
 			} catch (Exception e) {
-				// e.printStackTrace();
 				LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Could not find handler for this " + Bukkit.getVersion() + " version.");
 				return;
 			}

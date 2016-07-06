@@ -1,3 +1,4 @@
+* 2016-07-06 BeYkeRYkt smm: remove unused code
 * 2016-07-06 BeYkeRYkt Fix License
 * 2016-07-06 BeYkeRYkt Update README.md
 * 2016-07-06 BeYkeRYkt Add logo in README.md
