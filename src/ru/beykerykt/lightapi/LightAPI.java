@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -160,7 +161,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 	}
 
 	public void log(CommandSender sender, String message) {
-		sender.sendMessage(ChatColor.YELLOW + "<Light" + ChatColor.RED + "API" + ChatColor.YELLOW + ">: " + ChatColor.WHITE + message);
+		sender.sendMessage(ChatColor.AQUA + "<LightAPI>: " + ChatColor.WHITE + message);
 	}
 
 	public static LightAPI getInstance() {
@@ -364,5 +365,17 @@ public class LightAPI extends JavaPlugin implements Listener {
 				}, 60);
 			}
 		}
+	}
+	
+	
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		if(sender instanceof Player){
+			Player player = (Player) sender;
+			if(command.getName().equalsIgnoreCase("lightapi")){
+				
+			}
+		}
+		return true;
 	}
 }

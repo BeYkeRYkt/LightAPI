@@ -3,6 +3,9 @@ main: ru.beykerykt.lightapi.LightAPI
 version: 3.1.0
 description: Bukkit Library for create invisible light source
 author: BeYkeRYkt
+commands:
+   lightapi:
+      description: Main command
 permissions:
   lightapi.updater:
     default: false
