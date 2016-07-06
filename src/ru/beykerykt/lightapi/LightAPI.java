@@ -1,3 +1,26 @@
+/**
+ * The MIT License (MIT)
+ * 
+ * Copyright (c) 2015 - 2016
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *  
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package ru.beykerykt.lightapi;
 
 import java.io.File;
@@ -20,6 +43,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import ru.beykerykt.lightapi.chunks.ChunkCache;
 import ru.beykerykt.lightapi.chunks.ChunkInfo;
 import ru.beykerykt.lightapi.events.DeleteLightEvent;
@@ -44,10 +71,13 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 	private static LightAPI plugin;
 	private static RequestSteamMachine machine;
-	private int configVer = 2;
+	private int configVer = 3;
 	private int update_delay_ticks;
 	private int max_iterations_per_tick;
+
 	private boolean enableUpdater;
+	private String repo = "BeYkeRYkt/LightAPI";
+	private int delayUpdate = 40;
 
 	@SuppressWarnings("static-access")
 	@Override
@@ -106,7 +136,9 @@ public class LightAPI extends JavaPlugin implements Listener {
 		}
 
 		// Init config
-		this.enableUpdater = getConfig().getBoolean("enable-updater");
+		this.enableUpdater = getConfig().getBoolean("updater.enable");
+		this.repo = getConfig().getString("updater.repo");
+		this.delayUpdate = getConfig().getInt("updater.update-delay-ticks");
 		this.update_delay_ticks = getConfig().getInt("update-delay-ticks");
 		this.max_iterations_per_tick = getConfig().getInt("max-iterations-per-tick");
 
@@ -117,32 +149,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 		if (enableUpdater) {
 			// Starting updater
-			Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
-				@Override
-				public void run() {
-					Version version = Version.parse(getDescription().getVersion());
-					String repo = "BeYkeRYkt/LightAPI";
-
-					Updater updater;
-					try {
-						updater = new Updater(version, repo);
-
-						Response response = updater.getResult();
-						if (response == Response.SUCCESS) {
-							log(Bukkit.getConsoleSender(), ChatColor.WHITE + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.WHITE + "!");
-							UpdateType update = UpdateType.compareVersion(updater.getVersion().toString());
-							log(Bukkit.getConsoleSender(), ChatColor.WHITE + "Update type: " + update.getName());
-							if (update == UpdateType.MAJOR) {
-								log(Bukkit.getConsoleSender(), ChatColor.RED + "WARNING ! A MAJOR UPDATE! Not updating plugins may produce errors after starting the server! Notify developers about update.");
-							}
-							log(Bukkit.getConsoleSender(), ChatColor.WHITE + "Changes: ");
-							getServer().getConsoleSender().sendMessage(updater.getChanges());// for normal view
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}, 60);
+			runUpdater(getServer().getConsoleSender(), delayUpdate);
 		}
 
 		// init metrics
@@ -306,9 +313,11 @@ public class LightAPI extends JavaPlugin implements Listener {
 		if (!file.exists()) {
 			fc.options().header("LightAPI v" + getDescription().getVersion() + " Configuration" + "\nby BeYkeRYkt");
 			fc.set("version", configVer);
-			fc.set("enable-updater", true);
 			fc.set("update-delay-ticks", 2);
 			fc.set("max-iterations-per-tick", 400);
+			fc.set("updater.enable", true);
+			fc.set("updater.repo", "BeYkeRYkt/LightAPI");
+			fc.set("updater.update-delay-ticks", 40);
 			saveConfig();
 		}
 	}
@@ -335,45 +344,101 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 		if (enableUpdater) {
 			if (player.hasPermission("lightapi.updater")) {
-				Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
-
-					@Override
-					public void run() {
-						Version version = Version.parse(getDescription().getVersion());
-						String repo = "BeYkeRYkt/LightAPI";
-
-						Updater updater;
-						try {
-							updater = new Updater(version, repo);
-
-							Response response = updater.getResult();
-							if (response == Response.SUCCESS) {
-								log(player, ChatColor.WHITE + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.WHITE + "!");
-								UpdateType update = UpdateType.compareVersion(updater.getVersion().toString());
-								log(player, ChatColor.WHITE + "Update type: " + update.getName());
-								if (update == UpdateType.MAJOR) {
-									log(player, ChatColor.RED + "WARNING ! A MAJOR UPDATE! Not updating plugins may produce errors after starting the server! Notify developers about update.");
-								}
-								log(player, ChatColor.WHITE + "Changes: ");
-								player.sendMessage(updater.getChanges());// for normal view
-								// player.playSound(player.getLocation(), Sound.LEVEL_UP, 1, 1);
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				}, 60);
+				runUpdater(player, delayUpdate);
 			}
 		}
 	}
-	
-	
+
+	private void runUpdater(final CommandSender sender, int delay) {
+		Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
+
+			@Override
+			public void run() {
+				Version version = Version.parse(getDescription().getVersion());
+				Updater updater;
+				try {
+					updater = new Updater(version, repo);
+
+					Response response = updater.getResult();
+					if (response == Response.SUCCESS) {
+						log(sender, ChatColor.WHITE + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.WHITE + "!");
+						UpdateType update = UpdateType.compareVersion(updater.getVersion().toString());
+						log(sender, ChatColor.WHITE + "Update type: " + update.getName());
+						if (update == UpdateType.MAJOR) {
+							log(sender, ChatColor.RED + "WARNING ! A MAJOR UPDATE! Not updating plugins may produce errors after starting the server! Notify developers about update.");
+						}
+						log(sender, ChatColor.WHITE + "Changes: ");
+						sender.sendMessage(updater.getChanges());// for normal view
+						// player.playSound(player.getLocation(), Sound.LEVEL_UP, 1, 1);
+					} else if (response == Response.REPO_NOT_FOUND) {
+						log(sender, ChatColor.RED + "Repo not found! Check that your repo exists!");
+					} else if (response == Response.REPO_NO_RELEASES) {
+						log(sender, ChatColor.RED + "Releases not found! Check your repo!");
+					} else if (response == Response.NO_UPDATE) {
+						log(sender, ChatColor.GREEN + "You are running the latest version!");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}, delay);
+	}
+
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if(sender instanceof Player){
+		if (sender instanceof Player) {
 			Player player = (Player) sender;
-			if(command.getName().equalsIgnoreCase("lightapi")){
-				
+			if (command.getName().equalsIgnoreCase("lightapi")) {
+				if (args.length == 0) {
+					player.sendMessage(ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE + getDescription().getVersion() + "> ------- ");
+
+					TextComponent version = new TextComponent(ChatColor.AQUA + " Current version: ");
+					TextComponent update = new TextComponent(ChatColor.WHITE + getDescription().getVersion());
+					update.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lightapi update"));
+					update.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click here for check update").create()));
+					version.addExtra(update);
+					player.spigot().sendMessage(version);
+
+					player.sendMessage(ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
+
+					TextComponent text = new TextComponent(" | ");
+					TextComponent sourcecode = new TextComponent(ChatColor.AQUA + "Source code");
+					sourcecode.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "http://github.com/BeYkeRYkt/LightAPI/"));
+					sourcecode.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Goto the GitHub!").create()));
+					text.addExtra(sourcecode);
+					text.addExtra(new TextComponent(ChatColor.WHITE + " | "));
+
+					TextComponent developer = new TextComponent(ChatColor.AQUA + "Developer");
+					developer.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "http://github.com/BeYkeRYkt/"));
+					developer.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("BeYkeRYkt").create()));
+					text.addExtra(developer);
+					text.addExtra(new TextComponent(ChatColor.WHITE + " | "));
+
+					TextComponent contributors = new TextComponent(ChatColor.AQUA + "Contributors");
+					contributors.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/BeYkeRYkt/LightAPI/graphs/contributors"));
+					contributors.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("ALIENS!!").create()));
+					text.addExtra(contributors);
+					text.addExtra(new TextComponent(ChatColor.WHITE + " | "));
+
+					player.spigot().sendMessage(text);
+
+					TextComponent licensed = new TextComponent(" Licensed under ");
+					TextComponent MIT = new TextComponent(ChatColor.AQUA + "MIT License");
+					MIT.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://opensource.org/licenses/MIT/"));
+					MIT.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Goto for information about license!").create()));
+					licensed.addExtra(MIT);
+					player.spigot().sendMessage(licensed);
+				} else {
+					if (args[0].equalsIgnoreCase("update")) {
+						if (player.hasPermission("lightapi.updater") || player.isOp()) {
+							runUpdater(player, 2);
+						} else {
+							log(player, ChatColor.RED + "You don't have permission!");
+						}
+					} else {
+						log(player, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly?");
+					}
+				}
 			}
 		}
 		return true;
