@@ -36,6 +36,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -391,9 +392,9 @@ public class LightAPI extends JavaPlugin implements Listener {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if (sender instanceof Player) {
-			Player player = (Player) sender;
-			if (command.getName().equalsIgnoreCase("lightapi")) {
+		if (command.getName().equalsIgnoreCase("lightapi")) {
+			if (sender instanceof Player) {
+				Player player = (Player) sender;
 				if (args.length == 0) {
 					player.sendMessage(ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE + getDescription().getVersion() + "> ------- ");
 
@@ -443,6 +444,24 @@ public class LightAPI extends JavaPlugin implements Listener {
 						}
 					} else {
 						log(player, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly?");
+					}
+				}
+			} else if (sender instanceof ConsoleCommandSender) {
+				ConsoleCommandSender console = (ConsoleCommandSender) sender;
+				if (args.length == 0) {
+					console.sendMessage(ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE + getDescription().getVersion() + "> ------- ");
+					console.sendMessage(ChatColor.AQUA + " Current version: " + ChatColor.WHITE + getDescription().getVersion());
+					console.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
+					console.sendMessage(ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
+					console.sendMessage(ChatColor.AQUA + " Source code: " + ChatColor.WHITE + "http://github.com/BeYkeRYkt/LightAPI/");
+					console.sendMessage(ChatColor.AQUA + " Developer: " + ChatColor.WHITE + "BeYkeRYkt");
+					console.sendMessage("");
+					console.sendMessage(ChatColor.WHITE + " Licensed under: " + ChatColor.AQUA + "MIT License");
+				} else {
+					if (args[0].equalsIgnoreCase("update")) {
+						runUpdater(console, 2);
+					} else {
+						log(console, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly?");
 					}
 				}
 			}
