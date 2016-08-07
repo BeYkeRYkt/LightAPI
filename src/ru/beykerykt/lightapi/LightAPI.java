@@ -44,10 +44,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import ru.beykerykt.lightapi.chunks.ChunkCache;
 import ru.beykerykt.lightapi.chunks.ChunkInfo;
 import ru.beykerykt.lightapi.events.DeleteLightEvent;
@@ -66,6 +62,7 @@ import ru.beykerykt.lightapi.updater.Response;
 import ru.beykerykt.lightapi.updater.UpdateType;
 import ru.beykerykt.lightapi.updater.Updater;
 import ru.beykerykt.lightapi.updater.Version;
+import ru.beykerykt.lightapi.utils.BungeeChatHelperClass;
 import ru.beykerykt.lightapi.utils.Metrics;
 
 public class LightAPI extends JavaPlugin implements Listener {
@@ -396,45 +393,18 @@ public class LightAPI extends JavaPlugin implements Listener {
 			if (sender instanceof Player) {
 				Player player = (Player) sender;
 				if (args.length == 0) {
-					player.sendMessage(ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE + getDescription().getVersion() + "> ------- ");
-
-					TextComponent version = new TextComponent(ChatColor.AQUA + " Current version: ");
-					TextComponent update = new TextComponent(ChatColor.WHITE + getDescription().getVersion());
-					update.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lightapi update"));
-					update.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click here for check update").create()));
-					version.addExtra(update);
-					player.spigot().sendMessage(version);
-
-					player.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
-					player.sendMessage(ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
-
-					TextComponent text = new TextComponent(" | ");
-					TextComponent sourcecode = new TextComponent(ChatColor.AQUA + "Source code");
-					sourcecode.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "http://github.com/BeYkeRYkt/LightAPI/"));
-					sourcecode.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Goto the GitHub!").create()));
-					text.addExtra(sourcecode);
-					text.addExtra(new TextComponent(ChatColor.WHITE + " | "));
-
-					TextComponent developer = new TextComponent(ChatColor.AQUA + "Developer");
-					developer.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "http://github.com/BeYkeRYkt/"));
-					developer.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("BeYkeRYkt").create()));
-					text.addExtra(developer);
-					text.addExtra(new TextComponent(ChatColor.WHITE + " | "));
-
-					TextComponent contributors = new TextComponent(ChatColor.AQUA + "Contributors");
-					contributors.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/BeYkeRYkt/LightAPI/graphs/contributors"));
-					contributors.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("ALIENS!!").create()));
-					text.addExtra(contributors);
-					text.addExtra(new TextComponent(ChatColor.WHITE + " | "));
-
-					player.spigot().sendMessage(text);
-
-					TextComponent licensed = new TextComponent(" Licensed under ");
-					TextComponent MIT = new TextComponent(ChatColor.AQUA + "MIT License");
-					MIT.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://opensource.org/licenses/MIT/"));
-					MIT.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Goto for information about license!").create()));
-					licensed.addExtra(MIT);
-					player.spigot().sendMessage(licensed);
+					if (ServerModManager.hasBungeeChatAPI()) {
+						BungeeChatHelperClass.sendMessageAboutPlugin(player, this);
+					} else {
+						player.sendMessage(ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE + getDescription().getVersion() + "> ------- ");
+						player.sendMessage(ChatColor.AQUA + " Current version: " + ChatColor.WHITE + getDescription().getVersion());
+						player.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
+						player.sendMessage(ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
+						player.sendMessage(ChatColor.AQUA + " Source code: " + ChatColor.WHITE + "http://github.com/BeYkeRYkt/LightAPI/");
+						player.sendMessage(ChatColor.AQUA + " Developer: " + ChatColor.WHITE + "BeYkeRYkt");
+						player.sendMessage("");
+						player.sendMessage(ChatColor.WHITE + " Licensed under: " + ChatColor.AQUA + "MIT License");
+					}
 				} else {
 					if (args[0].equalsIgnoreCase("update")) {
 						if (player.hasPermission("lightapi.updater") || player.isOp()) {

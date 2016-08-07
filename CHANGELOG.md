@@ -1,3 +1,4 @@
+* [2016-08-07] [BeYkeRYkt] LightAPI: fix error for CraftBukkit builds
 * [2016-08-07] [BeYkeRYkt] utils: add BungeeChatHelper for fix CraftBukkit error
 * [2016-08-07] [BeYkeRYkt] smm: add method for check BungeeChatAPI
 * [2016-08-07] [BeYkeRYkt] misc: upload new logo v2
