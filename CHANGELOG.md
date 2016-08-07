@@ -1,7 +1,9 @@
+* [2016-08-07] [BeYkeRYkt] add missing license message
 * [2016-08-07] [BeYkeRYkt] Bump version !
 * [2016-08-07] [BeYkeRYkt] LightAPI: fix error for CraftBukkit builds
 * [2016-08-07] [BeYkeRYkt] utils: add BungeeChatHelper for fix CraftBukkit error
 * [2016-08-07] [BeYkeRYkt] smm: add method for check BungeeChatAPI
+* [2016-08-07] [BeYkeRYkt] Update README.md
 * [2016-08-07] [BeYkeRYkt] misc: upload new logo v2
 * [2016-07-07] [BeYkeRYkt] Bump version
 * [2016-07-07] [BeYkeRYkt] cmd: add code for console
