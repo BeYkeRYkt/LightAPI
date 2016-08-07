@@ -90,4 +90,17 @@ public class ServerModManager {
 	public static INMSHandler getNMSHandler() {
 		return handler;
 	}
+
+	public static boolean hasBungeeChatAPI() {
+		try {
+			Class<?> clazz = Class.forName("net.md_5.bungee.api.chat.TextComponent");
+			if (clazz != null) {
+				clazz = null;
+				return true;
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 }
