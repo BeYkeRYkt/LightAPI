@@ -1,3 +1,4 @@
+* [2016-08-07] [BeYkeRYkt] misc: upload new logo v2
 * [2016-07-07] [BeYkeRYkt] Bump version
 * [2016-07-07] [BeYkeRYkt] cmd: add code for console
 * [2016-07-06] [BeYkeRYkt] Bump version (according with Semantic versioning)
