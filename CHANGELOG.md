@@ -1,3 +1,4 @@
+* [2016-08-07] [BeYkeRYkt] utils: add BungeeChatHelper for fix CraftBukkit error
 * [2016-08-07] [BeYkeRYkt] smm: add method for check BungeeChatAPI
 * [2016-08-07] [BeYkeRYkt] misc: upload new logo v2
 * [2016-07-07] [BeYkeRYkt] Bump version
