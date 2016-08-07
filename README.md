@@ -1,4 +1,4 @@
-![Image](/others/LIGHT_API_LOGO.png)
+![Image](/others/light_api_logo_version_2.png)
 # LightAPI
 Bukkit Library for create invisible light source
 - [ SPIGOT RESOURCE ] (https://www.spigotmc.org/resources/lightapi.4510/)
