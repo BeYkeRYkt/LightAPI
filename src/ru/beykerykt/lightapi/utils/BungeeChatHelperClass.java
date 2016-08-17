@@ -34,6 +34,19 @@ import ru.beykerykt.lightapi.LightAPI;
 
 public class BungeeChatHelperClass {
 
+	public static boolean hasBungeeChatAPI() {
+		try {
+			Class<?> clazz = Class.forName("net.md_5.bungee.api.chat.TextComponent");
+			if (clazz != null) {
+				clazz = null;
+				return true;
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	public static void sendMessageAboutPlugin(Player player, LightAPI plugin) {
 		player.sendMessage(ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE + plugin.getDescription().getVersion() + "> ------- ");
 
