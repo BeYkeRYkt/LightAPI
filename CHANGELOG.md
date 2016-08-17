@@ -1,3 +1,4 @@
+* [2016-08-17] [BeYkeRYkt] Bump version!
 * [2016-08-17] [BeYkeRYkt] events: fix forgotten isCancelled
 * [2016-08-17] [BeYkeRYkt] bungee: move method to BungeeChatHelper
 * [2016-08-07] [BeYkeRYkt] add missing license message
