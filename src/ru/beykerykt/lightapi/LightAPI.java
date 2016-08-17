@@ -184,24 +184,26 @@ public class LightAPI extends JavaPlugin implements Listener {
 			final SetLightEvent event = new SetLightEvent(world, x, y, z, lightlevel, async);
 			Bukkit.getPluginManager().callEvent(event);
 
-			Block adjacent = getAdjacentAirBlock(world.getBlockAt(event.getX(), event.getY(), event.getZ()));
-			final int lx = adjacent.getX();
-			final int ly = adjacent.getY();
-			final int lz = adjacent.getZ();
+			if (!event.isCancelled()) {
+				Block adjacent = getAdjacentAirBlock(world.getBlockAt(event.getX(), event.getY(), event.getZ()));
+				final int lx = adjacent.getX();
+				final int ly = adjacent.getY();
+				final int lz = adjacent.getZ();
 
-			if (event.isAsync()) {
-				machine.addToQueue(new DataRequest() {
-					@Override
-					public void process() {
-						ServerModManager.getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
-						ServerModManager.getNMSHandler().recalculateLight(event.getWorld(), lx, ly, lz);
-					}
-				});
+				if (event.isAsync()) {
+					machine.addToQueue(new DataRequest() {
+						@Override
+						public void process() {
+							ServerModManager.getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
+							ServerModManager.getNMSHandler().recalculateLight(event.getWorld(), lx, ly, lz);
+						}
+					});
+					return true;
+				}
+				ServerModManager.getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
+				ServerModManager.getNMSHandler().recalculateLight(event.getWorld(), lx, ly, lz);
 				return true;
 			}
-			ServerModManager.getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
-			ServerModManager.getNMSHandler().recalculateLight(event.getWorld(), lx, ly, lz);
-			return true;
 		}
 		return false;
 	}
@@ -214,17 +216,20 @@ public class LightAPI extends JavaPlugin implements Listener {
 		if (getInstance().isEnabled()) {
 			final DeleteLightEvent event = new DeleteLightEvent(world, x, y, z, async);
 			Bukkit.getPluginManager().callEvent(event);
-			if (event.isAsync()) {
-				machine.addToQueue(new DataRequest() {
-					@Override
-					public void process() {
-						ServerModManager.getNMSHandler().deleteLight(event.getWorld(), event.getX(), event.getY(), event.getZ());
-					}
-				});
+
+			if (!event.isCancelled()) {
+				if (event.isAsync()) {
+					machine.addToQueue(new DataRequest() {
+						@Override
+						public void process() {
+							ServerModManager.getNMSHandler().deleteLight(event.getWorld(), event.getX(), event.getY(), event.getZ());
+						}
+					});
+					return true;
+				}
+				ServerModManager.getNMSHandler().deleteLight(event.getWorld(), event.getX(), event.getY(), event.getZ());
 				return true;
 			}
-			ServerModManager.getNMSHandler().deleteLight(event.getWorld(), event.getX(), event.getY(), event.getZ());
-			return true;
 		}
 		return false;
 	}
@@ -249,16 +254,18 @@ public class LightAPI extends JavaPlugin implements Listener {
 		if (getInstance().isEnabled()) {
 			UpdateChunkEvent event = new UpdateChunkEvent(info);
 			Bukkit.getPluginManager().callEvent(event);
-			if (ChunkCache.CHUNK_INFO_QUEUE.contains(event.getChunkInfo())) {
-				int index = ChunkCache.CHUNK_INFO_QUEUE.indexOf(event.getChunkInfo());
-				ChunkInfo previous = ChunkCache.CHUNK_INFO_QUEUE.get(index);
-				if (previous.getChunkYHeight() > event.getChunkInfo().getChunkYHeight()) {
-					event.getChunkInfo().setChunkYHeight(previous.getChunkYHeight());
+			if (!event.isCancelled()) {
+				if (ChunkCache.CHUNK_INFO_QUEUE.contains(event.getChunkInfo())) {
+					int index = ChunkCache.CHUNK_INFO_QUEUE.indexOf(event.getChunkInfo());
+					ChunkInfo previous = ChunkCache.CHUNK_INFO_QUEUE.get(index);
+					if (previous.getChunkYHeight() > event.getChunkInfo().getChunkYHeight()) {
+						event.getChunkInfo().setChunkYHeight(previous.getChunkYHeight());
+					}
+					ChunkCache.CHUNK_INFO_QUEUE.remove(index);
 				}
-				ChunkCache.CHUNK_INFO_QUEUE.remove(index);
+				ChunkCache.CHUNK_INFO_QUEUE.add(event.getChunkInfo());
+				return true;
 			}
-			ChunkCache.CHUNK_INFO_QUEUE.add(event.getChunkInfo());
-			return true;
 		}
 		return false;
 	}
@@ -393,7 +400,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 			if (sender instanceof Player) {
 				Player player = (Player) sender;
 				if (args.length == 0) {
-					if (ServerModManager.hasBungeeChatAPI()) {
+					if (BungeeChatHelperClass.hasBungeeChatAPI()) {
 						BungeeChatHelperClass.sendMessageAboutPlugin(player, this);
 					} else {
 						player.sendMessage(ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE + getDescription().getVersion() + "> ------- ");
