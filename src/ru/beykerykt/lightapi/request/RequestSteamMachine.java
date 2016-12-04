@@ -36,7 +36,8 @@ import ru.beykerykt.lightapi.server.ServerModManager;
 public class RequestSteamMachine implements Runnable {
 
 	private boolean isStarted;
-	private boolean needUpdate;
+	private boolean needRequestUpdate;
+	private boolean needChunkUpdate;
 	protected CopyOnWriteArrayList<DataRequest> REQUEST_QUEUE = new CopyOnWriteArrayList<DataRequest>();
 	protected int maxIterationsPerTick;
 	protected int iteratorCount;
@@ -48,7 +49,8 @@ public class RequestSteamMachine implements Runnable {
 	public void start(int ticks, int maxIterationsPerTick) {
 		if (!isStarted) {
 			isStarted = true;
-			needUpdate = false;
+			needRequestUpdate = false;
+			needChunkUpdate = false;
 			this.maxIterationsPerTick = maxIterationsPerTick;
 			iteratorCount = 0;
 			sch = executor.scheduleWithFixedDelay(this, 0, 50 * ticks, TimeUnit.MILLISECONDS);
@@ -58,7 +60,8 @@ public class RequestSteamMachine implements Runnable {
 	public void shutdown() {
 		if (isStarted) {
 			isStarted = false;
-			needUpdate = false;
+			needRequestUpdate = false;
+			needChunkUpdate = false;
 			REQUEST_QUEUE.clear();
 			maxIterationsPerTick = 0;
 			iteratorCount = 0;
@@ -75,8 +78,8 @@ public class RequestSteamMachine implements Runnable {
 			return false;
 		}
 		REQUEST_QUEUE.add(request);
-		if (!needUpdate) {
-			needUpdate = true;
+		if (!needRequestUpdate) {
+			needRequestUpdate = true;
 		}
 		return true;
 	}
@@ -84,11 +87,11 @@ public class RequestSteamMachine implements Runnable {
 	@Override
 	public void run() {
 		if (!ChunkCache.CHUNK_INFO_QUEUE.isEmpty()) {
-			needUpdate = true;
+			needChunkUpdate = true;
 		}
 
-		if (needUpdate) {
-			needUpdate = false;
+		if (needRequestUpdate) {
+			needRequestUpdate = false;
 			iteratorCount = 0;
 			while (!REQUEST_QUEUE.isEmpty() && iteratorCount < maxIterationsPerTick) {
 				DataRequest request = REQUEST_QUEUE.get(0);
@@ -97,12 +100,15 @@ public class RequestSteamMachine implements Runnable {
 				REQUEST_QUEUE.remove(0);
 			}
 
+		}
+
+		if (needChunkUpdate) {
+			needChunkUpdate = false;
 			while (!ChunkCache.CHUNK_INFO_QUEUE.isEmpty()) {
 				ChunkInfo info = ChunkCache.CHUNK_INFO_QUEUE.get(0);
 				ServerModManager.getNMSHandler().sendChunkUpdate(info.getWorld(), info.getChunkX(), info.getChunkYHeight(), info.getChunkZ(), info.getReceivers());
 				ChunkCache.CHUNK_INFO_QUEUE.remove(0);
 			}
 		}
-
 	}
 }
