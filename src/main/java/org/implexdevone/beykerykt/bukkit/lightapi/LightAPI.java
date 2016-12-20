@@ -40,9 +40,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.implexdevone.beykerykt.bukkit.lightapi.chunks.ChunkCache;
 import org.implexdevone.beykerykt.bukkit.lightapi.chunks.ChunkInfo;
@@ -59,25 +56,16 @@ import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.craftbukkit.CraftBu
 import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.craftbukkit.CraftBukkit_v1_9_R1;
 import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.craftbukkit.CraftBukkit_v1_9_R2;
 import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.paperspigot.PaperSpigot_v1_8_R3;
-import org.implexdevone.beykerykt.bukkit.lightapi.updater.Response;
-import org.implexdevone.beykerykt.bukkit.lightapi.updater.UpdateType;
-import org.implexdevone.beykerykt.bukkit.lightapi.updater.Updater;
-import org.implexdevone.beykerykt.bukkit.lightapi.updater.Version;
 import org.implexdevone.beykerykt.bukkit.lightapi.utils.BungeeChatHelperClass;
 import org.implexdevone.beykerykt.bukkit.lightapi.utils.Metrics;
 
-public class LightAPI extends JavaPlugin implements Listener {
+public class LightAPI extends JavaPlugin {
 
 	private static LightAPI plugin;
 	private static RequestSteamMachine machine;
 	private int configVer = 3;
 	private int update_delay_ticks;
 	private int max_iterations_per_tick;
-
-	private boolean enableUpdater;
-	private String repo = "BeYkeRYkt/LightAPI";
-	private int delayUpdate = 40;
-	private boolean viewChangelog;
 
 	@SuppressWarnings("static-access")
 	@Override
@@ -142,20 +130,10 @@ public class LightAPI extends JavaPlugin implements Listener {
 		// Init config
 		this.update_delay_ticks = getConfig().getInt("update-delay-ticks");
 		this.max_iterations_per_tick = getConfig().getInt("max-iterations-per-tick");
-		this.enableUpdater = getConfig().getBoolean("updater.enable");
-		this.repo = getConfig().getString("updater.repo");
-		this.delayUpdate = getConfig().getInt("updater.update-delay-ticks");
-		this.viewChangelog = getConfig().getBoolean("updater.view-changelog");
 
 		// init nms
 		ServerModManager.init();
 		machine.start(LightAPI.getInstance().getUpdateDelayTicks(), LightAPI.getInstance().getMaxIterationsPerTick()); // TEST
-		getServer().getPluginManager().registerEvents(this, this);
-
-		if (enableUpdater) {
-			// Starting updater
-			runUpdater(getServer().getConsoleSender(), delayUpdate);
-		}
 
 		// init metrics
 		try {
@@ -351,54 +329,6 @@ public class LightAPI extends JavaPlugin implements Listener {
 		this.max_iterations_per_tick = max_iterations_per_tick;
 	}
 
-	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent event) {
-		final Player player = event.getPlayer();
-
-		if (enableUpdater) {
-			if (player.hasPermission("lightapi.updater")) {
-				runUpdater(player, delayUpdate);
-			}
-		}
-	}
-
-	private void runUpdater(final CommandSender sender, int delay) {
-		Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
-
-			@Override
-			public void run() {
-				Version version = Version.parse(getDescription().getVersion());
-				Updater updater;
-				try {
-					updater = new Updater(version, repo);
-
-					Response response = updater.getResult();
-					if (response == Response.SUCCESS) {
-						log(sender, ChatColor.WHITE + "New update is available: " + ChatColor.YELLOW + updater.getLatestVersion() + ChatColor.WHITE + "!");
-						UpdateType update = UpdateType.compareVersion(updater.getVersion().toString());
-						log(sender, ChatColor.WHITE + "Repository: " + repo);
-						log(sender, ChatColor.WHITE + "Update type: " + update.getName());
-						if (update == UpdateType.MAJOR) {
-							log(sender, ChatColor.RED + "WARNING ! A MAJOR UPDATE! Not updating plugins may produce errors after starting the server! Notify developers about update.");
-						}
-						if (viewChangelog) {
-							log(sender, ChatColor.WHITE + "Changes: ");
-							sender.sendMessage(updater.getChanges());// for normal view
-						}
-					} else if (response == Response.REPO_NOT_FOUND) {
-						log(sender, ChatColor.RED + "Repo not found! Check that your repo exists!");
-					} else if (response == Response.REPO_NO_RELEASES) {
-						log(sender, ChatColor.RED + "Releases not found! Check your repo!");
-					} else if (response == Response.NO_UPDATE) {
-						log(sender, ChatColor.GREEN + "You are running the latest version!");
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}, delay);
-	}
-
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (command.getName().equalsIgnoreCase("lightapi")) {
@@ -418,15 +348,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 						player.sendMessage(ChatColor.WHITE + " Licensed under: " + ChatColor.AQUA + "MIT License");
 					}
 				} else {
-					if (args[0].equalsIgnoreCase("update")) {
-						if (player.hasPermission("lightapi.updater") || player.isOp()) {
-							runUpdater(player, 2);
-						} else {
-							log(player, ChatColor.RED + "You don't have permission!");
-						}
-					} else {
-						log(player, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly?");
-					}
+					log(player, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly?");
 				}
 			} else if (sender instanceof ConsoleCommandSender) {
 				ConsoleCommandSender console = (ConsoleCommandSender) sender;
@@ -440,11 +362,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 					console.sendMessage("");
 					console.sendMessage(ChatColor.WHITE + " Licensed under: " + ChatColor.AQUA + "MIT License");
 				} else {
-					if (args[0].equalsIgnoreCase("update")) {
-						runUpdater(console, 2);
-					} else {
-						log(console, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly?");
-					}
+					log(console, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly?");
 				}
 			}
 		}
