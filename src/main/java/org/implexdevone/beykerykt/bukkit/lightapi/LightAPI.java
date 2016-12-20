@@ -48,14 +48,8 @@ import org.implexdevone.beykerykt.bukkit.lightapi.events.SetLightEvent;
 import org.implexdevone.beykerykt.bukkit.lightapi.events.UpdateChunkEvent;
 import org.implexdevone.beykerykt.bukkit.lightapi.request.DataRequest;
 import org.implexdevone.beykerykt.bukkit.lightapi.request.RequestSteamMachine;
-import org.implexdevone.beykerykt.bukkit.lightapi.server.ServerModInfo;
-import org.implexdevone.beykerykt.bukkit.lightapi.server.ServerModManager;
-import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.craftbukkit.CraftBukkit_v1_10_R1;
+import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.INMSHandler;
 import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.craftbukkit.CraftBukkit_v1_11_R1;
-import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.craftbukkit.CraftBukkit_v1_8_R3;
-import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.craftbukkit.CraftBukkit_v1_9_R1;
-import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.craftbukkit.CraftBukkit_v1_9_R2;
-import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.paperspigot.PaperSpigot_v1_8_R3;
 import org.implexdevone.beykerykt.bukkit.lightapi.utils.BungeeChatHelperClass;
 import org.implexdevone.beykerykt.bukkit.lightapi.utils.Metrics;
 
@@ -67,46 +61,14 @@ public class LightAPI extends JavaPlugin {
 	private int update_delay_ticks;
 	private int max_iterations_per_tick;
 
+	private static INMSHandler handler;
+	
 	@SuppressWarnings("static-access")
 	@Override
 	public void onLoad() {
 		this.plugin = this;
 		this.machine = new RequestSteamMachine();
-
-		ServerModInfo craftbukkit = new ServerModInfo("CraftBukkit");
-		craftbukkit.getVersions().put("v1_8_R3", CraftBukkit_v1_8_R3.class);
-		craftbukkit.getVersions().put("v1_9_R1", CraftBukkit_v1_9_R1.class);
-		craftbukkit.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
-		craftbukkit.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
-		craftbukkit.getVersions().put("v1_11_R1", CraftBukkit_v1_11_R1.class);
-		ServerModManager.registerServerMod(craftbukkit);
-
-		ServerModInfo spigot = new ServerModInfo("Spigot");
-		spigot.getVersions().put("v1_8_R3", CraftBukkit_v1_8_R3.class);
-		spigot.getVersions().put("v1_9_R1", CraftBukkit_v1_9_R1.class);
-		spigot.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
-		spigot.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
-		spigot.getVersions().put("v1_11_R1", CraftBukkit_v1_11_R1.class);
-		ServerModManager.registerServerMod(spigot);
-
-		ServerModInfo paperspigot = new ServerModInfo("PaperSpigot");
-		paperspigot.getVersions().put("v1_8_R3", PaperSpigot_v1_8_R3.class);
-		ServerModManager.registerServerMod(paperspigot);
-
-		ServerModInfo paper = new ServerModInfo("Paper");
-		paper.getVersions().put("v1_9_R1", CraftBukkit_v1_9_R1.class);
-		paper.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
-		paper.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
-		paper.getVersions().put("v1_11_R1", CraftBukkit_v1_11_R1.class);
-		ServerModManager.registerServerMod(paper);
-
-		ServerModInfo tacospigot = new ServerModInfo("TacoSpigot");
-		// tacospigot.getVersions().put("v1_8_R3", PaperSpigot_v1_8_R3.class); - call errors with anti-xray - obfuscate
-		tacospigot.getVersions().put("v1_9_R1", CraftBukkit_v1_9_R1.class);
-		tacospigot.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
-		tacospigot.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
-		tacospigot.getVersions().put("v1_11_R1", CraftBukkit_v1_11_R1.class);
-		ServerModManager.registerServerMod(tacospigot);
+		this.handler = new CraftBukkit_v1_11_R1();
 	}
 
 	@Override
@@ -131,8 +93,6 @@ public class LightAPI extends JavaPlugin {
 		this.update_delay_ticks = getConfig().getInt("update-delay-ticks");
 		this.max_iterations_per_tick = getConfig().getInt("max-iterations-per-tick");
 
-		// init nms
-		ServerModManager.init();
 		machine.start(LightAPI.getInstance().getUpdateDelayTicks(), LightAPI.getInstance().getMaxIterationsPerTick()); // TEST
 
 		// init metrics
@@ -157,6 +117,10 @@ public class LightAPI extends JavaPlugin {
 	public static LightAPI getInstance() {
 		return plugin;
 	}
+	
+	public static INMSHandler getNMSHandler(){
+		return handler;
+	}
 
 	public static boolean createLight(Location location, int lightlevel, boolean async) {
 		return createLight(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), lightlevel, async);
@@ -177,14 +141,14 @@ public class LightAPI extends JavaPlugin {
 					machine.addToQueue(new DataRequest() {
 						@Override
 						public void process() {
-							ServerModManager.getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
-							ServerModManager.getNMSHandler().recalculateLight(event.getWorld(), lx, ly, lz);
+							getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
+							getNMSHandler().recalculateLight(event.getWorld(), lx, ly, lz);
 						}
 					});
 					return true;
 				}
-				ServerModManager.getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
-				ServerModManager.getNMSHandler().recalculateLight(event.getWorld(), lx, ly, lz);
+				getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
+				getNMSHandler().recalculateLight(event.getWorld(), lx, ly, lz);
 				return true;
 			}
 		}
@@ -205,12 +169,12 @@ public class LightAPI extends JavaPlugin {
 					machine.addToQueue(new DataRequest() {
 						@Override
 						public void process() {
-							ServerModManager.getNMSHandler().deleteLight(event.getWorld(), event.getX(), event.getY(), event.getZ());
+							getNMSHandler().deleteLight(event.getWorld(), event.getX(), event.getY(), event.getZ());
 						}
 					});
 					return true;
 				}
-				ServerModManager.getNMSHandler().deleteLight(event.getWorld(), event.getX(), event.getY(), event.getZ());
+				getNMSHandler().deleteLight(event.getWorld(), event.getX(), event.getY(), event.getZ());
 				return true;
 			}
 		}
@@ -223,7 +187,7 @@ public class LightAPI extends JavaPlugin {
 
 	public static List<ChunkInfo> collectChunks(final World world, final int x, final int y, final int z) {
 		if (getInstance().isEnabled()) {
-			return ServerModManager.getNMSHandler().collectChunks(world, x, y, z);
+			return getNMSHandler().collectChunks(world, x, y, z);
 		}
 		return null;
 	}
@@ -274,7 +238,7 @@ public class LightAPI extends JavaPlugin {
 
 	public static boolean updateChunk(World world, int x, int y, int z, Collection<? extends Player> players) {
 		if (getInstance().isEnabled()) {
-			ServerModManager.getNMSHandler().sendChunkUpdate(world, x >> 4, y, z >> 4, players);
+			getNMSHandler().sendChunkUpdate(world, x >> 4, y, z >> 4, players);
 			return true;
 		}
 		return false;

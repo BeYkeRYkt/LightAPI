@@ -30,9 +30,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.implexdevone.beykerykt.bukkit.lightapi.LightAPI;
 import org.implexdevone.beykerykt.bukkit.lightapi.chunks.ChunkCache;
 import org.implexdevone.beykerykt.bukkit.lightapi.chunks.ChunkInfo;
-import org.implexdevone.beykerykt.bukkit.lightapi.server.ServerModManager;
 
 public class RequestSteamMachine implements Runnable {
 
@@ -107,7 +107,7 @@ public class RequestSteamMachine implements Runnable {
 			needChunkUpdate = false;
 			while (!ChunkCache.CHUNK_INFO_QUEUE.isEmpty()) {
 				ChunkInfo info = ChunkCache.CHUNK_INFO_QUEUE.get(0);
-				ServerModManager.getNMSHandler().sendChunkUpdate(info.getWorld(), info.getChunkX(), info.getChunkYHeight(), info.getChunkZ(), info.getReceivers());
+				LightAPI.getNMSHandler().sendChunkUpdate(info.getWorld(), info.getChunkX(), info.getChunkYHeight(), info.getChunkZ(), info.getReceivers());
 				ChunkCache.CHUNK_INFO_QUEUE.remove(0);
 			}
 		}
