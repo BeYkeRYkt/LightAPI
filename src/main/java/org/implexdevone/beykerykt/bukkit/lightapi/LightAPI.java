@@ -83,13 +83,7 @@ public class LightAPI extends JavaPlugin {
 			Bukkit.getPluginManager().callEvent(event);
 
 			if (!event.isCancelled()) {
-				Block adjacent = getAdjacentAirBlock(world.getBlockAt(event.getX(), event.getY(), event.getZ()));
-				final int lx = adjacent.getX();
-				final int ly = adjacent.getY();
-				final int lz = adjacent.getZ();
-
 				getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
-				recalculateLight(event.getWorld(), lx, ly, lz);
 				return true;
 			}
 		}
