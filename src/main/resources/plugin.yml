@@ -1,0 +1,11 @@
+name: LightAPI
+main: org.implexdevone.beykerykt.bukkit.lightapi.LightAPI
+version: 3.2.4
+description: Bukkit Library for create invisible light source
+author: BeYkeRYkt
+commands:
+   lightapi:
+      description: Main command
+permissions:
+  lightapi.updater:
+    default: false
