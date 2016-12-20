@@ -24,7 +24,6 @@
  */
 package org.implexdevone.beykerykt.bukkit.lightapi;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -38,7 +37,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.implexdevone.beykerykt.bukkit.lightapi.chunks.ChunkInfo;
@@ -53,8 +51,6 @@ import org.implexdevone.beykerykt.bukkit.lightapi.utils.Metrics;
 public class LightAPI extends JavaPlugin {
 
 	private static LightAPI plugin;
-	private int configVer = 3;
-
 	private static INMSHandler handler;
 
 	@SuppressWarnings("static-access")
@@ -66,22 +62,6 @@ public class LightAPI extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		// Config
-		try {
-			FileConfiguration fc = getConfig();
-			File file = new File(getDataFolder(), "config.yml");
-			if (file.exists()) {
-				if (fc.getInt("version") < configVer) {
-					file.delete(); // got a better idea?
-					generateConfig(file);
-				}
-			} else {
-				generateConfig(file);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 		// init metrics
 		try {
 			Metrics metrics = new Metrics(this);
@@ -218,21 +198,6 @@ public class LightAPI extends JavaPlugin {
 			}
 		}
 		return block;
-	}
-
-	private void generateConfig(File file) {
-		FileConfiguration fc = getConfig();
-		if (!file.exists()) {
-			fc.options().header("LightAPI v" + getDescription().getVersion() + " Configuration" + "\nby BeYkeRYkt");
-			fc.set("version", configVer);
-			fc.set("update-delay-ticks", 2);
-			fc.set("max-iterations-per-tick", 400);
-			fc.set("updater.enable", true);
-			fc.set("updater.repo", "BeYkeRYkt/LightAPI");
-			fc.set("updater.update-delay-ticks", 40);
-			fc.set("updater.view-changelog", false);
-			saveConfig();
-		}
 	}
 
 	@Override
