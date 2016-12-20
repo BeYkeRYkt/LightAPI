@@ -24,7 +24,6 @@
  */
 package org.implexdevone.beykerykt.bukkit.lightapi;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -46,7 +45,6 @@ import org.implexdevone.beykerykt.bukkit.lightapi.events.UpdateChunkEvent;
 import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.INMSHandler;
 import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.craftbukkit.CraftBukkit_v1_11_R1;
 import org.implexdevone.beykerykt.bukkit.lightapi.utils.BungeeChatHelperClass;
-import org.implexdevone.beykerykt.bukkit.lightapi.utils.Metrics;
 
 public class LightAPI extends JavaPlugin {
 
@@ -62,13 +60,6 @@ public class LightAPI extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		// init metrics
-		try {
-			Metrics metrics = new Metrics(this);
-			metrics.start();
-		} catch (IOException e) {
-			// nothing...
-		}
 	}
 
 	@Override
