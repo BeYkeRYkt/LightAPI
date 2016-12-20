@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -78,10 +77,6 @@ public class LightAPI extends JavaPlugin {
 		return handler;
 	}
 
-	public static boolean createLight(Location location, int lightlevel, boolean async) {
-		return createLight(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), lightlevel, async);
-	}
-
 	public static boolean createLight(final World world, final int x, final int y, final int z, final int lightlevel, boolean async) {
 		if (getInstance().isEnabled()) {
 			SetLightEvent event = new SetLightEvent(world, x, y, z, lightlevel, async);
@@ -94,15 +89,11 @@ public class LightAPI extends JavaPlugin {
 				final int lz = adjacent.getZ();
 
 				getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
-				getNMSHandler().recalculateLight(event.getWorld(), lx, ly, lz);
+				recalculateLight(event.getWorld(), lx, ly, lz);
 				return true;
 			}
 		}
 		return false;
-	}
-
-	public static boolean deleteLight(Location location, boolean async) {
-		return deleteLight(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), async);
 	}
 
 	public static boolean deleteLight(final World world, final int x, final int y, final int z, boolean async) {
@@ -118,20 +109,19 @@ public class LightAPI extends JavaPlugin {
 		return false;
 	}
 
-	public static List<ChunkInfo> collectChunks(Location location) {
-		return collectChunks(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+	public static boolean recalculateLight(World world, int x, int y, int z) {
+		if (getInstance().isEnabled()) {
+			getNMSHandler().recalculateLight(world, x, y, z);
+			return true;
+		}
+		return false;
 	}
 
-	public static List<ChunkInfo> collectChunks(final World world, final int x, final int y, final int z) {
+	public static List<ChunkInfo> collectChunks(World world, int x, int y, int z) {
 		if (getInstance().isEnabled()) {
 			return getNMSHandler().collectChunks(world, x, y, z);
 		}
 		return null;
-	}
-
-	@Deprecated
-	public static boolean updateChunks(ChunkInfo info) {
-		return updateChunk(info);
 	}
 
 	public static boolean updateChunk(ChunkInfo info) {
@@ -146,10 +136,6 @@ public class LightAPI extends JavaPlugin {
 		return false;
 	}
 
-	public static boolean updateChunks(Location location, Collection<? extends Player> players) {
-		return updateChunks(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), players);
-	}
-
 	public static boolean updateChunks(World world, int x, int y, int z, Collection<? extends Player> players) {
 		if (getInstance().isEnabled()) {
 			for (ChunkInfo info : collectChunks(world, x, y, z)) {
@@ -159,10 +145,6 @@ public class LightAPI extends JavaPlugin {
 			return true;
 		}
 		return false;
-	}
-
-	public static boolean updateChunk(Location location, Collection<? extends Player> players) {
-		return updateChunk(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), players);
 	}
 
 	public static boolean updateChunk(World world, int x, int y, int z, Collection<? extends Player> players) {

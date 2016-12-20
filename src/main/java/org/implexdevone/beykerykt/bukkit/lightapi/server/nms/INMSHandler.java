@@ -33,14 +33,12 @@ import org.implexdevone.beykerykt.bukkit.lightapi.chunks.ChunkInfo;
 
 public interface INMSHandler {
 
-	// Lights...
 	public void createLight(World world, int x, int y, int z, int light);
 
 	public void deleteLight(World world, int x, int y, int z);
 
 	public void recalculateLight(World world, int x, int y, int z);
 
-	// Chunks...
 	public List<ChunkInfo> collectChunks(World world, int x, int y, int z);
 
 	public void sendChunkUpdate(World world, int chunkX, int chunkZ, Collection<? extends Player> players);
