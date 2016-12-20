@@ -41,13 +41,10 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.implexdevone.beykerykt.bukkit.lightapi.chunks.ChunkCache;
 import org.implexdevone.beykerykt.bukkit.lightapi.chunks.ChunkInfo;
 import org.implexdevone.beykerykt.bukkit.lightapi.events.DeleteLightEvent;
 import org.implexdevone.beykerykt.bukkit.lightapi.events.SetLightEvent;
 import org.implexdevone.beykerykt.bukkit.lightapi.events.UpdateChunkEvent;
-import org.implexdevone.beykerykt.bukkit.lightapi.request.DataRequest;
-import org.implexdevone.beykerykt.bukkit.lightapi.request.RequestSteamMachine;
 import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.INMSHandler;
 import org.implexdevone.beykerykt.bukkit.lightapi.server.nms.craftbukkit.CraftBukkit_v1_11_R1;
 import org.implexdevone.beykerykt.bukkit.lightapi.utils.BungeeChatHelperClass;
@@ -56,18 +53,14 @@ import org.implexdevone.beykerykt.bukkit.lightapi.utils.Metrics;
 public class LightAPI extends JavaPlugin {
 
 	private static LightAPI plugin;
-	private static RequestSteamMachine machine;
 	private int configVer = 3;
-	private int update_delay_ticks;
-	private int max_iterations_per_tick;
 
 	private static INMSHandler handler;
-	
+
 	@SuppressWarnings("static-access")
 	@Override
 	public void onLoad() {
 		this.plugin = this;
-		this.machine = new RequestSteamMachine();
 		this.handler = new CraftBukkit_v1_11_R1();
 	}
 
@@ -89,12 +82,6 @@ public class LightAPI extends JavaPlugin {
 			e.printStackTrace();
 		}
 
-		// Init config
-		this.update_delay_ticks = getConfig().getInt("update-delay-ticks");
-		this.max_iterations_per_tick = getConfig().getInt("max-iterations-per-tick");
-
-		machine.start(LightAPI.getInstance().getUpdateDelayTicks(), LightAPI.getInstance().getMaxIterationsPerTick()); // TEST
-
 		// init metrics
 		try {
 			Metrics metrics = new Metrics(this);
@@ -106,8 +93,6 @@ public class LightAPI extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		machine.shutdown();
-		ChunkCache.CHUNK_INFO_QUEUE.clear();
 	}
 
 	public void log(CommandSender sender, String message) {
@@ -117,8 +102,8 @@ public class LightAPI extends JavaPlugin {
 	public static LightAPI getInstance() {
 		return plugin;
 	}
-	
-	public static INMSHandler getNMSHandler(){
+
+	public static INMSHandler getNMSHandler() {
 		return handler;
 	}
 
@@ -128,7 +113,7 @@ public class LightAPI extends JavaPlugin {
 
 	public static boolean createLight(final World world, final int x, final int y, final int z, final int lightlevel, boolean async) {
 		if (getInstance().isEnabled()) {
-			final SetLightEvent event = new SetLightEvent(world, x, y, z, lightlevel, async);
+			SetLightEvent event = new SetLightEvent(world, x, y, z, lightlevel, async);
 			Bukkit.getPluginManager().callEvent(event);
 
 			if (!event.isCancelled()) {
@@ -137,16 +122,6 @@ public class LightAPI extends JavaPlugin {
 				final int ly = adjacent.getY();
 				final int lz = adjacent.getZ();
 
-				if (event.isAsync()) {
-					machine.addToQueue(new DataRequest() {
-						@Override
-						public void process() {
-							getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
-							getNMSHandler().recalculateLight(event.getWorld(), lx, ly, lz);
-						}
-					});
-					return true;
-				}
 				getNMSHandler().createLight(event.getWorld(), event.getX(), event.getY(), event.getZ(), event.getLightLevel());
 				getNMSHandler().recalculateLight(event.getWorld(), lx, ly, lz);
 				return true;
@@ -161,19 +136,10 @@ public class LightAPI extends JavaPlugin {
 
 	public static boolean deleteLight(final World world, final int x, final int y, final int z, boolean async) {
 		if (getInstance().isEnabled()) {
-			final DeleteLightEvent event = new DeleteLightEvent(world, x, y, z, async);
+			DeleteLightEvent event = new DeleteLightEvent(world, x, y, z, async);
 			Bukkit.getPluginManager().callEvent(event);
 
 			if (!event.isCancelled()) {
-				if (event.isAsync()) {
-					machine.addToQueue(new DataRequest() {
-						@Override
-						public void process() {
-							getNMSHandler().deleteLight(event.getWorld(), event.getX(), event.getY(), event.getZ());
-						}
-					});
-					return true;
-				}
 				getNMSHandler().deleteLight(event.getWorld(), event.getX(), event.getY(), event.getZ());
 				return true;
 			}
@@ -202,15 +168,7 @@ public class LightAPI extends JavaPlugin {
 			UpdateChunkEvent event = new UpdateChunkEvent(info);
 			Bukkit.getPluginManager().callEvent(event);
 			if (!event.isCancelled()) {
-				if (ChunkCache.CHUNK_INFO_QUEUE.contains(event.getChunkInfo())) {
-					int index = ChunkCache.CHUNK_INFO_QUEUE.indexOf(event.getChunkInfo());
-					ChunkInfo previous = ChunkCache.CHUNK_INFO_QUEUE.get(index);
-					if (previous.getChunkYHeight() > event.getChunkInfo().getChunkYHeight()) {
-						event.getChunkInfo().setChunkYHeight(previous.getChunkYHeight());
-					}
-					ChunkCache.CHUNK_INFO_QUEUE.remove(index);
-				}
-				ChunkCache.CHUNK_INFO_QUEUE.add(event.getChunkInfo());
+				getNMSHandler().sendChunkUpdate(info.getWorld(), info.getChunkX(), info.getChunkYHeight(), info.getChunkZ(), info.getReceivers());
 				return true;
 			}
 		}
@@ -275,22 +233,6 @@ public class LightAPI extends JavaPlugin {
 			fc.set("updater.view-changelog", false);
 			saveConfig();
 		}
-	}
-
-	public int getUpdateDelayTicks() {
-		return update_delay_ticks;
-	}
-
-	public void setUpdateDelayTicks(int update_delay_ticks) {
-		this.update_delay_ticks = update_delay_ticks;
-	}
-
-	public int getMaxIterationsPerTick() {
-		return max_iterations_per_tick;
-	}
-
-	public void setMaxIterationsPerTick(int max_iterations_per_tick) {
-		this.max_iterations_per_tick = max_iterations_per_tick;
 	}
 
 	@Override
