@@ -107,7 +107,7 @@ public class PaperSpigot_v1_8_R3 implements INMSHandler {
 	public void sendChunkUpdate(Chunk chunk, Player player) {
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
-		if (distanceTo(pChunk, chunk) < 5) {
+		if (distanceToSquared(pChunk, chunk) < 5 * 5) {
 			PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, false, 65535);
 			human.playerConnection.sendPacket(packet);
 		}
@@ -125,7 +125,7 @@ public class PaperSpigot_v1_8_R3 implements INMSHandler {
 		Chunk chunk = ((CraftWorld) world).getHandle().getChunkAt(chunkX, chunkZ);
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
-		if (distanceTo(pChunk, chunk) < 5) {
+		if (distanceToSquared(pChunk, chunk) < 5 * 5) {
 			PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, false, (16 * 16 * y) - 1);
 			human.playerConnection.sendPacket(packet);
 		}
@@ -139,11 +139,11 @@ public class PaperSpigot_v1_8_R3 implements INMSHandler {
 		return cachedChunkModified;
 	}
 
-	private int distanceTo(Chunk from, Chunk to) {
+	private int distanceToSquared(Chunk from, Chunk to) {
 		if (!from.world.getWorldData().getName().equals(to.world.getWorldData().getName()))
 			return 100;
 		double var2 = to.locX - from.locX;
 		double var4 = to.locZ - from.locZ;
-		return (int) Math.sqrt(var2 * var2 + var4 * var4);
+		return var2 * var2 + var4 * var4;
 	}
 }
