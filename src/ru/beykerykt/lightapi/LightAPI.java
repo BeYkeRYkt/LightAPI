@@ -53,11 +53,7 @@ import ru.beykerykt.lightapi.request.DataRequest;
 import ru.beykerykt.lightapi.request.RequestSteamMachine;
 import ru.beykerykt.lightapi.server.ServerModInfo;
 import ru.beykerykt.lightapi.server.ServerModManager;
-import ru.beykerykt.lightapi.server.nms.craftbukkit.CraftBukkit_v1_10_R1;
-import ru.beykerykt.lightapi.server.nms.craftbukkit.CraftBukkit_v1_11_R1;
-import ru.beykerykt.lightapi.server.nms.craftbukkit.CraftBukkit_v1_8_R3;
-import ru.beykerykt.lightapi.server.nms.craftbukkit.CraftBukkit_v1_9_R1;
-import ru.beykerykt.lightapi.server.nms.craftbukkit.CraftBukkit_v1_9_R2;
+import ru.beykerykt.lightapi.server.nms.craftbukkit.*;
 import ru.beykerykt.lightapi.server.nms.paperspigot.PaperSpigot_v1_8_R3;
 import ru.beykerykt.lightapi.updater.Response;
 import ru.beykerykt.lightapi.updater.UpdateType;
@@ -91,6 +87,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 		craftbukkit.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
 		craftbukkit.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
 		craftbukkit.getVersions().put("v1_11_R1", CraftBukkit_v1_11_R1.class);
+		craftbukkit.getVersions().put("v1_12_R1", CraftBukkit_v1_12_R1.class);
 		ServerModManager.registerServerMod(craftbukkit);
 
 		ServerModInfo spigot = new ServerModInfo("Spigot");
@@ -99,6 +96,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 		spigot.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
 		spigot.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
 		spigot.getVersions().put("v1_11_R1", CraftBukkit_v1_11_R1.class);
+		spigot.getVersions().put("v1_12_R1", CraftBukkit_v1_12_R1.class);
 		ServerModManager.registerServerMod(spigot);
 
 		ServerModInfo paperspigot = new ServerModInfo("PaperSpigot");
@@ -110,6 +108,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 		paper.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
 		paper.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
 		paper.getVersions().put("v1_11_R1", CraftBukkit_v1_11_R1.class);
+		paper.getVersions().put("v1_12_R1", CraftBukkit_v1_12_R1.class);
 		ServerModManager.registerServerMod(paper);
 
 		ServerModInfo tacospigot = new ServerModInfo("TacoSpigot");
@@ -118,6 +117,7 @@ public class LightAPI extends JavaPlugin implements Listener {
 		tacospigot.getVersions().put("v1_9_R2", CraftBukkit_v1_9_R2.class);
 		tacospigot.getVersions().put("v1_10_R1", CraftBukkit_v1_10_R1.class);
 		tacospigot.getVersions().put("v1_11_R1", CraftBukkit_v1_11_R1.class);
+		tacospigot.getVersions().put("v1_12_R1", CraftBukkit_v1_12_R1.class);
 		ServerModManager.registerServerMod(tacospigot);
 	}
 
