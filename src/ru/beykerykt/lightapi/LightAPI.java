@@ -25,6 +25,7 @@ package ru.beykerykt.lightapi;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
 
@@ -53,6 +54,8 @@ import ru.beykerykt.lightapi.request.DataRequest;
 import ru.beykerykt.lightapi.request.RequestSteamMachine;
 import ru.beykerykt.lightapi.server.ServerModInfo;
 import ru.beykerykt.lightapi.server.ServerModManager;
+import ru.beykerykt.lightapi.server.exceptions.UnknownModImplementationException;
+import ru.beykerykt.lightapi.server.exceptions.UnknownNMSVersionException;
 import ru.beykerykt.lightapi.server.nms.craftbukkit.*;
 import ru.beykerykt.lightapi.server.nms.paperspigot.PaperSpigot_v1_8_R3;
 import ru.beykerykt.lightapi.updater.Response;
@@ -148,7 +151,21 @@ public class LightAPI extends JavaPlugin implements Listener {
 		this.viewChangelog = getConfig().getBoolean("updater.view-changelog");
 
 		// init nms
-		ServerModManager.init();
+		try {
+			ServerModManager.init();
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e1) {
+			e1.printStackTrace();
+			getServer().getPluginManager().disablePlugin(this);
+		} catch (UnknownNMSVersionException e) {
+			log(Bukkit.getConsoleSender(), ChatColor.RED + "Could not find handler for this Bukkit " + ChatColor.WHITE + e.getModName() + ChatColor.RED + " implementation " + ChatColor.WHITE + e.getNmsVersion() + ChatColor.RED + " version.");
+			e.printStackTrace();
+			getServer().getPluginManager().disablePlugin(this);
+		} catch (UnknownModImplementationException e) {
+			log(Bukkit.getConsoleSender(), ChatColor.RED + "Could not find handler for this Bukkit implementation: " + ChatColor.WHITE + e.getModName());
+			e.printStackTrace();
+			getServer().getPluginManager().disablePlugin(this);
+		}
+
 		machine.start(LightAPI.getInstance().getUpdateDelayTicks(), LightAPI.getInstance().getMaxIterationsPerTick()); // TEST
 		getServer().getPluginManager().registerEvents(this, this);
 

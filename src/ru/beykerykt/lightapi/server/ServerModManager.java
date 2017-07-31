@@ -23,12 +23,15 @@
  */
 package ru.beykerykt.lightapi.server;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
 
 import ru.beykerykt.lightapi.LightAPI;
+import ru.beykerykt.lightapi.server.exceptions.UnknownModImplementationException;
+import ru.beykerykt.lightapi.server.exceptions.UnknownNMSVersionException;
 import ru.beykerykt.lightapi.server.nms.INMSHandler;
 
 public class ServerModManager {
@@ -36,10 +39,8 @@ public class ServerModManager {
 	private static Map<String, ServerModInfo> supportImpl = new ConcurrentHashMap<String, ServerModInfo>();
 	private static INMSHandler handler;
 
-	public static void init() {
-		if (handler != null) {
-			handler = null;
-		}
+	public static void init() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, UnknownNMSVersionException, UnknownModImplementationException {
+		shutdown();
 
 		// Init handler...
 		String modName = Bukkit.getVersion().split("-")[1];
@@ -48,29 +49,33 @@ public class ServerModManager {
 		}
 		ServerModInfo impl = supportImpl.get(modName);
 		if (impl != null) {
-			try {
-				String folder_version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-				if (impl.getVersions().containsKey(folder_version)) {
-					final Class<? extends INMSHandler> clazz = impl.getVersions().get(folder_version);
-					// Check if we have a NMSHandler class at that location.
-					if (INMSHandler.class.isAssignableFrom(clazz)) {
-						handler = clazz.getConstructor().newInstance();
-					}
-				} else {
-					throw new Exception("Unknown version."); // ?
+			// try {
+			String folder_version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
+			if (impl.getVersions().containsKey(folder_version)) {
+				final Class<? extends INMSHandler> clazz = impl.getVersions().get(folder_version);
+				// Check if we have a NMSHandler class at that location.
+				if (INMSHandler.class.isAssignableFrom(clazz)) {
+					handler = clazz.getConstructor().newInstance();
+					LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Loading handler for " + impl.getModName() + " " + Bukkit.getVersion());
 				}
-			} catch (Exception e) {
-				LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Could not find handler for this " + Bukkit.getVersion() + " version.");
-				return;
+			} else {
+				throw new UnknownNMSVersionException(modName, folder_version);
 			}
-			LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Loading handler for " + impl.getModName() + " " + Bukkit.getVersion());
-			return;
 		} else {
-			LightAPI.getInstance().log(Bukkit.getConsoleSender(), "Could not find handler for this Bukkit implementation.");
-			return;
+			throw new UnknownModImplementationException(modName);
 		}
 	}
 
+	public static void shutdown() {
+		if (isInitialized()) {
+			handler = null;
+		}
+	}
+
+	public static boolean isInitialized(){
+		return handler != null;
+	}
+	
 	public static boolean registerServerMod(ServerModInfo info) {
 		if (supportImpl.containsKey(info.getModName())) {
 			return false;
