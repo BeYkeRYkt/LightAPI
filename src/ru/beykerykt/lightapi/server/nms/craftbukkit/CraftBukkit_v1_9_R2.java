@@ -140,6 +140,6 @@ public class CraftBukkit_v1_9_R2 implements INMSHandler {
 			return 100;
 		double var2 = to.locX - from.locX;
 		double var4 = to.locZ - from.locZ;
-		return var2 * var2 + var4 * var4;
+		return (int) (var2 * var2 + var4 * var4);
 	}
 }

@@ -1,3 +1,20 @@
+* [2017-07-31] [BeYkeRYkt] nms: fix building
+*   [2017-07-31] [Vladimir Mikhaylov] Merge pull request #9 from Dereku/CraftBukkit_v1_12_R1
+|\  
+| * [2017-07-09] [Dereku] 1.12 support
+|/  
+*   [2017-04-13] [Vladimir Mikhaylov] Merge pull request #6 from kh498/3.0
+|\  
+| * [2017-04-13] [kh498] Use the squared distance to increase performance
+|/  
+* [2016-12-09] [BeYkeRYkt] Update README.md
+* [2016-12-08] [BeYkeRYkt] Update logo
+* [2016-12-04] [BeYkeRYkt] request: separate update flags
+*   [2016-12-04] [BeYkeRYkt] Merge pull request #4 from Nashoba24/3.0
+|\  
+| * [2016-11-18] [Nashoba24] Support 1.11
+|/  
+* [2016-10-21] [BeYkeRYkt] request: remove unnecessary runnable
 * [2016-08-17] [BeYkeRYkt] Bump version!
 * [2016-08-17] [BeYkeRYkt] events: fix forgotten isCancelled
 * [2016-08-17] [BeYkeRYkt] bungee: move method to BungeeChatHelper
