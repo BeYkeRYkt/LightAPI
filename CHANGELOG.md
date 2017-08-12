@@ -1,3 +1,4 @@
+* [2017-08-12] [BeYkeRYkt] common: import ThreadHotplug
 * [2017-07-31] [BeYkeRYkt] common: implement 'servermod' exceptions
 * [2017-07-31] [BeYkeRYkt] nms: fix building
 *   [2017-07-31] [Vladimir Mikhaylov] Merge pull request #9 from Dereku/CraftBukkit_v1_12_R1
