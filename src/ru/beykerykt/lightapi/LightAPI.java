@@ -156,14 +156,17 @@ public class LightAPI extends JavaPlugin implements Listener {
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e1) {
 			e1.printStackTrace();
 			getServer().getPluginManager().disablePlugin(this);
+			return;
 		} catch (UnknownNMSVersionException e) {
 			log(Bukkit.getConsoleSender(), ChatColor.RED + "Could not find handler for this Bukkit " + ChatColor.WHITE + e.getModName() + ChatColor.RED + " implementation " + ChatColor.WHITE + e.getNmsVersion() + ChatColor.RED + " version.");
 			e.printStackTrace();
 			getServer().getPluginManager().disablePlugin(this);
+			return;
 		} catch (UnknownModImplementationException e) {
 			log(Bukkit.getConsoleSender(), ChatColor.RED + "Could not find handler for this Bukkit implementation: " + ChatColor.WHITE + e.getModName());
 			e.printStackTrace();
 			getServer().getPluginManager().disablePlugin(this);
+			return;
 		}
 
 		machine.start(LightAPI.getInstance().getUpdateDelayTicks(), LightAPI.getInstance().getMaxIterationsPerTick()); // TEST
