@@ -1,3 +1,4 @@
+* [2017-08-13] [BeYkeRYkt] format
 * [2017-08-12] [BeYkeRYkt] Revert "common: import ThreadHotplug"
 * [2017-08-12] [BeYkeRYkt] add missings return
 * [2017-08-12] [BeYkeRYkt] common: import ThreadHotplug

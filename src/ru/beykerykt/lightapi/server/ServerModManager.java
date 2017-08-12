@@ -72,10 +72,10 @@ public class ServerModManager {
 		}
 	}
 
-	public static boolean isInitialized(){
+	public static boolean isInitialized() {
 		return handler != null;
 	}
-	
+
 	public static boolean registerServerMod(ServerModInfo info) {
 		if (supportImpl.containsKey(info.getModName())) {
 			return false;

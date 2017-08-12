@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-
 public class CraftBukkit_v1_12_R1 implements INMSHandler {
 
 	private static Field cachedChunkModified;
