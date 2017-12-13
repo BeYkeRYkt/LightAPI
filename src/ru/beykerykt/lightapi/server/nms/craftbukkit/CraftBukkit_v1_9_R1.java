@@ -104,7 +104,9 @@ public class CraftBukkit_v1_9_R1 implements INMSHandler {
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
 		if (distanceToSquared(pChunk, chunk) < 5 * 5) {
-			PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, false, 65535); // ?
+			// Last argument is bit-mask what chunk sections to update. Only lower 16 bits are used.
+			// There are 16 sections in chunk. Each section height=16. So, y-coordinate varies from 0 to 255.
+			PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, false, 0xffff);
 			human.playerConnection.sendPacket(packet);
 		}
 	}
@@ -122,7 +124,10 @@ public class CraftBukkit_v1_9_R1 implements INMSHandler {
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
 		if (distanceToSquared(pChunk, chunk) < 5 * 5) {
-			PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, false, (16 * 16 * y) - 1);
+			// Last argument is bit-mask what chunk sections to update. Only lower 16 bits are used.
+			// There are 16 sections in chunk. Each section height=16. So, y-coordinate varies from 0 to 255.
+			// We know that max light=15 (15 blocks). So, it is enough to update only 3 sections: y\16-1, y\16, y\16+1
+			PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, false, (7 << (y >> 4)) >> 1);
 			human.playerConnection.sendPacket(packet);
 		}
 	}
