@@ -142,7 +142,7 @@ public class CraftBukkit_v1_11_R1 implements INMSHandler {
 		return cachedChunkModified;
 	}
 
-	private int distanceToSquared(Chunk from, Chunk to) {
+	private double distanceToSquared(Chunk from, Chunk to) {
 		if (!from.world.getWorldData().getName().equals(to.world.getWorldData().getName()))
 			return 100;
 		double var2 = to.locX - from.locX;
