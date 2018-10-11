@@ -1,5 +1,7 @@
-name: ImplexLightAPI
+name: LightAPI
 main: org.implexdevone.beykerykt.bukkit.lightapi.LightAPI
-version: 4.0.0-0.1-implexdev
+version: 4.0.0-0.1-implexdev-oss
 description: Bukkit library for create invisible light source
-author: beykerykt@implexdevone.org
+author: BeYkeRYkt
+authors: [The ImplexDevOne Project, other contributors in GitHub]
+website: https://github.com/BeYkeRYkt/LightAPI
