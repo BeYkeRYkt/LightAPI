@@ -28,12 +28,12 @@ SOFTWARE.
    <groupId>org.implexdevone.beykerykt.bukkit.lightapi</groupId>
    <artifactId>lightapi</artifactId>
    <version>4.0</version>
-   <name>ImplexLightAPI</name>
+   <name>LightAPI</name>
    <scm>
-      <connection>scm:git:git://github.com/ImplexDevOne/LightAPI.git</connection>
-      <developerConnection>scm:git:git@github.com:ImplexDevOne/LightAPI.git</developerConnection>
-      <url>https://github.com/ImplexDevOne/LightAPI</url>
-      <tag>4.0-implexdev</tag>
+      <connection>scm:git:git://github.com/BeYkeRYkt/LightAPI.git</connection>
+      <developerConnection>scm:git:git@github.com:BeYkeRYkt/LightAPI.git</developerConnection>
+      <url>https://github.com/BeYkeRYkt/LightAPI</url>
+      <tag>4.0-implexdev-oss</tag>
    </scm>
    <licenses>
       <license>
@@ -41,16 +41,6 @@ SOFTWARE.
          <url>LICENSE</url>
       </license>
    </licenses>
-   <distributionManagement>
-      <repository>
-         <id>maven.implexdevone.org</id>
-         <url>http://maven.implexdevone.org/beykerykt/repository/</url>
-      </repository>
-      <snapshotRepository>
-         <id>maven.implexdevone.org</id>
-         <url>http://maven.implexdevone.org/beykerykt/repository/</url>
-      </snapshotRepository>
-   </distributionManagement>
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
    </properties>
