@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>ru.beykerykt.minecraft</groupId>
+		<artifactId>lightapi-parent</artifactId>
+		<version>5.0.0</version>
+	</parent>
+	<artifactId>lightapi-bukkit-nms-all</artifactId>
+	<packaging>pom</packaging>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<SERVER_API>Bukkit</SERVER_API>
+	</properties>
+	<dependencies>
+		<!-- Common LightAPI -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>lightapi-common</artifactId>
+			<version>${project.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<!-- Bukkit common LightAPI -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>lightapi-bukkit-common</artifactId>
+			<version>${project.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<!-- Bukkit NMS v1_13_R2 LightAPI -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>lightapi-bukkit-nms-v1_13_R2</artifactId>
+			<version>${project.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<finalName>LightAPI-${SERVER_API}-${project.version}</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
+				</configuration>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<id>package-all</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/all-jar.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
