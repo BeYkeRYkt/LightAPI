@@ -126,10 +126,17 @@ public interface IBukkitLightHandler extends ILightHandler {
 	public void sendChunk(World world, int chunkX, int y, int chunkZ, Collection<? extends Player> players);
 
 	/**
-	 * Sending a chunk to a player
-	 * 
-	 * @param world     - World
-	 * @param chunkData - {@link IChunkData}
+	 * Sending a chunk to a receivers
+	 *
+	 * @param chunkData - {@link BukkitChunkData}
 	 */
-	public void sendChunk(World world, IChunkData chunkData);
+	public void sendChunk(BukkitChunkData chunkData);
+
+	/**
+	 * Sending a chunk to a player
+	 *
+	 * @param chunkData - {@link BukkitChunkData}
+	 * @param player    - Player
+	 */
+	public void sendChunk(BukkitChunkData chunkData, Player player);
 }

@@ -108,28 +108,28 @@ public interface ILightHandler {
 	/**
 	 * Sending a chunk to a player by name
 	 * 
-	 * @param worldName - World name
-	 * @param chunkData - {@link IChunkData}
+	 * @param worldName  - World name
+	 * @param chunkData  - {@link IChunkData}
 	 * @param playerName - Player name
 	 */
 	public void sendChunk(String worldName, IChunkData chunkData, String playerName);
-	
+
 	/**
 	 * Sending a chunk to world
 	 * 
-	 * @param worldName  - World name
-	 * @param chunkX     - Chunk X coordinate
-	 * @param chunkZ     - Chunk Z coordinate
+	 * @param worldName - World name
+	 * @param chunkX    - Chunk X coordinate
+	 * @param chunkZ    - Chunk Z coordinate
 	 */
 	public void sendChunk(String worldName, int chunkX, int chunkZ);
 
 	/**
 	 * Sending a chunk to world
 	 * 
-	 * @param worldName  - World name
-	 * @param chunkX     - Chunk X coordinate
-	 * @param y          - Block Y coordinate
-	 * @param chunkZ     - Chunk Z coordinate
+	 * @param worldName - World name
+	 * @param chunkX    - Chunk X coordinate
+	 * @param y         - Block Y coordinate
+	 * @param chunkZ    - Chunk Z coordinate
 	 */
 	public void sendChunk(String worldName, int chunkX, int y, int chunkZ);
 
