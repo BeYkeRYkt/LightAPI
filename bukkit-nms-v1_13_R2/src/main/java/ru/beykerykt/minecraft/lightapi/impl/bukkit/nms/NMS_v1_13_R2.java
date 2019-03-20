@@ -220,6 +220,8 @@ public class NMS_v1_13_R2 implements IBukkitLightHandler {
 		if (chunkData instanceof BukkitChunkData) {
 			BukkitChunkData bcd = (BukkitChunkData) chunkData;
 			sendChunk(world, bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), player);
+		} else {
+			sendChunk(world, chunkData.getChunkX(), chunkData.getChunkZ(), player);
 		}
 	}
 
@@ -242,7 +244,14 @@ public class NMS_v1_13_R2 implements IBukkitLightHandler {
 	@Override
 	public void sendChunk(String worldName, IChunkData chunkData) {
 		World world = Bukkit.getWorld(worldName);
-		sendChunk(world, chunkData);
+		if (chunkData instanceof BukkitChunkData) {
+			BukkitChunkData bcd = (BukkitChunkData) chunkData;
+			sendChunk(world, bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), bcd.getReceivers());
+		} else {
+			for (Player player : world.getPlayers()) {
+				sendChunk(world, chunkData.getChunkX(), chunkData.getChunkZ(), player);
+			}
+		}
 	}
 
 	@Override
@@ -294,10 +303,14 @@ public class NMS_v1_13_R2 implements IBukkitLightHandler {
 	}
 
 	@Override
-	public void sendChunk(World world, IChunkData chunkData) {
-		if (chunkData instanceof BukkitChunkData) {
-			BukkitChunkData bcd = (BukkitChunkData) chunkData;
-			sendChunk(world, bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), bcd.getReceivers());
-		}
+	public void sendChunk(BukkitChunkData chunkData) {
+		sendChunk(chunkData.getWorld(), chunkData.getChunkX(), chunkData.getChunkYHeight(), chunkData.getChunkZ(),
+				chunkData.getReceivers());
+	}
+
+	@Override
+	public void sendChunk(BukkitChunkData chunkData, Player player) {
+		sendChunk(chunkData.getWorld(), chunkData.getChunkX(), chunkData.getChunkYHeight(), chunkData.getChunkZ(),
+				player);
 	}
 }
