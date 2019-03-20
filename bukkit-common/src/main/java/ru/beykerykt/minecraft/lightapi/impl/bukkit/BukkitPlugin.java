@@ -24,7 +24,6 @@
  */
 package ru.beykerykt.minecraft.lightapi.impl.bukkit;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -48,27 +47,12 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 	@Override
 	public void onLoad() {
 		// set server implementation
-		try {
-			if (LightAPI.setLightHandler(getBukkitLightHandler())) {
-				getLogger().info("Done!");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		LightAPI.setLightHandler(new BukkitHandlerFactory(this).createHandler());
 	}
 
 	@Override
 	public void onEnable() {
 		getServer().getPluginManager().registerEvents(this, this);
-	}
-
-	private IBukkitLightHandler getBukkitLightHandler()
-			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
-			NoSuchMethodException, SecurityException, ClassNotFoundException {
-		String version = getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-		getLogger().info("Your server is using version " + version);
-		return (IBukkitLightHandler) Class.forName("ru.beykerykt.minecraft.lightapi2.impl.bukkit.nms.NMS_" + version)
-				.getConstructor().newInstance();
 	}
 
 	private boolean flag = true;
