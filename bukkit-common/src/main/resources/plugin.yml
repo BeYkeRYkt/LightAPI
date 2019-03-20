@@ -5,3 +5,6 @@ description: Bukkit library for create invisible light source
 author: BeYkeRYkt
 authors: [The ImplexDevOne Project, other contributors in GitHub]
 website: https://github.com/BeYkeRYkt/LightAPI
+commands:
+   lightapi:
+      description: Main command
