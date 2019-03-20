@@ -26,35 +26,45 @@ package ru.beykerykt.minecraft.lightapi.impl.bukkit;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import ru.beykerykt.minecraft.lightapi.common.IHandlerFactory;
 import ru.beykerykt.minecraft.lightapi.common.ILightHandler;
 
 public class BukkitHandlerFactory implements IHandlerFactory {
 
 	private BukkitPlugin plugin;
-	
+
 	public BukkitHandlerFactory(BukkitPlugin plugin) {
 		this.plugin = plugin;
 	}
-	
+
 	@Override
 	public ILightHandler createHandler() {
-		try {
-			return getBukkitLightHandler();
-		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		// First, check if CraftBukkit really is, since Bukkit is only an API, and there
+		// may be several implementations (for example, Glowstone and etc)
+		String impl = plugin.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[2];
+
+		// Since the biggest modification of CraftBukkit is Spigot and its individual
+		// forks, use the name 'craftbukkit' to define
+		if (impl.equals("craftbukkit")) {
+			String version = plugin.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
+			plugin.getLogger().info("Your server is using version " + version);
+			try {
+				return (IBukkitLightHandler) Class
+						.forName("ru.beykerykt.minecraft.lightapi.impl.bukkit.nms.NMS_" + version).getConstructor()
+						.newInstance();
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | NoSuchMethodException | SecurityException
+					| ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		} else if (plugin.getServer().getName().equals("Glowstone")) {
+			// may be it's Glowstone ???
+			throw new NotImplementedException("Glowstone is currently not supported."); // TODO: support this
+		} else {
+			throw new NotImplementedException(plugin.getServer().getName() + " is currently not supported.");
 		}
 		return null;
-	}
-
-	private IBukkitLightHandler getBukkitLightHandler()
-			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
-			NoSuchMethodException, SecurityException, ClassNotFoundException {
-		String version = plugin.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-		plugin.getLogger().info("Your server is using version " + version);
-		return (IBukkitLightHandler) Class.forName("ru.beykerykt.minecraft.lightapi2.impl.bukkit.nms.NMS_" + version)
-				.getConstructor().newInstance();
 	}
 }
