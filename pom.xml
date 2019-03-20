@@ -20,6 +20,7 @@
 		<module>common</module>
 		<!-- Bukkit -->
 		<module>bukkit-common</module>
+		<module>bukkit-nms-v1_12_R1</module>
 		<module>bukkit-nms-v1_13_R2</module>
 		<module>bukkit-nms-all</module>
 	</modules>
