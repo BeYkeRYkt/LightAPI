@@ -147,6 +147,49 @@ public class LightAPI {
 	}
 
 	/**
+	 * Sending a chunk to a player by name
+	 * 
+	 * @param worldName  - World name
+	 * @param chunkData  - {@link IChunkData}
+	 * @param playerName - Player name
+	 */
+	public static void sendChunk(String worldName, IChunkData chunkData, String playerName) {
+		if (!isInitialized()) {
+			return;
+		}
+		getLightHandler().sendChunk(worldName, chunkData, playerName);
+	}
+
+	/**
+	 * Sending a chunk to a world
+	 * 
+	 * @param worldName - World name
+	 * @param chunkX    - Chunk X coordinate
+	 * @param chunkZ    - Chunk Z coordinate
+	 */
+	public static void sendChunk(String worldName, int chunkX, int chunkZ) {
+		if (!isInitialized()) {
+			return;
+		}
+		getLightHandler().sendChunk(worldName, chunkX, chunkZ);
+	}
+
+	/**
+	 * Sending a chunk to a world
+	 * 
+	 * @param worldName - World name
+	 * @param chunkX    - Chunk X coordinate
+	 * @param y         - Block Y coordinate
+	 * @param chunkZ    - Chunk Z coordinate
+	 */
+	public static void sendChunk(String worldName, int chunkX, int y, int chunkZ) {
+		if (!isInitialized()) {
+			return;
+		}
+		getLightHandler().sendChunk(worldName, chunkX, y, chunkZ);
+	}
+
+	/**
 	 * Sending a chunk to world
 	 * 
 	 * @param worldName - World name
