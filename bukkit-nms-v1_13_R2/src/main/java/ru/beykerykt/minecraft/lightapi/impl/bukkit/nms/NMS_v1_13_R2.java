@@ -183,7 +183,8 @@ public class NMS_v1_13_R2 implements IBukkitLightHandler {
 						Chunk chunk = nmsWorld.getChunkAt(chunkX, chunkZ);
 						Field isModified = getChunkField(chunk);
 						if (isModified.getBoolean(chunk)) {
-							IChunkData cCoord = new BukkitChunkData(world, chunk.locX, y, chunk.locZ, world.getPlayers());
+							IChunkData cCoord = new BukkitChunkData(world, chunk.locX, y, chunk.locZ,
+									world.getPlayers());
 							if (!list.contains(cCoord)) {
 								list.add(cCoord);
 							}
@@ -210,6 +211,32 @@ public class NMS_v1_13_R2 implements IBukkitLightHandler {
 		World world = Bukkit.getWorld(worldName);
 		Player player = Bukkit.getPlayer(playerName);
 		sendChunk(world, chunkX, y, chunkZ, player);
+	}
+
+	@Override
+	public void sendChunk(String worldName, IChunkData chunkData, String playerName) {
+		World world = Bukkit.getWorld(worldName);
+		Player player = Bukkit.getPlayer(playerName);
+		if (chunkData instanceof BukkitChunkData) {
+			BukkitChunkData bcd = (BukkitChunkData) chunkData;
+			sendChunk(world, bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), player);
+		}
+	}
+
+	@Override
+	public void sendChunk(String worldName, int chunkX, int chunkZ) {
+		World world = Bukkit.getWorld(worldName);
+		for (Player player : world.getPlayers()) {
+			sendChunk(world, chunkX, chunkZ, player);
+		}
+	}
+
+	@Override
+	public void sendChunk(String worldName, int chunkX, int y, int chunkZ) {
+		World world = Bukkit.getWorld(worldName);
+		for (Player player : world.getPlayers()) {
+			sendChunk(world, chunkX, y, chunkZ, player);
+		}
 	}
 
 	@Override
