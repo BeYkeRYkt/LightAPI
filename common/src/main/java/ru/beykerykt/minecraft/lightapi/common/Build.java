@@ -33,9 +33,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Build {
 
 	/**
-	 * Internal version. May change during any changes in the API, additions or
-	 * deletions of any packages, server platforms, versions of NMS. The string
-	 * should change from release to release.
+	 * Internal version. May change during any changes in the API. The string should
+	 * change from release to release.
 	 */
 	public static final int CURRENT_VERSION = VERSION_CODES.TWO;
 
