@@ -113,6 +113,9 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 
 	@Override
 	public boolean createLight(World world, LightType type, int x, int y, int z, int lightlevel) {
+		if (world == null || type == null) {
+			return false;
+		}
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
 		BlockPosition position = new BlockPosition(x, y, z);
 		EnumSkyBlock esb = EnumSkyBlock.BLOCK;
@@ -143,6 +146,9 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 
 	@Override
 	public boolean deleteLight(World world, LightType type, int x, int y, int z) {
+		if (world == null || type == null) {
+			return false;
+		}
 		Block candidateBlock = world.getBlockAt(x, y, z);
 		int oldlightlevel = candidateBlock.getLightFromBlocks();
 		recalculateLight(world, type, x, y, z);
@@ -167,11 +173,12 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 
 	@Override
 	public List<IChunkData> collectChunks(World world, int x, int y, int z, int radiusBlocks) {
-
+		if (world == null) {
+			return null;
+		}
 		if (radiusBlocks > 8) {
 			radiusBlocks = 8;
 		}
-
 		List<IChunkData> list = new CopyOnWriteArrayList<IChunkData>();
 		try {
 			WorldServer nmsWorld = ((CraftWorld) world).getHandle();
@@ -217,6 +224,9 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 	public void sendChunk(String worldName, IChunkData chunkData, String playerName) {
 		World world = Bukkit.getWorld(worldName);
 		Player player = Bukkit.getPlayer(playerName);
+		if (chunkData == null || world == null || player == null) {
+			return;
+		}
 		if (chunkData instanceof BukkitChunkData) {
 			BukkitChunkData bcd = (BukkitChunkData) chunkData;
 			sendChunk(world, bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), player);
@@ -244,6 +254,9 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 	@Override
 	public void sendChunk(String worldName, IChunkData chunkData) {
 		World world = Bukkit.getWorld(worldName);
+		if (chunkData == null || world == null) {
+			return;
+		}
 		if (chunkData instanceof BukkitChunkData) {
 			BukkitChunkData bcd = (BukkitChunkData) chunkData;
 			sendChunk(world, bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), bcd.getReceivers());
@@ -256,6 +269,9 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 
 	@Override
 	public void sendChunk(World world, int chunkX, int chunkZ, Player player) {
+		if (world == null || player == null) {
+			return;
+		}
 		Chunk chunk = ((CraftWorld) world).getHandle().getChunkAt(chunkX, chunkZ);
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
@@ -280,6 +296,9 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 
 	@Override
 	public void sendChunk(World world, int chunkX, int y, int chunkZ, Player player) {
+		if (world == null || player == null) {
+			return;
+		}
 		Chunk chunk = ((CraftWorld) world).getHandle().getChunkAt(chunkX, chunkZ);
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
@@ -304,12 +323,18 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 
 	@Override
 	public void sendChunk(BukkitChunkData chunkData) {
+		if (chunkData == null) {
+			return;
+		}
 		sendChunk(chunkData.getWorld(), chunkData.getChunkX(), chunkData.getChunkYHeight(), chunkData.getChunkZ(),
 				chunkData.getReceivers());
 	}
 
 	@Override
 	public void sendChunk(BukkitChunkData chunkData, Player player) {
+		if (chunkData == null || player == null) {
+			return;
+		}
 		sendChunk(chunkData.getWorld(), chunkData.getChunkX(), chunkData.getChunkYHeight(), chunkData.getChunkZ(),
 				player);
 	}
