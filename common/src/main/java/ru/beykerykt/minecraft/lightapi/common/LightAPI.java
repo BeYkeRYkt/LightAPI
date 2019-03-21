@@ -83,6 +83,18 @@ public class LightAPI {
 	}
 
 	/**
+	 * Platform that is being used
+	 * 
+	 * @return One of the proposed options from {@link ImplementationPlatform}
+	 */
+	public static ImplementationPlatform getImplementationPlatform() {
+		if(!isInitialized()) {
+			return ImplementationPlatform.UNKNOWN;
+		}
+		return getLightHandler().getImplementationPlatform();
+	}
+	
+	/**
 	 * Is it required to send a chunk after placing / removing light.
 	 * 
 	 * @return true - if after changing the chunk, the developer needs to manually

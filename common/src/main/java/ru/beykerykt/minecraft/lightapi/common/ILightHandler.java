@@ -62,6 +62,13 @@ public interface ILightHandler {
 	public boolean deleteLight(String worldName, LightType type, int x, int y, int z);
 
 	/**
+	 * Platform that is being used
+	 * 
+	 * @return One of the proposed options from {@link ImplementationPlatform}
+	 */
+	public ImplementationPlatform getImplementationPlatform();
+
+	/**
 	 * Is it required to send a chunk after placing/removing light.
 	 * 
 	 * @return true - if after changing the chunk, the developer needs to manually

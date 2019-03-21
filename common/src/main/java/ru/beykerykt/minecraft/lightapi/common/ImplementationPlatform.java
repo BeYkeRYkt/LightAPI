@@ -24,57 +24,41 @@
  */
 package ru.beykerykt.minecraft.lightapi.common;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 /**
- * Information about the current LightAPI build
+ * 
+ * Supported Platforms
+ * 
+ * @author BeYkeRYkt
+ *
  */
-public class Build {
+public enum ImplementationPlatform {
 
 	/**
-	 * Internal version. May change during any changes in the API, additions or
-	 * deletions of any packages, server platforms, versions of NMS. The string
-	 * should change from release to release.
+	 * UNKNOWN
 	 */
-	public static final int CURRENT_VERSION = VERSION_CODES.TWO;
+	UNKNOWN(0),
 
 	/**
-	 * Platform that is being used.
+	 * Platforms built on the Bukkit API. The implication is that pure Bukkit API is
+	 * used without NMS and other implementations.
 	 */
-	public static ImplementationPlatform CURRENT_IMPLEMENTATION = LightAPI.getImplementationPlatform();
+	BUKKIT(1),
 
-	private static final List<String> map;
+	/**
+	 * Platforms built on CraftBukkit. Spigot, Paper and etc
+	 */
+	CRAFTBUKKIT(2);
 
-	static {
-		map = new CopyOnWriteArrayList<String>();
-		map.add(VERSION_CODES.UNKNOWN, "Unknown");
-		map.add(VERSION_CODES.ONE, "One");
-		map.add(VERSION_CODES.TWO, "Two");
+	// TODO
+	// GLOWSTONE(3), SPONGE(4);
+
+	private final int id;
+
+	private ImplementationPlatform(int id) {
+		this.id = id;
 	}
 
-	public static class VERSION_CODES {
-		/**
-		 * UNKNOWN
-		 */
-		public static int UNKNOWN = 0;
-
-		/**
-		 * 20 March 2019: First version recoded API for LightAPI
-		 */
-		public static int ONE = 1;
-
-		/**
-		 * TBA: Disable LightAPI-Backward. Introduce ImplementationPlatform.
-		 */
-		public static int TWO = 2;
-	}
-
-	public static String getNameForInt(int id) {
-		final String name = map.get(id);
-		if (name == null) {
-			return map.get(0);
-		}
-		return name;
+	public int getId() {
+		return id;
 	}
 }
