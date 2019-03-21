@@ -46,7 +46,7 @@ import net.minecraft.server.v1_12_R1.WorldServer;
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
 import ru.beykerykt.minecraft.lightapi.impl.bukkit.BukkitChunkData;
-import ru.beykerykt.minecraft.lightapi.impl.bukkit.IBukkitLightHandler;
+import ru.beykerykt.minecraft.lightapi.impl.bukkit.NMSLightHandler;
 
 /**
  * 
@@ -55,7 +55,7 @@ import ru.beykerykt.minecraft.lightapi.impl.bukkit.IBukkitLightHandler;
  * @author BeYkeRYkt
  *
  */
-public class NMS_v1_12_R1 implements IBukkitLightHandler {
+public class NMS_v1_12_R1 extends NMSLightHandler {
 
 	private static Field cachedChunkModified;
 
