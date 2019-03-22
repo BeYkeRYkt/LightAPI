@@ -69,6 +69,13 @@ public interface ILightHandler {
 	public ImplementationPlatform getImplementationPlatform();
 
 	/**
+	 * Used type of mapping 
+	 * 
+	 * @return One of the proposed options from {@link MappingType}
+	 */
+	public MappingType getMappingType();
+	
+	/**
 	 * Is it required to send a chunk after placing/removing light.
 	 * 
 	 * @return true - if after changing the chunk, the developer needs to manually
