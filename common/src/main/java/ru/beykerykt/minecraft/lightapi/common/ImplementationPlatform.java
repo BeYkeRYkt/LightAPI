@@ -47,10 +47,15 @@ public enum ImplementationPlatform {
 	/**
 	 * Platforms built on CraftBukkit. Spigot, Paper and etc
 	 */
-	CRAFTBUKKIT(2);
+	CRAFTBUKKIT(2),
 
+	/**
+	 * Platforms built on SpongePowered.
+	 */
+	SPONGE(3);
+	
 	// TODO
-	// GLOWSTONE(3), SPONGE(4);
+	// GLOWSTONE(4)
 
 	private final int id;
 

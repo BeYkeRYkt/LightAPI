@@ -25,5 +25,9 @@
 		<module>bukkit-nms-v1_13_R2</module>
 		<module>bukkit-nms-all</module>
 		<module>bukkit-backward-support</module>
+		<!-- Sponge -->
+		<module>sponge-common</module>
+		<module>sponge-mcp-v1_12_R1</module>
+		<module>sponge-mcp-all</module>
 	</modules>
 </project>
