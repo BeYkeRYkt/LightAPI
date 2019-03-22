@@ -53,7 +53,7 @@ public enum ImplementationPlatform {
 	 * Platforms built on SpongePowered.
 	 */
 	SPONGE(3);
-	
+
 	// TODO
 	// GLOWSTONE(4)
 

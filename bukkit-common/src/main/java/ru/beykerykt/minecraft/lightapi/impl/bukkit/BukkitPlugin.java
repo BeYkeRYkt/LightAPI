@@ -85,6 +85,8 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 					version.addExtra(update);
 					player.spigot().sendMessage(version);
 
+					player.sendMessage(ChatColor.AQUA + " Impl: " + ChatColor.WHITE + Build.CURRENT_IMPLEMENTATION);
+
 					player.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
 					player.sendMessage(
 							ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
@@ -138,6 +140,7 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 							+ getDescription().getVersion() + "> ------- ");
 					console.sendMessage(
 							ChatColor.AQUA + " Current version: " + ChatColor.WHITE + getDescription().getVersion());
+					console.sendMessage(ChatColor.AQUA + " Impl: " + ChatColor.WHITE + Build.CURRENT_IMPLEMENTATION);
 					console.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
 					console.sendMessage(
 							ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
@@ -171,9 +174,21 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 			List<IChunkData> list = new CopyOnWriteArrayList<IChunkData>();
 
 			if (prevLoc != null) {
-				LightAPI.deleteLight(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
-						prevLoc.getBlockY(), prevLoc.getBlockZ());
-
+				if (LightAPI.deleteLight(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
+						prevLoc.getBlockY(), prevLoc.getBlockZ())) {
+					if (LightAPI.isRequireManuallySendingChunks()) {
+						for (IChunkData data : LightAPI.collectChunks(prevLoc.getWorld().getName(), prevLoc.getBlockX(),
+								prevLoc.getBlockY(), prevLoc.getBlockZ(), 12 / 2)) {
+							if (!list.contains(data)) {
+								list.add(data);
+							}
+						}
+					}
+				}
+			}
+			prevLoc = event.getClickedBlock().getLocation();
+			if (LightAPI.createLight(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
+					prevLoc.getBlockY(), prevLoc.getBlockZ(), 12)) {
 				if (LightAPI.isRequireManuallySendingChunks()) {
 					for (IChunkData data : LightAPI.collectChunks(prevLoc.getWorld().getName(), prevLoc.getBlockX(),
 							prevLoc.getBlockY(), prevLoc.getBlockZ(), 12 / 2)) {
@@ -181,21 +196,9 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 							list.add(data);
 						}
 					}
-				}
-			}
-			prevLoc = event.getClickedBlock().getLocation();
-			LightAPI.createLight(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
-					prevLoc.getBlockY(), prevLoc.getBlockZ(), 12);
-			if (LightAPI.isRequireManuallySendingChunks()) {
-				for (IChunkData data : LightAPI.collectChunks(prevLoc.getWorld().getName(), prevLoc.getBlockX(),
-						prevLoc.getBlockY(), prevLoc.getBlockZ(), 12 / 2)) {
-					if (!list.contains(data)) {
-						list.add(data);
+					for (IChunkData data : list) {
+						LightAPI.sendChunk(p.getWorld().getName(), data);
 					}
-				}
-
-				for (IChunkData data : list) {
-					LightAPI.sendChunk(p.getWorld().getName(), data);
 				}
 			}
 		}

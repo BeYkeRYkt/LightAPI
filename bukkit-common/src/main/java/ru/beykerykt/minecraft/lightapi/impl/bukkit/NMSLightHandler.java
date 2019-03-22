@@ -16,7 +16,7 @@ public abstract class NMSLightHandler implements IBukkitLightHandler {
 	public ImplementationPlatform getImplementationPlatform() {
 		return ImplementationPlatform.CRAFTBUKKIT;
 	}
-	
+
 	@Override
 	public MappingType getMappingType() {
 		return MappingType.CB;
