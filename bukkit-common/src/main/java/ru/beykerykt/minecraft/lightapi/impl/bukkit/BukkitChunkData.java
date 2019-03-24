@@ -117,6 +117,7 @@ public class BukkitChunkData implements IChunkData {
 		int result = 1;
 		result = prime * result + ((world == null) ? 0 : world.hashCode());
 		result = prime * result + x;
+		result = prime * result + (y >> 4);
 		result = prime * result + z;
 		return result;
 	}
@@ -137,6 +138,8 @@ public class BukkitChunkData implements IChunkData {
 			return false;
 		if (x != other.x)
 			return false;
+		if ((y >> 4) != (other.y >> 4))
+			return false;
 		if (z != other.z)
 			return false;
 		return true;
@@ -144,6 +147,6 @@ public class BukkitChunkData implements IChunkData {
 
 	@Override
 	public String toString() {
-		return "ChunkData [worldName=" + world.getName() + ", x=" + x + ", z=" + z + "]";
+		return "BukkitChunkData [worldName=" + world.getName() + ", x=" + x + ", y=" + y + ", z=" + z + "]";
 	}
 }
