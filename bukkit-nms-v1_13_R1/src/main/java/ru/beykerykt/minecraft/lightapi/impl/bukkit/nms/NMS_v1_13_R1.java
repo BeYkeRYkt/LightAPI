@@ -176,7 +176,7 @@ public class NMS_v1_13_R1 extends NMSLightHandler {
 		if (world == null) {
 			return null;
 		}
-		if (radiusBlocks > 8) {
+		if (radiusBlocks > 8 || radiusBlocks <= 0) {
 			radiusBlocks = 8;
 		}
 		List<IChunkData> list = new CopyOnWriteArrayList<IChunkData>();
