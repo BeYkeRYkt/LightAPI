@@ -70,13 +70,13 @@ public class SpongePlugin {
 
 	private Location<World> prevLoc;
 	// testing
-	private boolean debug = true;
+	private boolean debug = false;
 	private boolean flag = false;
 
 	@Listener
 	public void onPlayerChat(MessageChannelEvent.Chat event, @First final Player p) {
-		// if (!flag || !debug)
-		// return;
+		if (!flag || !debug)
+			return;
 		Text message = event.getRawMessage();
 
 		if (message.toPlain().equals("enable")) {
