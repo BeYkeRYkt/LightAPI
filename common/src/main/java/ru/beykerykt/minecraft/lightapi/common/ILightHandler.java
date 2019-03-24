@@ -99,6 +99,19 @@ public interface ILightHandler {
 	public List<IChunkData> collectChunks(String worldName, int x, int y, int z, int radiusBlocks);
 
 	/**
+	 * 
+	 * Collects in the list СhunkData around the given coordinate. The radius is
+	 * specified in blocks.
+	 * 
+	 * @param worldName - World name
+	 * @param x         - Block X coordinate
+	 * @param y         - Block Y coordinate
+	 * @param z         - Block Z coordinate
+	 * @return List СhunkData around the given coordinate.
+	 */
+	public List<IChunkData> collectChunks(String worldName, int x, int y, int z);
+
+	/**
 	 * Sending a chunk to a player by name
 	 * 
 	 * @param worldName  - World name
@@ -148,10 +161,17 @@ public interface ILightHandler {
 	public void sendChunk(String worldName, int chunkX, int y, int chunkZ);
 
 	/**
-	 * Sending a chunk to world
+	 * Sending a chunk to specific world
 	 * 
 	 * @param worldName - World name
 	 * @param chunkData - {@link IChunkData}
 	 */
 	public void sendChunk(String worldName, IChunkData chunkData);
+
+	/**
+	 * Sending a chunk to world
+	 * 
+	 * @param chunkData - {@link IChunkData}
+	 */
+	public void sendChunk(IChunkData chunkData);
 }

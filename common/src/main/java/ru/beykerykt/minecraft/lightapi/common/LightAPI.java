@@ -128,6 +128,24 @@ public class LightAPI {
 	}
 
 	/**
+	 * 
+	 * Collects in the list СhunkData around the given coordinate. The radius is
+	 * specified in blocks.
+	 * 
+	 * @param worldName - World name
+	 * @param x         - Block X coordinate
+	 * @param y         - Block Y coordinate
+	 * @param z         - Block Z coordinate
+	 * @return List СhunkData around the given coordinate.
+	 */
+	public static List<IChunkData> collectChunks(String worldName, int x, int y, int z) {
+		if (!isInitialized()) {
+			return null;
+		}
+		return getLightHandler().collectChunks(worldName, x, y, z);
+	}
+
+	/**
 	 * Sending a chunk to a player by name
 	 * 
 	 * @param worldName  - World name
@@ -202,7 +220,7 @@ public class LightAPI {
 	}
 
 	/**
-	 * Sending a chunk to world
+	 * Sending a chunk to specific world
 	 * 
 	 * @param worldName - World name
 	 * @param chunkData - {@link IChunkData}
@@ -212,5 +230,18 @@ public class LightAPI {
 			return;
 		}
 		getLightHandler().sendChunk(worldName, chunkData);
+	}
+
+	/**
+	 * Sending a chunk to world
+	 * 
+	 * @param worldName - World name
+	 * @param chunkData - {@link IChunkData}
+	 */
+	public static void sendChunk(IChunkData chunkData) {
+		if (!isInitialized()) {
+			return;
+		}
+		getLightHandler().sendChunk(chunkData);
 	}
 }

@@ -207,6 +207,11 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 	}
 
 	@Override
+	public List<IChunkData> collectChunks(String worldName, int x, int y, int z) {
+		return collectChunks(worldName, x, y, z, 8);
+	}
+
+	@Override
 	public void sendChunk(String worldName, int chunkX, int chunkZ, String playerName) {
 		World world = Bukkit.getWorld(worldName);
 		Player player = Bukkit.getPlayer(playerName);
@@ -337,5 +342,10 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 		}
 		sendChunk(chunkData.getWorld(), chunkData.getChunkX(), chunkData.getChunkYHeight(), chunkData.getChunkZ(),
 				player);
+	}
+
+	@Override
+	public void sendChunk(IChunkData chunkData) {
+		sendChunk(chunkData.getWorldName(), chunkData);
 	}
 }

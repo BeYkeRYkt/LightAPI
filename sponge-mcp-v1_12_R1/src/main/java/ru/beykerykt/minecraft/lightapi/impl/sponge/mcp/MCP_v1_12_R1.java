@@ -189,6 +189,11 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 	}
 
 	@Override
+	public List<IChunkData> collectChunks(String worldName, int x, int y, int z) {
+		return collectChunks(worldName, x, y, z, 8);
+	}
+
+	@Override
 	public void sendChunk(World world, int chunkX, int chunkZ, Player player) {
 		if (world == null || player == null) {
 			return;
@@ -349,6 +354,11 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 				sendChunk(world.get(), chunkData.getChunkX(), chunkData.getChunkZ(), player);
 			}
 		}
+	}
+
+	@Override
+	public void sendChunk(IChunkData chunkData) {
+		sendChunk(chunkData.getWorldName(), chunkData);
 	}
 
 	@Override
