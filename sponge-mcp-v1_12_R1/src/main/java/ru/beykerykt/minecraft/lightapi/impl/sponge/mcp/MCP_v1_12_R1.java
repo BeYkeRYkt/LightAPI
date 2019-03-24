@@ -27,12 +27,13 @@ package ru.beykerykt.minecraft.lightapi.impl.sponge.mcp;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.property.block.GroundLuminanceProperty;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -85,12 +86,37 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 	public boolean recalculateLight(World world, LightType type, int x, int y, int z) {
 		WorldServer mixWorld = (WorldServer) world;
 		BlockPos adjacentPosition = new BlockPos(x, y, z);
+		/**
+		 * With asynchronous lighting, all lighting calculations occur in a separate
+		 * thread. This causes problems with defining changed chunks when calling a
+		 * function from another thread, since the list of changed chunks can be created
+		 * earlier than changes occur that need to be sent to players after placing the
+		 * light source. Use the CompletableFuture features from JRE_1.8 to solve the
+		 * problem.
+		 * 
+		 * Unfortunately, performance tests were not performed.
+		 */
+		if (isAsyncLighting()) {
+			// We hope that the user uses the latest version of Java
+			CompletableFuture<Boolean> future = null;
+			if (type == LightType.BLOCK) {
+				future = CompletableFuture
+						.supplyAsync(() -> mixWorld.checkLightFor(EnumSkyBlock.BLOCK, adjacentPosition));
+			} else if (type == LightType.SKY) {
+				future = CompletableFuture
+						.supplyAsync(() -> mixWorld.checkLightFor(EnumSkyBlock.SKY, adjacentPosition));
+			}
+			try {
+				return future.get();
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+		}
 		EnumSkyBlock esb = EnumSkyBlock.BLOCK;
 		if (type == LightType.SKY) {
 			esb = EnumSkyBlock.SKY;
 		}
-		boolean flag = mixWorld.checkLightFor(esb, adjacentPosition);
-		return flag;
+		return mixWorld.checkLightFor(esb, adjacentPosition);
 	}
 
 	private int distanceToSquared(Chunk from, Chunk to) {
@@ -114,7 +140,27 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 		if (type == LightType.SKY) {
 			esb = EnumSkyBlock.SKY;
 		}
-		mcpWorld.setLightFor(esb, pos, lightlevel);
+
+		/**
+		 * With asynchronous lighting, all lighting calculations occur in a separate
+		 * thread. This causes problems with defining changed chunks when calling a
+		 * function from another thread, since the list of changed chunks can be created
+		 * earlier than changes occur that need to be sent to players after placing the
+		 * light source. Use the CompletableFuture features from JRE_1.8 to solve the
+		 * problem.
+		 */
+		if (isAsyncLighting()) {
+			// We hope that the user uses the latest version of Java
+			CompletableFuture<Void> future = null;
+			if (type == LightType.BLOCK) {
+				future = CompletableFuture.runAsync(() -> mcpWorld.setLightFor(EnumSkyBlock.BLOCK, pos, lightlevel));
+			} else if (type == LightType.SKY) {
+				future = CompletableFuture.runAsync(() -> mcpWorld.setLightFor(EnumSkyBlock.SKY, pos, lightlevel));
+			}
+			future.join(); // wait
+		} else {
+			mcpWorld.setLightFor(esb, pos, lightlevel);
+		}
 
 		Location<World> blockLoc = new Location<World>(world, x, y, z);
 		Location<World> adjacent = getAdjacentAirBlock(blockLoc);
@@ -141,8 +187,6 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 
 		Location<World> blockLoc = new Location<World>(world, x, y, z);
 
-		Task.Builder builder = Sponge.getScheduler().createTaskBuilder();
-		builder.delayTicks(1);
 		// check light
 		Optional<GroundLuminanceProperty> groundLumOpt = blockLoc.getProperty(GroundLuminanceProperty.class);
 		if (groundLumOpt.isPresent()) {
@@ -164,7 +208,7 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 		if (world == null) {
 			return null;
 		}
-		if (radiusBlocks > 8) {
+		if (radiusBlocks > 8 || radiusBlocks <= 0) {
 			radiusBlocks = 8;
 		}
 		List<IChunkData> list = new CopyOnWriteArrayList<IChunkData>();
