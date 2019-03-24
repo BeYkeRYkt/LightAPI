@@ -46,7 +46,7 @@ import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
 
 @Plugin(id = "lightapi", name = "LightAPI", description = "Library for create invisible light", authors = {
-		"BeYkeRYkt" })
+		"BeYkeRYkt" }, version = "Sponge-5.0.0")
 public class SpongePlugin {
 
 	@Inject
