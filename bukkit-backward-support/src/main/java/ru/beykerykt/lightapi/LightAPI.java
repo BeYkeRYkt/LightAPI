@@ -124,7 +124,7 @@ public class LightAPI extends JavaPlugin {
 		List<ChunkInfo> list = new CopyOnWriteArrayList<ChunkInfo>();
 		IBukkitLightHandler handler = (IBukkitLightHandler) ru.beykerykt.minecraft.lightapi.common.LightAPI
 				.getLightHandler();
-		for (IChunkData newData : handler.collectChunks(world, x, y, z, 8)) {
+		for (IChunkData newData : handler.collectChunks(world, x, y, z, 15)) {
 			BukkitChunkData bcd = (BukkitChunkData) newData;
 			ChunkInfo info = new ChunkInfo(world, bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(),
 					bcd.getReceivers());
@@ -174,7 +174,7 @@ public class LightAPI extends JavaPlugin {
 		}
 		IBukkitLightHandler handler = (IBukkitLightHandler) ru.beykerykt.minecraft.lightapi.common.LightAPI
 				.getLightHandler();
-		for (IChunkData newData : handler.collectChunks(world, x, y, z, 8)) {
+		for (IChunkData newData : handler.collectChunks(world, x, y, z, 15)) {
 			if (newData instanceof BukkitChunkData) {
 				BukkitChunkData bcd = (BukkitChunkData) newData;
 				bcd.setReceivers(new ArrayList<Player>(players));
