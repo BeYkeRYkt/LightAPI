@@ -165,8 +165,8 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 	}
 
 	// testing
-	private boolean debug = true;
-	private boolean flag = true;
+	private boolean debug = false;
+	private boolean flag = false;
 
 	private boolean removeLight(Location loc) {
 		List<IChunkData> moddedChunks = new CopyOnWriteArrayList<IChunkData>();
