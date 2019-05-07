@@ -24,73 +24,45 @@
  */
 package ru.beykerykt.minecraft.lightapi.impl.bukkit.nms;
 
-import java.lang.reflect.Field;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
-import net.minecraft.server.v1_12_R1.BlockPosition;
-import net.minecraft.server.v1_12_R1.Chunk;
-import net.minecraft.server.v1_12_R1.EntityPlayer;
-import net.minecraft.server.v1_12_R1.EnumSkyBlock;
-import net.minecraft.server.v1_12_R1.PacketPlayOutMapChunk;
-import net.minecraft.server.v1_12_R1.WorldServer;
+import net.minecraft.server.v1_14_R1.BlockPosition;
+import net.minecraft.server.v1_14_R1.Chunk;
+import net.minecraft.server.v1_14_R1.EntityPlayer;
+import net.minecraft.server.v1_14_R1.EnumSkyBlock;
+import net.minecraft.server.v1_14_R1.IChunkAccess;
+import net.minecraft.server.v1_14_R1.LightEngineBlock;
+import net.minecraft.server.v1_14_R1.LightEngineSky;
+import net.minecraft.server.v1_14_R1.PacketPlayOutLightUpdate;
+import net.minecraft.server.v1_14_R1.WorldServer;
+import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
-import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 import ru.beykerykt.minecraft.lightapi.impl.bukkit.BukkitChunkData;
 import ru.beykerykt.minecraft.lightapi.impl.bukkit.NMSLightHandler;
 
 /**
  * 
- * Interface implementation for NMS (Net Minecraft Server) version 1.12.2
+ * Interface implementation for NMS (Net Minecraft Server) version 1.14
  * 
  * @author BeYkeRYkt
  *
  */
-public class NMS_v1_12_R1 extends NMSLightHandler {
-
-	private static Field cachedChunkModified;
-
-	private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
-			BlockFace.WEST };
-
-	private static Block getAdjacentAirBlock(Block block) {
-		for (BlockFace face : SIDES) {
-			if (block.getY() == 0x0 && face == BlockFace.DOWN) // 0
-				continue;
-			if (block.getY() == 0xFF && face == BlockFace.UP) // 255
-				continue;
-
-			Block candidate = block.getRelative(face);
-
-			if (!candidate.getType().isOccluding()) {
-				return candidate;
-			}
-		}
-		return block;
-	}
-
-	private static Field getChunkField(Object chunk) throws NoSuchFieldException, SecurityException {
-		if (cachedChunkModified == null) {
-			cachedChunkModified = chunk.getClass().getDeclaredField("s");
-			cachedChunkModified.setAccessible(true);
-		}
-		return cachedChunkModified;
-	}
+public class NMS_v1_14_R1 extends NMSLightHandler {
 
 	private int distanceToSquared(Chunk from, Chunk to) {
 		if (!from.world.getWorldData().getName().equals(to.world.getWorldData().getName()))
 			return 100;
-		double var2 = to.locX - from.locX;
-		double var4 = to.locZ - from.locZ;
+		double var2 = to.getPos().x - from.getPos().x;
+		double var4 = to.getPos().z - from.getPos().z;
 		return (int) (var2 * var2 + var4 * var4);
 	}
 
@@ -108,12 +80,7 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 		}
 
 		setRawLightLevel(world, type, blockX, blockY, blockZ, lightlevel);
-
-		Block adjacent = getAdjacentAirBlock(world.getBlockAt(blockX, blockY, blockZ));
-		int ax = adjacent.getX();
-		int ay = adjacent.getY();
-		int az = adjacent.getZ();
-		recalculateLighting(world, type, ax, ay, az);
+		recalculateLighting(world, type, blockX, blockY, blockZ);
 
 		// check light
 		if (world.getBlockAt(blockX, blockY, blockZ).getLightFromBlocks() == lightlevel
@@ -137,6 +104,7 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 		Block candidateBlock = world.getBlockAt(blockX, blockY, blockZ);
 		int oldlightlevel = candidateBlock.getLightFromBlocks();
 
+		setRawLightLevel(world, type, blockX, blockY, blockZ, 0);
 		recalculateLighting(world, type, blockX, blockY, blockZ);
 
 		// check light
@@ -157,17 +125,29 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 		if (world == null || type == null) {
 			return;
 		}
-		if (lightlevel == 0) {
-			recalculateLighting(world, type, blockX, blockY, blockZ);
-			return;
-		}
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
 		BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
-		EnumSkyBlock esb = EnumSkyBlock.BLOCK;
-		if (type == LightType.SKY) {
-			esb = EnumSkyBlock.SKY;
+
+		if (lightlevel <= 0) {
+			if (type == LightType.BLOCK) {
+				LightEngineBlock leb = (LightEngineBlock) worldServer.getChunkProvider().getLightEngine()
+						.a(EnumSkyBlock.BLOCK);
+				leb.a(position);
+			} else {
+				LightEngineSky les = (LightEngineSky) worldServer.getChunkProvider().getLightEngine()
+						.a(EnumSkyBlock.SKY);
+				les.a(position);
+			}
+			return;
 		}
-		worldServer.a(esb, position, lightlevel);
+		if (type == LightType.BLOCK) {
+			LightEngineBlock leb = (LightEngineBlock) worldServer.getChunkProvider().getLightEngine()
+					.a(EnumSkyBlock.BLOCK);
+			leb.a(position, lightlevel);
+		} else {
+			LightEngineSky les = (LightEngineSky) worldServer.getChunkProvider().getLightEngine().a(EnumSkyBlock.SKY);
+			les.a(position, lightlevel);
+		}
 	}
 
 	@Override
@@ -199,22 +179,25 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 	@Override
 	public void recalculateLighting(World world, LightType type, int blockX, int blockY, int blockZ) {
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
-		BlockPosition adjacentPosition = new BlockPosition(blockX, blockY, blockZ);
-		EnumSkyBlock esb = EnumSkyBlock.BLOCK;
-		if (type == LightType.SKY) {
-			esb = EnumSkyBlock.SKY;
+
+		// Do not recalculate if no changes!
+		if (!worldServer.getChunkProvider().getLightEngine().a()) {
+			return;
 		}
-		worldServer.c(esb, adjacentPosition);
+
+		Chunk chunk = worldServer.getChunkAt(blockX >> 4, blockZ >> 4);
+		CompletableFuture<IChunkAccess> future = worldServer.getChunkProvider().getLightEngine().a(chunk, true);
+		worldServer.getMinecraftServer().awaitTasks(future::isDone);
 	}
 
 	@Override
 	public LightingEngineVersion getLightingEngineVersion() {
-		return LightingEngineVersion.V1;
+		return LightingEngineVersion.V2;
 	}
 
 	@Override
 	public boolean isAsyncLighting() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -223,14 +206,14 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 	}
 
 	@Override
-	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int radiusBlocks) {
+	public List<IChunkData> collectChunks(String worldName, int x, int y, int z, int lightlevel) {
 		World world = Bukkit.getWorld(worldName);
-		return collectChunks(world, blockX, blockY, blockZ, radiusBlocks);
+		return collectChunks(world, x, y, z, lightlevel);
 	}
 
 	@Override
-	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ) {
-		return collectChunks(worldName, blockX, blockY, blockZ, 15);
+	public List<IChunkData> collectChunks(String worldName, int x, int y, int z) {
+		return collectChunks(worldName, x, y, z, 15);
 	}
 
 	@Override
@@ -239,7 +222,7 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 	}
 
 	@Override
-	public List<IChunkData> collectChunks(World world, int blockX, int blockY, int blockZ, int lightlevel) {
+	public List<IChunkData> collectChunks(World world, int x, int y, int z, int lightlevel) {
 		if (world == null) {
 			return null;
 		}
@@ -252,18 +235,14 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 			WorldServer nmsWorld = ((CraftWorld) world).getHandle();
 			for (int dX = -radiusBlocks; dX <= radiusBlocks; dX += radiusBlocks) {
 				for (int dZ = -radiusBlocks; dZ <= radiusBlocks; dZ += radiusBlocks) {
-					int chunkX = (blockX + dX) >> 4;
-					int chunkZ = (blockZ + dZ) >> 4;
-					if (nmsWorld.getChunkProviderServer().isLoaded(chunkX, chunkZ)) {
+					int chunkX = (x + dX) >> 4;
+					int chunkZ = (z + dZ) >> 4;
+					if (nmsWorld.isChunkLoaded(chunkX, chunkZ)) {
 						Chunk chunk = nmsWorld.getChunkAt(chunkX, chunkZ);
-						Field isModified = getChunkField(chunk);
-						if (isModified.getBoolean(chunk)) {
-							IChunkData cCoord = new BukkitChunkData(world, chunk.locX, blockY, chunk.locZ,
-									world.getPlayers());
-							if (!list.contains(cCoord)) {
-								list.add(cCoord);
-							}
-							chunk.a(false);
+						IChunkData cCoord = new BukkitChunkData(world, chunk.getPos().x, y, chunk.getPos().z,
+								world.getPlayers());
+						if (!list.contains(cCoord)) {
+							list.add(cCoord);
 						}
 					}
 				}
@@ -283,13 +262,7 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
 		if (distanceToSquared(pChunk, chunk) < 5 * 5) {
-			// Last argument is bit-mask what chunk sections to update. Only lower 16 bits
-			// are used.
-			// There are 16 sections in chunk. Each section height=16. So, y-coordinate
-			// varies from 0 to 255.
-			// Use 0x1ffff instead 0xffff because of little bug in PacketPlayOutMapChunk
-			// constructor.
-			PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, 0x1ffff);
+			PacketPlayOutLightUpdate packet = new PacketPlayOutLightUpdate(chunk.getPos(), chunk.e());
 			human.playerConnection.sendPacket(packet);
 		}
 	}
@@ -303,13 +276,7 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
 		if (distanceToSquared(pChunk, chunk) < 5 * 5) {
-			// Last argument is bit-mask what chunk sections to update. Only lower 16 bits
-			// are used.
-			// There are 16 sections in chunk. Each section height=16. So, y-coordinate
-			// varies from 0 to 255.
-			// We know that max light=15 (15 blocks). So, it is enough to update only 3
-			// sections: y\16-1, y\16, y\16+1
-			PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, (7 << (y >> 4)) >> 1);
+			PacketPlayOutLightUpdate packet = new PacketPlayOutLightUpdate(chunk.getPos(), chunk.e());
 			human.playerConnection.sendPacket(packet);
 		}
 	}

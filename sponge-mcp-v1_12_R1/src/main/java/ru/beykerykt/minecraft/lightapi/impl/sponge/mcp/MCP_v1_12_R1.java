@@ -24,7 +24,6 @@
  */
 package ru.beykerykt.minecraft.lightapi.impl.sponge.mcp;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -47,6 +46,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
+import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 import ru.beykerykt.minecraft.lightapi.common.MappingType;
 import ru.beykerykt.minecraft.lightapi.impl.sponge.SpongeChunkData;
 import ru.beykerykt.minecraft.lightapi.impl.sponge.SpongeLightHandler;
@@ -83,42 +83,6 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 		return blockLoc;
 	}
 
-	public boolean recalculateLight(World world, LightType type, int x, int y, int z) {
-		WorldServer mixWorld = (WorldServer) world;
-		BlockPos adjacentPosition = new BlockPos(x, y, z);
-		/**
-		 * With asynchronous lighting, all lighting calculations occur in a separate
-		 * thread. This causes problems with defining changed chunks when calling a
-		 * function from another thread, since the list of changed chunks can be created
-		 * earlier than changes occur that need to be sent to players after placing the
-		 * light source. Use the CompletableFuture features from JRE_1.8 to solve the
-		 * problem.
-		 * 
-		 * Unfortunately, performance tests were not performed.
-		 */
-		if (isAsyncLighting()) {
-			// We hope that the user uses the latest version of Java
-			CompletableFuture<Boolean> future = null;
-			if (type == LightType.BLOCK) {
-				future = CompletableFuture
-						.supplyAsync(() -> mixWorld.checkLightFor(EnumSkyBlock.BLOCK, adjacentPosition));
-			} else if (type == LightType.SKY) {
-				future = CompletableFuture
-						.supplyAsync(() -> mixWorld.checkLightFor(EnumSkyBlock.SKY, adjacentPosition));
-			}
-			try {
-				return future.get();
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-			}
-		}
-		EnumSkyBlock esb = EnumSkyBlock.BLOCK;
-		if (type == LightType.SKY) {
-			esb = EnumSkyBlock.SKY;
-		}
-		return mixWorld.checkLightFor(esb, adjacentPosition);
-	}
-
 	private int distanceToSquared(Chunk from, Chunk to) {
 		if (!from.getWorld().getWorldInfo().getWorldName().equals(to.getWorld().getWorldInfo().getWorldName()))
 			return 100;
@@ -129,13 +93,83 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 
 	/***********************************************************************************************************************/
 	@Override
-	public boolean createLight(World world, LightType type, int x, int y, int z, int lightlevel) {
+	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+		Optional<World> world = Sponge.getServer().getWorld(worldName);
+		return createLight(world.get(), type, blockX, blockY, blockZ, lightlevel);
+	}
+
+	@Override
+	public boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
 		if (world == null || type == null) {
 			return false;
 		}
 
+		setRawLightLevel(world, type, blockX, blockY, blockZ, lightlevel);
+
+		Location<World> blockLoc = new Location<World>(world, blockX, blockY, blockZ);
+		Location<World> adjacent = getAdjacentAirBlock(blockLoc);
+		int ax = adjacent.getBlockX();
+		int ay = adjacent.getBlockY();
+		int az = adjacent.getBlockZ();
+		recalculateLighting(world, type, ax, ay, az);
+
+		// check light
+		Optional<GroundLuminanceProperty> groundLumOpt = blockLoc.getProperty(GroundLuminanceProperty.class);
+		if (groundLumOpt.isPresent()) {
+			if (groundLumOpt.get().getValue() >= lightlevel) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean deleteLight(String worldName, LightType type, int x, int y, int z) {
+		Optional<World> world = Sponge.getServer().getWorld(worldName);
+		return deleteLight(world.get(), type, x, y, z);
+	}
+
+	@Override
+	public boolean deleteLight(World world, LightType type, int x, int y, int z) {
+		if (world == null || type == null) {
+			return false;
+		}
+
+		Location<World> blockLoc = new Location<World>(world, x, y, z);
+
+		// check light
+		Optional<GroundLuminanceProperty> groundLumOpt = blockLoc.getProperty(GroundLuminanceProperty.class);
+		if (groundLumOpt.isPresent()) {
+			Double oldlightlevel = groundLumOpt.get().getValue();
+			recalculateLighting(world, type, x, y, z);
+
+			groundLumOpt = blockLoc.getProperty(GroundLuminanceProperty.class);
+			if (groundLumOpt.isPresent()) {
+				if (groundLumOpt.get().getValue() != oldlightlevel) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+		Optional<World> world = Sponge.getServer().getWorld(worldName);
+		setRawLightLevel(world.get(), type, blockX, blockY, blockZ, lightlevel);
+	}
+
+	@Override
+	public void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+		if (world == null || type == null) {
+			return;
+		}
+		if (lightlevel == 0) {
+			recalculateLighting(world, type, blockX, blockY, blockZ);
+			return;
+		}
 		WorldServer mcpWorld = (WorldServer) world;
-		BlockPos pos = new BlockPos(x, y, z);
+		BlockPos pos = new BlockPos(blockX, blockY, blockZ);
 		EnumSkyBlock esb = EnumSkyBlock.BLOCK;
 		if (type == LightType.SKY) {
 			esb = EnumSkyBlock.SKY;
@@ -161,53 +195,94 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 		} else {
 			mcpWorld.setLightFor(esb, pos, lightlevel);
 		}
-
-		Location<World> blockLoc = new Location<World>(world, x, y, z);
-		Location<World> adjacent = getAdjacentAirBlock(blockLoc);
-		int ax = adjacent.getBlockX();
-		int ay = adjacent.getBlockY();
-		int az = adjacent.getBlockZ();
-		recalculateLight(world, type, ax, ay, az);
-
-		// check light
-		Optional<GroundLuminanceProperty> groundLumOpt = blockLoc.getProperty(GroundLuminanceProperty.class);
-		if (groundLumOpt.isPresent()) {
-			if (groundLumOpt.get().getValue() >= lightlevel) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@Override
-	public boolean deleteLight(World world, LightType type, int x, int y, int z) {
+	public int getRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+		Optional<World> world = Sponge.getServer().getWorld(worldName);
+		return getRawLightLevel(world.get(), type, blockX, blockY, blockZ);
+	}
+
+	@Override
+	public int getRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ) {
 		if (world == null || type == null) {
-			return false;
+			return 0;
 		}
-
-		Location<World> blockLoc = new Location<World>(world, x, y, z);
-
-		// check light
-		Optional<GroundLuminanceProperty> groundLumOpt = blockLoc.getProperty(GroundLuminanceProperty.class);
-		if (groundLumOpt.isPresent()) {
-			Double oldlightlevel = groundLumOpt.get().getValue();
-			recalculateLight(world, type, x, y, z);
-
-			groundLumOpt = blockLoc.getProperty(GroundLuminanceProperty.class);
-			if (groundLumOpt.isPresent()) {
-				if (groundLumOpt.get().getValue() != oldlightlevel) {
-					return true;
-				}
-			}
+		WorldServer mixWorld = (WorldServer) world;
+		BlockPos adjacentPosition = new BlockPos(blockX, blockY, blockZ);
+		EnumSkyBlock esb = EnumSkyBlock.BLOCK;
+		if (type == LightType.SKY) {
+			esb = EnumSkyBlock.SKY;
 		}
-		return false;
+		return mixWorld.getLightFor(esb, adjacentPosition);
 	}
 
 	@Override
-	public List<IChunkData> collectChunks(World world, int x, int y, int z, int radiusBlocks) {
+	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+		Optional<World> world = Sponge.getServer().getWorld(worldName);
+		recalculateLighting(world.get(), type, blockX, blockY, blockZ);
+	}
+
+	@Override
+	public void recalculateLighting(World world, LightType type, int blockX, int blockY, int blockZ) {
+		WorldServer mixWorld = (WorldServer) world;
+		BlockPos adjacentPosition = new BlockPos(blockX, blockY, blockZ);
+		/**
+		 * With asynchronous lighting, all lighting calculations occur in a separate
+		 * thread. This causes problems with defining changed chunks when calling a
+		 * function from another thread, since the list of changed chunks can be created
+		 * earlier than changes occur that need to be sent to players after placing the
+		 * light source. Use the CompletableFuture features from JRE_1.8 to solve the
+		 * problem.
+		 * 
+		 * Unfortunately, performance tests were not performed.
+		 */
+		if (isAsyncLighting()) {
+			// We hope that the user uses the latest version of Java
+			CompletableFuture<Boolean> future = null;
+			if (type == LightType.BLOCK) {
+				future = CompletableFuture
+						.supplyAsync(() -> mixWorld.checkLightFor(EnumSkyBlock.BLOCK, adjacentPosition));
+			} else if (type == LightType.SKY) {
+				future = CompletableFuture
+						.supplyAsync(() -> mixWorld.checkLightFor(EnumSkyBlock.SKY, adjacentPosition));
+			}
+			try {
+				future.get();
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
+		EnumSkyBlock esb = EnumSkyBlock.BLOCK;
+		if (type == LightType.SKY) {
+			esb = EnumSkyBlock.SKY;
+		}
+		mixWorld.checkLightFor(esb, adjacentPosition);
+	}
+
+	@Override
+	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int radiusBlocks) {
+		Optional<World> world = Sponge.getServer().getWorld(worldName);
+		return collectChunks(world.get(), blockX, blockY, blockZ, radiusBlocks);
+	}
+
+	@Override
+	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ) {
+		return collectChunks(worldName, blockX, blockY, blockZ, 15);
+	}
+
+	@Override
+	public List<IChunkData> collectChunks(World world, int blockX, int blockY, int blockZ) {
+		return collectChunks(world, blockX, blockY, blockZ, 15);
+	}
+
+	@Override
+	public List<IChunkData> collectChunks(World world, int x, int y, int z, int lightlevel) {
 		if (world == null) {
 			return null;
 		}
+		int radiusBlocks = lightlevel / 2;
 		if (radiusBlocks > 8 || radiusBlocks <= 0) {
 			radiusBlocks = 8;
 		}
@@ -233,12 +308,7 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 	}
 
 	@Override
-	public List<IChunkData> collectChunks(String worldName, int x, int y, int z) {
-		return collectChunks(worldName, x, y, z, 8);
-	}
-
-	@Override
-	public void sendChunk(World world, int chunkX, int chunkZ, Player player) {
+	public void sendChanges(World world, int chunkX, int chunkZ, Player player) {
 		if (world == null || player == null) {
 			return;
 		}
@@ -259,14 +329,7 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 	}
 
 	@Override
-	public void sendChunk(World world, int chunkX, int chunkZ, Collection<? extends Player> players) {
-		for (Player player : players) {
-			sendChunk(world, chunkX, chunkZ, player);
-		}
-	}
-
-	@Override
-	public void sendChunk(World world, int chunkX, int y, int chunkZ, Player player) {
+	public void sendChanges(World world, int chunkX, int y, int chunkZ, Player player) {
 		if (world == null || player == null) {
 			return;
 		}
@@ -287,44 +350,12 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 	}
 
 	@Override
-	public void sendChunk(World world, int chunkX, int y, int chunkZ, Collection<? extends Player> players) {
-		for (Player player : players) {
-			sendChunk(world, chunkX, y, chunkZ, player);
-		}
+	public LightingEngineVersion getLightingEngineVersion() {
+		return LightingEngineVersion.V1;
 	}
 
 	@Override
-	public void sendChunk(SpongeChunkData chunkData) {
-		if (chunkData == null) {
-			return;
-		}
-		sendChunk(chunkData.getWorld(), chunkData.getChunkX(), chunkData.getChunkYHeight(), chunkData.getChunkZ(),
-				chunkData.getReceivers());
-	}
-
-	@Override
-	public void sendChunk(SpongeChunkData chunkData, Player player) {
-		if (chunkData == null || player == null) {
-			return;
-		}
-		sendChunk(chunkData.getWorld(), chunkData.getChunkX(), chunkData.getChunkYHeight(), chunkData.getChunkZ(),
-				player);
-	}
-
-	@Override
-	public boolean createLight(String worldName, LightType type, int x, int y, int z, int lightlevel) {
-		Optional<World> world = Sponge.getServer().getWorld(worldName);
-		return createLight(world.get(), type, x, y, z, lightlevel);
-	}
-
-	@Override
-	public boolean deleteLight(String worldName, LightType type, int x, int y, int z) {
-		Optional<World> world = Sponge.getServer().getWorld(worldName);
-		return deleteLight(world.get(), type, x, y, z);
-	}
-
-	@Override
-	public boolean isRequireManuallySendingChunks() {
+	public boolean isRequireManuallySendingChanges() {
 		return true;
 	}
 
@@ -334,79 +365,80 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 	}
 
 	@Override
-	public List<IChunkData> collectChunks(String worldName, int x, int y, int z, int radiusBlocks) {
-		Optional<World> world = Sponge.getServer().getWorld(worldName);
-		return collectChunks(world.get(), x, y, z, radiusBlocks);
-	}
-
-	@Override
-	public void sendChunk(String worldName, int chunkX, int chunkZ, String playerName) {
-		Optional<World> world = Sponge.getServer().getWorld(worldName);
-		Optional<Player> player = Sponge.getServer().getPlayer(playerName);
-		sendChunk(world.get(), chunkX, chunkZ, player.get());
-	}
-
-	@Override
-	public void sendChunk(String worldName, int chunkX, int y, int chunkZ, String playerName) {
-		Optional<World> world = Sponge.getServer().getWorld(worldName);
-		Optional<Player> player = Sponge.getServer().getPlayer(playerName);
-		sendChunk(world.get(), chunkX, y, chunkZ, player.get());
-	}
-
-	@Override
-	public void sendChunk(String worldName, IChunkData chunkData, String playerName) {
-		Optional<World> world = Sponge.getServer().getWorld(worldName);
-		Optional<Player> player = Sponge.getServer().getPlayer(playerName);
-		if (chunkData == null || world == null || player == null) {
-			return;
-		}
-		if (chunkData instanceof SpongeChunkData) {
-			SpongeChunkData bcd = (SpongeChunkData) chunkData;
-			sendChunk(world.get(), bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), player.get());
-		} else {
-			sendChunk(world.get(), chunkData.getChunkX(), chunkData.getChunkZ(), player.get());
-		}
-	}
-
-	@Override
-	public void sendChunk(String worldName, int chunkX, int chunkZ) {
-		Optional<World> world = Sponge.getServer().getWorld(worldName);
-		for (Player player : world.get().getPlayers()) {
-			sendChunk(world.get(), chunkX, chunkZ, player);
-		}
-	}
-
-	@Override
-	public void sendChunk(String worldName, int chunkX, int y, int chunkZ) {
-		Optional<World> world = Sponge.getServer().getWorld(worldName);
-		for (Player player : world.get().getPlayers()) {
-			sendChunk(world.get(), chunkX, y, chunkZ, player);
-		}
-	}
-
-	@Override
-	public void sendChunk(String worldName, IChunkData chunkData) {
-		Optional<World> world = Sponge.getServer().getWorld(worldName);
-		if (chunkData == null || world == null) {
-			return;
-		}
-		if (chunkData instanceof SpongeChunkData) {
-			SpongeChunkData bcd = (SpongeChunkData) chunkData;
-			sendChunk(world.get(), bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), bcd.getReceivers());
-		} else {
-			for (Player player : world.get().getPlayers()) {
-				sendChunk(world.get(), chunkData.getChunkX(), chunkData.getChunkZ(), player);
-			}
-		}
-	}
-
-	@Override
-	public void sendChunk(IChunkData chunkData) {
-		sendChunk(chunkData.getWorldName(), chunkData);
-	}
-
-	@Override
 	public MappingType getMappingType() {
 		return MappingType.SRG; // Because it works so SpongeVanilla
+	}
+
+	@Override
+	public void sendChanges(IChunkData chunkData, Player player) {
+		if (chunkData == null || player == null) {
+			return;
+		}
+		if (chunkData instanceof SpongeChunkData) {
+			SpongeChunkData bcd = (SpongeChunkData) chunkData;
+			sendChanges(bcd.getWorld(), bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), player);
+		}
+	}
+
+	@Override
+	public void sendChanges(World world, int chunkX, int chunkZ) {
+		if (world == null)
+			return;
+		for (Player player : world.getPlayers()) {
+			sendChanges(world, chunkX, chunkZ, player);
+		}
+	}
+
+	@Override
+	public void sendChanges(World world, int chunkX, int blockY, int chunkZ) {
+		if (world == null)
+			return;
+		for (Player player : world.getPlayers()) {
+			sendChanges(world, chunkX, blockY, chunkZ, player);
+		}
+	}
+
+	@Override
+	public void sendChanges(String worldName, int chunkX, int chunkZ, String playerName) {
+		Optional<World> world = Sponge.getServer().getWorld(worldName);
+		Optional<Player> player = Sponge.getServer().getPlayer(playerName);
+		sendChanges(world.get(), chunkX, chunkZ, player.get());
+	}
+
+	@Override
+	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ, String playerName) {
+		Optional<World> world = Sponge.getServer().getWorld(worldName);
+		Optional<Player> player = Sponge.getServer().getPlayer(playerName);
+		sendChanges(world.get(), chunkX, blockY, chunkZ, player.get());
+	}
+
+	@Override
+	public void sendChanges(IChunkData chunkData, String playerName) {
+		Optional<Player> player = Sponge.getServer().getPlayer(playerName);
+		sendChanges(chunkData, player.get());
+	}
+
+	@Override
+	public void sendChanges(String worldName, int chunkX, int chunkZ) {
+		Optional<World> world = Sponge.getServer().getWorld(worldName);
+		sendChanges(world.get(), chunkX, chunkZ);
+	}
+
+	@Override
+	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ) {
+		Optional<World> world = Sponge.getServer().getWorld(worldName);
+		sendChanges(world.get(), chunkX, blockY, chunkZ);
+	}
+
+	@Override
+	public void sendChanges(IChunkData chunkData) {
+		if (chunkData == null)
+			return;
+		if (chunkData instanceof SpongeChunkData) {
+			SpongeChunkData bcd = (SpongeChunkData) chunkData;
+			for (Player player : bcd.getReceivers()) {
+				sendChanges(bcd.getWorld(), bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), player);
+			}
+		}
 	}
 }

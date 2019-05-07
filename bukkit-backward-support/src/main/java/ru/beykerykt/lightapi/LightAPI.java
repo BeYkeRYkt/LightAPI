@@ -154,7 +154,7 @@ public class LightAPI extends JavaPlugin {
 			BukkitChunkData newData = new BukkitChunkData(event.getChunkInfo().getWorld(),
 					event.getChunkInfo().getChunkX(), event.getChunkInfo().getChunkYHeight(),
 					event.getChunkInfo().getChunkZ(), new ArrayList<>(event.getChunkInfo().getReceivers()));
-			handler.sendChunk(newData);
+			handler.sendChanges(newData);
 			return true;
 		}
 		return false;
@@ -178,7 +178,7 @@ public class LightAPI extends JavaPlugin {
 			if (newData instanceof BukkitChunkData) {
 				BukkitChunkData bcd = (BukkitChunkData) newData;
 				bcd.setReceivers(new ArrayList<Player>(players));
-				handler.sendChunk(bcd);
+				handler.sendChanges(bcd);
 			}
 		}
 		return true;
@@ -198,7 +198,9 @@ public class LightAPI extends JavaPlugin {
 		}
 		IBukkitLightHandler handler = (IBukkitLightHandler) ru.beykerykt.minecraft.lightapi.common.LightAPI
 				.getLightHandler();
-		handler.sendChunk(world, x >> 4, y, z >> 4, players);
+		for (Player player : players) {
+			handler.sendChanges(world, x >> 4, y, z >> 4, player);
+		}
 		return true;
 	}
 

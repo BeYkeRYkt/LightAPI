@@ -24,7 +24,6 @@
  */
 package ru.beykerykt.minecraft.lightapi.impl.bukkit;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.bukkit.World;
@@ -45,98 +44,138 @@ public interface IBukkitLightHandler extends ILightHandler {
 
 	/**
 	 * Placement of a certain type of light with a given level of illumination in
-	 * the named world in certain coordinates.
+	 * the named world in certain coordinates with the return result.
 	 * 
 	 * @param world      - World
-	 * @param type       - Lighting type
-	 * @param x          - Block X coordinate
-	 * @param y          - Block Y coordinate
-	 * @param z          - Block Z coordinate
-	 * @param lightlevel - Lighting level. Default range - 0 - 15
-	 * @return true - if the task is completed, false - if not
+	 * @param type       - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
 	 */
-	public boolean createLight(World world, LightType type, int x, int y, int z, int lightlevel);
+	public boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
 
 	/**
-	 * Removing a certain type of light in the named world in certain coordinates.
+	 * Removing a certain type of light in the named world in certain coordinates
+	 * with the return result.
 	 * 
-	 * @param world - World
-	 * @param type  - Lighting type
-	 * @param x     - Block X coordinate
-	 * @param y     - Block Y coordinate
-	 * @param z     - Block Z coordinate
-	 * @return true - if the task is completed, false - if not
+	 * @param world  - World
+	 * @param type   - Light type
+	 * @param blockX - Block X coordinate
+	 * @param blockY - Block Y coordinate
+	 * @param blockZ - Block Z coordinate
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
 	 */
-	public boolean deleteLight(World world, LightType type, int x, int y, int z);
+	public boolean deleteLight(World world, LightType type, int blockX, int blockY, int blockZ);
 
 	/**
+	 * Sets "directly" the level of light in given coordinates without additional
+	 * processing.
 	 * 
-	 * Collects in the list СhunkData around the given coordinate. The radius is
-	 * specified in blocks.
-	 * 
-	 * @param world        - World
-	 * @param x            - Block X coordinate
-	 * @param y            - Block Y coordinate
-	 * @param z            - Block Z coordinate
-	 * @param radiusBlocks - radius
-	 * @return List СhunkData around the given coordinate.
+	 * @param world      - World
+	 * @param type       - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
 	 */
-	public List<IChunkData> collectChunks(World world, int x, int y, int z, int radiusBlocks);
+	public void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
 
 	/**
-	 * Sending a chunk to a player
+	 * Gets "directly" the level of light from given coordinates without additional
+	 * processing.
+	 * 
+	 * @param world  - World
+	 * @param type   - Light type
+	 * @param blockX - Block X coordinate
+	 * @param blockY - Block Y coordinate
+	 * @param blockZ - Block Z coordinate
+	 * @return lightlevel - Light level. Default range - 0 - 15
+	 */
+	public int getRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ);
+
+	/**
+	 * Performs re-illumination of the light in the given coordinates.
+	 * 
+	 * @param world  - World
+	 * @param type   - Light type
+	 * @param blockX - Block X coordinate
+	 * @param blockY - Block Y coordinate
+	 * @param blockZ - Block Z coordinate
+	 */
+	public void recalculateLighting(World world, LightType type, int blockX, int blockY, int blockZ);
+
+	/**
+	 * Collects changed chunks in the list around the given coordinate.
+	 * 
+	 * @param world      - World
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - Light level. Default range - 0 - 15
+	 * @return List changed chunks around the given coordinate.
+	 */
+	public List<IChunkData> collectChunks(World world, int blockX, int blockY, int blockZ, int lightlevel);
+
+	/**
+	 * Collects changed chunks in the list around the given coordinate.
+	 * 
+	 * @param world  - World
+	 * @param blockX - Block X coordinate
+	 * @param blockY - Block Y coordinate
+	 * @param blockZ - Block Z coordinate
+	 * @return List changed chunks around the given coordinate.
+	 */
+	public List<IChunkData> collectChunks(World world, int blockX, int blockY, int blockZ);
+
+	/**
+	 * Sending changes to a player by name
 	 * 
 	 * @param world  - World
 	 * @param chunkX - Chunk X coordinate
 	 * @param chunkZ - Chunk Z coordinate
 	 * @param player - Player
 	 */
-	public void sendChunk(World world, int chunkX, int chunkZ, Player player);
+	public void sendChanges(World world, int chunkX, int chunkZ, Player player);
 
 	/**
-	 * Sending a chunk to a player list
-	 * 
-	 * @param world   - World
-	 * @param chunkX  - Chunk X coordinate
-	 * @param chunkZ  - Chunk Z coordinate
-	 * @param players - Players list
-	 */
-	public void sendChunk(World world, int chunkX, int chunkZ, Collection<? extends Player> players);
-
-	/**
-	 * Sending a chunk to a player
+	 * Sending changes to a player by name
 	 * 
 	 * @param world  - World
 	 * @param chunkX - Chunk X coordinate
-	 * @param y      - Block Y coordinate
+	 * @param blockY - Block Y coordinate
 	 * @param chunkZ - Chunk Z coordinate
 	 * @param player - Player
 	 */
-	public void sendChunk(World world, int chunkX, int y, int chunkZ, Player player);
+	public void sendChanges(World world, int chunkX, int blockY, int chunkZ, Player player);
 
 	/**
-	 * Sending a chunk to a player list
+	 * Sending changes to a player by name
 	 * 
-	 * @param world   - World
-	 * @param chunkX  - Chunk X coordinate
-	 * @param y       - Block Y coordinate
-	 * @param chunkZ  - Chunk Z coordinate
-	 * @param players - Players list
-	 */
-	public void sendChunk(World world, int chunkX, int y, int chunkZ, Collection<? extends Player> players);
-
-	/**
-	 * Sending a chunk to a receivers
-	 *
-	 * @param chunkData - {@link BukkitChunkData}
-	 */
-	public void sendChunk(BukkitChunkData chunkData);
-
-	/**
-	 * Sending a chunk to a player
-	 *
-	 * @param chunkData - {@link BukkitChunkData}
+	 * @param chunkData - {@link IChunkData}
 	 * @param player    - Player
 	 */
-	public void sendChunk(BukkitChunkData chunkData, Player player);
+	public void sendChanges(IChunkData chunkData, Player player);
+
+	/**
+	 * Sending changes to world
+	 * 
+	 * @param world  - World
+	 * @param chunkX - Chunk X coordinate
+	 * @param chunkZ - Chunk Z coordinate
+	 */
+	public void sendChanges(World world, int chunkX, int chunkZ);
+
+	/**
+	 * Sending changes to world
+	 * 
+	 * @param world  - World
+	 * @param chunkX - Chunk X coordinate
+	 * @param blockY - Block Y coordinate
+	 * @param chunkZ - Chunk Z coordinate
+	 */
+	public void sendChanges(World world, int chunkX, int blockY, int chunkZ);
 }

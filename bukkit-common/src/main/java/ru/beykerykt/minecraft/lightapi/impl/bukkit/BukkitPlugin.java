@@ -48,6 +48,7 @@ import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
+import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 
 public class BukkitPlugin extends JavaPlugin implements Listener {
 
@@ -61,7 +62,9 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 
 	@Override
 	public void onEnable() {
-		getServer().getPluginManager().registerEvents(this, this);
+		if (debug) {
+			getServer().getPluginManager().registerEvents(this, this);
+		}
 	}
 
 	public void log(CommandSender sender, String message) {
@@ -162,43 +165,315 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 	}
 
 	// testing
-	private boolean debug = false;
-	private boolean flag = false;
+	private boolean debug = true;
+	private boolean flag = true;
+
+	private boolean removeLight(Location loc) {
+		List<IChunkData> moddedChunks = new CopyOnWriteArrayList<IChunkData>();
+		int oldBlockLight = loc.getBlock().getLightFromBlocks();
+
+		// delete and collect changed chunks
+		if (LightAPI.deleteLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+				loc.getBlockZ())) {
+			if (LightAPI.isRequireManuallySendingChanges()) {
+				for (IChunkData data : LightAPI.collectChunks(loc.getWorld().getName(), loc.getBlockX(),
+						loc.getBlockY(), loc.getBlockZ(), oldBlockLight)) {
+					if (!moddedChunks.contains(data)) {
+						moddedChunks.add(data);
+					}
+				}
+			} else {
+				System.out
+						.println("Seems with sending changes to take care of the server itself. Do not send anything.");
+			}
+		} else {
+			System.out.println("The light level has not changed. Check your arguments.");
+			return false;
+		}
+
+		// send changes
+		for (IChunkData data : moddedChunks) {
+			LightAPI.sendChanges(data);
+		}
+		moddedChunks.clear();
+		return true;
+	}
+
+	private boolean createLight(Location loc, int lightlevel) {
+		List<IChunkData> moddedChunks = new CopyOnWriteArrayList<IChunkData>();
+
+		// create and collect changed chunks
+		if (LightAPI.createLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+				loc.getBlockZ(), lightlevel)) {
+			if (LightAPI.isRequireManuallySendingChanges()) {
+				for (IChunkData data : LightAPI.collectChunks(loc.getWorld().getName(), loc.getBlockX(),
+						loc.getBlockY(), loc.getBlockZ(), lightlevel)) {
+					if (!moddedChunks.contains(data)) {
+						moddedChunks.add(data);
+					}
+				}
+			} else {
+				System.out
+						.println("Seems with sending changes to take care of the server itself. Do not send anything.");
+			}
+		} else {
+			System.out.println("The light level has not changed. Check your arguments.");
+			return false;
+		}
+
+		// send changes
+		for (IChunkData data : moddedChunks) {
+			LightAPI.sendChanges(data);
+		}
+		moddedChunks.clear();
+		return true;
+	}
+
+	private void recreateLight(Location loc) {
+		List<IChunkData> moddedChunks = new CopyOnWriteArrayList<IChunkData>();
+		int oldBlockLight = loc.getBlock().getLightFromBlocks();
+
+		// pre 1.14
+		if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V1) {
+			// delete and collect changed chunks
+			if (LightAPI.deleteLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ())) {
+				if (LightAPI.isRequireManuallySendingChanges()) {
+					for (IChunkData data : LightAPI.collectChunks(loc.getWorld().getName(), loc.getBlockX(),
+							loc.getBlockY(), loc.getBlockZ(), oldBlockLight)) {
+						if (!moddedChunks.contains(data)) {
+							moddedChunks.add(data);
+						}
+					}
+				} else {
+					System.out.println(
+							"Seems with sending changes to take care of the server itself. Do not send anything.");
+				}
+			} else {
+				System.out.println("The light level has not changed. Check your arguments.");
+			}
+
+			// create and collect changed chunks
+			if (LightAPI.createLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ(), oldBlockLight)) {
+				if (LightAPI.isRequireManuallySendingChanges()) {
+					for (IChunkData data : LightAPI.collectChunks(loc.getWorld().getName(), loc.getBlockX(),
+							loc.getBlockY(), loc.getBlockZ(), oldBlockLight)) {
+						if (!moddedChunks.contains(data)) {
+							moddedChunks.add(data);
+						}
+					}
+				} else {
+					System.out.println(
+							"Seems with sending changes to take care of the server itself. Do not send anything.");
+				}
+			} else {
+				System.out.println("The light level has not changed. Check your arguments.");
+			}
+			// 1.14+
+		} else if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V2) {
+			/**
+			 * (IN 1.14) createLight() and deleteLight() are designed to be used once,
+			 * because after you call them, they immediately trigger lighting recalculation.
+			 * To avoid unnecessary recalculations, you can use setRawLightLevel() and call
+			 * recalculateLighting() after all changes.
+			 */
+			// delete and collect changed chunks
+			LightAPI.setRawLightLevel(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ(), 0);
+			if (LightAPI.isRequireManuallySendingChanges()) {
+				for (IChunkData data : LightAPI.collectChunks(loc.getWorld().getName(), loc.getBlockX(),
+						loc.getBlockY(), loc.getBlockZ(), oldBlockLight)) {
+					if (!moddedChunks.contains(data)) {
+						moddedChunks.add(data);
+					}
+				}
+			}
+
+			// create and collect changed chunks
+			LightAPI.setRawLightLevel(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ(), oldBlockLight);
+			LightAPI.recalculateLighting(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ());
+			if (LightAPI.isRequireManuallySendingChanges()) {
+				for (IChunkData data : LightAPI.collectChunks(loc.getWorld().getName(), loc.getBlockX(),
+						loc.getBlockY(), loc.getBlockZ(), oldBlockLight)) {
+					if (!moddedChunks.contains(data)) {
+						moddedChunks.add(data);
+					}
+				}
+			}
+		}
+
+		// send changes
+		for (IChunkData data : moddedChunks) {
+			LightAPI.sendChanges(data);
+		}
+		moddedChunks.clear();
+	}
+
+	private boolean disableHardBench = false;
+
+	/**
+	 * Benchmark
+	 * 
+	 * @param loc - world location
+	 */
+	private void cycleRecreate(Location loc) {
+		int oldBlockLight = 15;
+
+		///////////////////////////////////////////
+		long time_start = System.currentTimeMillis();
+		for (int i = 0; i < 99; i++) {
+			LightAPI.setRawLightLevel(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ(), 0);
+			LightAPI.setRawLightLevel(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ(), oldBlockLight);
+		}
+		if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V1) {
+			LightAPI.createLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ(), oldBlockLight);
+		} else if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V2) {
+			LightAPI.setRawLightLevel(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ(), oldBlockLight);
+			LightAPI.recalculateLighting(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ());
+		}
+		long time_end = System.currentTimeMillis() - time_start;
+		System.out.println("cycle raw + once recalc: " + time_end);
+		LightAPI.deleteLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+				loc.getBlockZ());
+		LightAPI.recalculateLighting(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+				loc.getBlockZ());
+
+		///////////////////////////////////////////
+		time_start = System.currentTimeMillis();
+		for (int i = 0; i < 100; i++) {
+			LightAPI.setRawLightLevel(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ(), 0);
+			if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V1) {
+				LightAPI.createLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+						loc.getBlockZ(), oldBlockLight);
+			} else if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V2) {
+				LightAPI.setRawLightLevel(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+						loc.getBlockZ(), oldBlockLight);
+				LightAPI.recalculateLighting(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(),
+						loc.getBlockY(), loc.getBlockZ());
+			}
+		}
+		time_end = System.currentTimeMillis() - time_start;
+		System.out.println("cycle raw + cycle recalc: " + time_end);
+		LightAPI.deleteLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+				loc.getBlockZ());
+		LightAPI.recalculateLighting(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+				loc.getBlockZ());
+
+		///////////////////////////////////////////
+		if (!disableHardBench) {
+			try {
+				time_start = System.currentTimeMillis();
+				for (int i = 0; i < 100; i++) {
+					if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V1) {
+						LightAPI.deleteLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(),
+								loc.getBlockY(), loc.getBlockZ());
+						LightAPI.createLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(),
+								loc.getBlockY(), loc.getBlockZ(), oldBlockLight);
+					} else if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V2) {
+						LightAPI.setRawLightLevel(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(),
+								loc.getBlockY(), loc.getBlockZ(), 0);
+						LightAPI.recalculateLighting(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(),
+								loc.getBlockY(), loc.getBlockZ());
+						LightAPI.setRawLightLevel(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(),
+								loc.getBlockY(), loc.getBlockZ(), oldBlockLight);
+						LightAPI.recalculateLighting(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(),
+								loc.getBlockY(), loc.getBlockZ());
+					}
+				}
+				time_end = System.currentTimeMillis() - time_start;
+				System.out.println("cycle raw + cycle recalc: " + time_end);
+				LightAPI.deleteLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+						loc.getBlockZ());
+				LightAPI.recalculateLighting(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(),
+						loc.getBlockY(), loc.getBlockZ());
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				disableHardBench = true;
+			}
+		}
+	}
 
 	@EventHandler
 	public void onPlayerClick(PlayerInteractEvent event) {
 		Player p = event.getPlayer();
+		int lightlevel = 12;
 		if (!flag || !debug)
 			return;
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			List<IChunkData> list = new CopyOnWriteArrayList<IChunkData>();
 
-			if (prevLoc != null) {
-				if (LightAPI.deleteLight(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
-						prevLoc.getBlockY(), prevLoc.getBlockZ())) {
-					if (LightAPI.isRequireManuallySendingChunks()) {
+			// pre 1.14
+			if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V1) {
+				if (prevLoc != null) {
+					// remove and collect changed chunks
+					if (LightAPI.deleteLight(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
+							prevLoc.getBlockY(), prevLoc.getBlockZ())) {
+						if (LightAPI.isRequireManuallySendingChanges()) {
+							for (IChunkData data : LightAPI.collectChunks(prevLoc.getWorld().getName(),
+									prevLoc.getBlockX(), prevLoc.getBlockY(), prevLoc.getBlockZ(), lightlevel)) {
+								if (!list.contains(data)) {
+									list.add(data);
+								}
+							}
+						}
+					}
+				}
+				prevLoc = event.getClickedBlock().getLocation();
+				if (LightAPI.createLight(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
+						prevLoc.getBlockY(), prevLoc.getBlockZ(), lightlevel)) {
+					if (LightAPI.isRequireManuallySendingChanges()) {
 						for (IChunkData data : LightAPI.collectChunks(prevLoc.getWorld().getName(), prevLoc.getBlockX(),
-								prevLoc.getBlockY(), prevLoc.getBlockZ(), 12 / 2)) {
+								prevLoc.getBlockY(), prevLoc.getBlockZ(), lightlevel)) {
 							if (!list.contains(data)) {
 								list.add(data);
 							}
 						}
 					}
 				}
-			}
-			prevLoc = event.getClickedBlock().getLocation();
-			if (LightAPI.createLight(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
-					prevLoc.getBlockY(), prevLoc.getBlockZ(), 12)) {
-				if (LightAPI.isRequireManuallySendingChunks()) {
+
+				for (IChunkData data : list) {
+					LightAPI.sendChanges(data);
+				}
+				// 1.14+
+			} else if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V2) {
+				if (prevLoc != null) {
+					// remove and collect changed chunks
+					LightAPI.setRawLightLevel(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
+							prevLoc.getBlockY(), prevLoc.getBlockZ(), 0);
+					if (LightAPI.isRequireManuallySendingChanges()) {
+						for (IChunkData data : LightAPI.collectChunks(prevLoc.getWorld().getName(), prevLoc.getBlockX(),
+								prevLoc.getBlockY(), prevLoc.getBlockZ(), lightlevel)) {
+							if (!list.contains(data)) {
+								list.add(data);
+							}
+						}
+					}
+				}
+				prevLoc = event.getClickedBlock().getLocation();
+				LightAPI.setRawLightLevel(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
+						prevLoc.getBlockY(), prevLoc.getBlockZ(), lightlevel);
+				LightAPI.recalculateLighting(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
+						prevLoc.getBlockY(), prevLoc.getBlockZ());
+				if (LightAPI.isRequireManuallySendingChanges()) {
 					for (IChunkData data : LightAPI.collectChunks(prevLoc.getWorld().getName(), prevLoc.getBlockX(),
-							prevLoc.getBlockY(), prevLoc.getBlockZ(), 12 / 2)) {
+							prevLoc.getBlockY(), prevLoc.getBlockZ(), lightlevel)) {
 						if (!list.contains(data)) {
 							list.add(data);
 						}
 					}
-					for (IChunkData data : list) {
-						LightAPI.sendChunk(p.getWorld().getName(), data);
-					}
+				}
+
+				for (IChunkData data : list) {
+					LightAPI.sendChanges(data);
 				}
 			}
 		}
@@ -216,33 +491,21 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 			p.sendMessage("Block | light from blocks: " + p.getLocation().getBlock().getLightFromBlocks());
 			p.sendMessage("Block | light from sky: " + p.getLocation().getBlock().getLightFromSky());
 		} else if (event.getMessage().equals("create")) {
-			if (LightAPI.createLight(p.getWorld().getName(), LightType.BLOCK, p.getLocation().getBlockX(),
-					p.getLocation().getBlockY(), p.getLocation().getBlockZ(), 15)) {
+			if (createLight(p.getLocation(), 15)) {
 				p.sendMessage("Light placed!");
-
-				if (LightAPI.isRequireManuallySendingChunks()) {
-					for (IChunkData data : LightAPI.collectChunks(p.getWorld().getName(), p.getLocation().getBlockX(),
-							p.getLocation().getBlockY(), p.getLocation().getBlockZ(), 15 / 2)) {
-						LightAPI.sendChunk(p.getWorld().getName(), data);
-					}
-				}
-
 				event.setCancelled(true);
 			}
 		} else if (event.getMessage().equals("delete")) {
-			if (LightAPI.deleteLight(p.getWorld().getName(), LightType.BLOCK, p.getLocation().getBlockX(),
-					p.getLocation().getBlockY(), p.getLocation().getBlockZ())) {
+			if (removeLight(p.getLocation())) {
 				p.sendMessage("Light deleted!");
-
-				if (LightAPI.isRequireManuallySendingChunks()) {
-					for (IChunkData data : LightAPI.collectChunks(p.getWorld().getName(), p.getLocation().getBlockX(),
-							p.getLocation().getBlockY(), p.getLocation().getBlockZ(), 15 / 2)) {
-						LightAPI.sendChunk(p.getWorld().getName(), data);
-					}
-				}
-
 				event.setCancelled(true);
 			}
+		} else if (event.getMessage().equals("recreate")) {
+			recreateLight(p.getLocation());
+			event.setCancelled(true);
+		} else if (event.getMessage().equals("bench")) {
+			cycleRecreate(p.getLocation());
+			event.setCancelled(true);
 		} else if (event.getMessage().equals("disable")) {
 			flag = false;
 			event.setCancelled(true);

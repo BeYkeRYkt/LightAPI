@@ -48,38 +48,95 @@ public class LightAPI {
 
 	/**
 	 * Placement of a certain type of light with a given level of illumination in
-	 * the named world in certain coordinates.
+	 * the named world in certain coordinates with the return result.
 	 * 
 	 * @param worldName  - World name
-	 * @param type       - Lighting type
-	 * @param x          - Block X coordinate
-	 * @param y          - Block Y coordinate
-	 * @param z          - Block Z coordinate
-	 * @param lightlevel - Lighting level. Default range - 0 - 15
-	 * @return true - if the task is completed, false - if not
+	 * @param type       - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
 	 */
-	public static boolean createLight(String worldName, LightType type, int x, int y, int z, int lightlevel) {
+	public static boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
+			int lightlevel) {
 		if (!isInitialized()) {
 			return false;
 		}
-		return getLightHandler().createLight(worldName, type, x, y, z, lightlevel);
+		return getLightHandler().createLight(worldName, type, blockX, blockY, blockZ, lightlevel);
 	}
 
 	/**
-	 * Removing a certain type of light in the named world in certain coordinates.
+	 * Removing a certain type of light in the named world in certain coordinates
+	 * with the return result.
 	 * 
 	 * @param worldName - World name
-	 * @param type      - Lighting type
-	 * @param x         - Block X coordinate
-	 * @param y         - Block Y coordinate
-	 * @param z         - Block Z coordinate
-	 * @return true - if the task is completed, false - if not
+	 * @param type      - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
 	 */
-	public static boolean deleteLight(String worldName, LightType type, int x, int y, int z) {
+	public static boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ) {
 		if (!isInitialized()) {
 			return false;
 		}
-		return getLightHandler().deleteLight(worldName, type, x, y, z);
+		return getLightHandler().deleteLight(worldName, type, blockX, blockY, blockZ);
+	}
+
+	/**
+	 * Sets "directly" the level of light in given coordinates without additional
+	 * processing.
+	 * 
+	 * @param worldName  - World name
+	 * @param type       - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 */
+	public static void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ,
+			int lightlevel) {
+		if (!isInitialized()) {
+			return;
+		}
+		getLightHandler().setRawLightLevel(worldName, type, blockX, blockY, blockZ, lightlevel);
+	}
+
+	/**
+	 * Gets "directly" the level of light from given coordinates without additional
+	 * processing.
+	 * 
+	 * @param worldName - World name
+	 * @param type      - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @return lightlevel - Light level. Default range - 0 - 15
+	 */
+	public static int getRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+		if (!isInitialized()) {
+			return 0;
+		}
+		return getLightHandler().getRawLightLevel(worldName, type, blockX, blockY, blockZ);
+	}
+
+	/**
+	 * Performs re-illumination of the light in the given coordinates.
+	 * 
+	 * @param worldName - World name
+	 * @param type      - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 */
+	public static void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+		if (!isInitialized()) {
+			return;
+		}
+		getLightHandler().recalculateLighting(worldName, type, blockX, blockY, blockZ);
 	}
 
 	/**
@@ -95,153 +152,159 @@ public class LightAPI {
 	}
 
 	/**
-	 * Is it required to send a chunk after placing / removing light.
+	 * Used lighting engine version.
 	 * 
-	 * @return true - if after changing the chunk, the developer needs to manually
-	 *         send the chunks. false - if the server automatically sends it after
-	 *         the change.
+	 * @return One of the proposed options from {@link LightingEngineVersion}
 	 */
-	public static boolean isRequireManuallySendingChunks() {
+	public static LightingEngineVersion getLightingEngineVersion() {
+		if (!isInitialized()) {
+			return LightingEngineVersion.UNKNOWN;
+		}
+		return getLightHandler().getLightingEngineVersion();
+	}
+
+	/**
+	 * Does the calculation of the lighting in a separate thread.
+	 *
+	 * @return true - if the lighting calculation occurs in a separate thread, false
+	 *         - if in main thread.
+	 */
+	public static boolean isAsyncLighting() {
 		if (!isInitialized()) {
 			return false;
 		}
-		return getLightHandler().isRequireManuallySendingChunks();
+		return getLightHandler().isAsyncLighting();
 	}
 
 	/**
+	 * Is it required to send changes after changing light levels.
 	 * 
-	 * Collects in the list СhunkData around the given coordinate. The radius is
-	 * specified in blocks.
-	 * 
-	 * @param worldName    - World name
-	 * @param x            - Block X coordinate
-	 * @param y            - Block Y coordinate
-	 * @param z            - Block Z coordinate
-	 * @param radiusBlocks - radius
-	 * @return List СhunkData around the given coordinate.
+	 * @return true - if after changing light levels, the developer needs to
+	 *         manually send the changes. false - if the server automatically sends
+	 *         it after the change.
 	 */
-	public static List<IChunkData> collectChunks(String worldName, int x, int y, int z, int radiusBlocks) {
+	public static boolean isRequireManuallySendingChanges() {
+		if (!isInitialized()) {
+			return false;
+		}
+		return getLightHandler().isRequireManuallySendingChanges();
+	}
+
+	/**
+	 * Collects changed chunks in the list around the given coordinate.
+	 * 
+	 * @param worldName  - World name
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - Light level. Default range - 0 - 15
+	 * @return List changed chunks around the given coordinate.
+	 */
+	public static List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int lightlevel) {
 		if (!isInitialized()) {
 			return null;
 		}
-		return getLightHandler().collectChunks(worldName, x, y, z, radiusBlocks);
+		return getLightHandler().collectChunks(worldName, blockX, blockY, blockZ, lightlevel);
 	}
 
 	/**
-	 * 
-	 * Collects in the list СhunkData around the given coordinate. The radius is
-	 * specified in blocks.
+	 * Collects changed chunks in the list around the given coordinate.
 	 * 
 	 * @param worldName - World name
-	 * @param x         - Block X coordinate
-	 * @param y         - Block Y coordinate
-	 * @param z         - Block Z coordinate
-	 * @return List СhunkData around the given coordinate.
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @return List changed chunks around the given coordinate.
 	 */
-	public static List<IChunkData> collectChunks(String worldName, int x, int y, int z) {
+	public static List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ) {
 		if (!isInitialized()) {
 			return null;
 		}
-		return getLightHandler().collectChunks(worldName, x, y, z);
+		return getLightHandler().collectChunks(worldName, blockX, blockY, blockZ);
 	}
 
 	/**
-	 * Sending a chunk to a player by name
+	 * Sending changes to a player by name
 	 * 
 	 * @param worldName  - World name
 	 * @param chunkX     - Chunk X coordinate
 	 * @param chunkZ     - Chunk Z coordinate
 	 * @param playerName - Player name
 	 */
-	public static void sendChunk(String worldName, int chunkX, int chunkZ, String playerName) {
+	public static void sendChanges(String worldName, int chunkX, int chunkZ, String playerName) {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().sendChunk(worldName, chunkX, chunkZ, playerName);
+		getLightHandler().sendChanges(worldName, chunkX, chunkZ, playerName);
 	}
 
 	/**
-	 * Sending a chunk to a player by name
+	 * Sending changes to a player by name
 	 * 
 	 * @param worldName  - World name
 	 * @param chunkX     - Chunk X coordinate
-	 * @param y          - Block Y coordinate
+	 * @param blockY     - Block Y coordinate
 	 * @param chunkZ     - Chunk Z coordinate
 	 * @param playerName - Player name
 	 */
-	public static void sendChunk(String worldName, int chunkX, int y, int chunkZ, String playerName) {
+	public static void sendChanges(String worldName, int chunkX, int blockY, int chunkZ, String playerName) {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().sendChunk(worldName, chunkX, y, chunkZ, playerName);
+		getLightHandler().sendChanges(worldName, chunkX, blockY, chunkZ, playerName);
 	}
 
 	/**
-	 * Sending a chunk to a player by name
+	 * Sending changes to a player by name
 	 * 
-	 * @param worldName  - World name
 	 * @param chunkData  - {@link IChunkData}
 	 * @param playerName - Player name
 	 */
-	public static void sendChunk(String worldName, IChunkData chunkData, String playerName) {
+	public static void sendChanges(IChunkData chunkData, String playerName) {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().sendChunk(worldName, chunkData, playerName);
+		getLightHandler().sendChanges(chunkData, playerName);
 	}
 
 	/**
-	 * Sending a chunk to a world
+	 * Sending changes to world
 	 * 
 	 * @param worldName - World name
 	 * @param chunkX    - Chunk X coordinate
 	 * @param chunkZ    - Chunk Z coordinate
 	 */
-	public static void sendChunk(String worldName, int chunkX, int chunkZ) {
+	public static void sendChanges(String worldName, int chunkX, int chunkZ) {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().sendChunk(worldName, chunkX, chunkZ);
+		getLightHandler().sendChanges(worldName, chunkX, chunkZ);
 	}
 
 	/**
-	 * Sending a chunk to a world
+	 * Sending changes to world
 	 * 
 	 * @param worldName - World name
 	 * @param chunkX    - Chunk X coordinate
-	 * @param y         - Block Y coordinate
+	 * @param blockY    - Block Y coordinate
 	 * @param chunkZ    - Chunk Z coordinate
 	 */
-	public static void sendChunk(String worldName, int chunkX, int y, int chunkZ) {
+	public static void sendChanges(String worldName, int chunkX, int blockY, int chunkZ) {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().sendChunk(worldName, chunkX, y, chunkZ);
+		getLightHandler().sendChanges(worldName, chunkX, blockY, chunkZ);
 	}
 
 	/**
-	 * Sending a chunk to specific world
+	 * Sending changes to world
 	 * 
-	 * @param worldName - World name
 	 * @param chunkData - {@link IChunkData}
 	 */
-	public static void sendChunk(String worldName, IChunkData chunkData) {
+	public static void sendChanges(IChunkData chunkData) {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().sendChunk(worldName, chunkData);
-	}
-
-	/**
-	 * Sending a chunk to world
-	 * 
-	 * @param worldName - World name
-	 * @param chunkData - {@link IChunkData}
-	 */
-	public static void sendChunk(IChunkData chunkData) {
-		if (!isInitialized()) {
-			return;
-		}
-		getLightHandler().sendChunk(chunkData);
+		getLightHandler().sendChanges(chunkData);
 	}
 }

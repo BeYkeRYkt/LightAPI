@@ -90,10 +90,10 @@ public class SpongePlugin {
 			World world = (World) playerLoc.getExtent();
 			if (LightAPI.createLight(world.getName(), LightType.BLOCK, playerLoc.getBlockX(), playerLoc.getBlockY(),
 					playerLoc.getBlockZ(), 12)) {
-				if (LightAPI.isRequireManuallySendingChunks()) {
+				if (LightAPI.isRequireManuallySendingChanges()) {
 					for (IChunkData data : LightAPI.collectChunks(world.getName(), playerLoc.getBlockX(),
 							playerLoc.getBlockY(), playerLoc.getBlockZ(), 12 / 2)) {
-						LightAPI.sendChunk(p.getWorld().getName(), data);
+						LightAPI.sendChanges(data);
 					}
 				}
 			}
@@ -102,10 +102,10 @@ public class SpongePlugin {
 			World world = (World) playerLoc.getExtent();
 			if (LightAPI.deleteLight(world.getName(), LightType.BLOCK, playerLoc.getBlockX(), playerLoc.getBlockY(),
 					playerLoc.getBlockZ())) {
-				if (LightAPI.isRequireManuallySendingChunks()) {
+				if (LightAPI.isRequireManuallySendingChanges()) {
 					for (IChunkData data : LightAPI.collectChunks(world.getName(), playerLoc.getBlockX(),
 							playerLoc.getBlockY(), playerLoc.getBlockZ(), 12 / 2)) {
-						LightAPI.sendChunk(p.getWorld().getName(), data);
+						LightAPI.sendChanges(data);
 					}
 				}
 			}
@@ -120,7 +120,7 @@ public class SpongePlugin {
 		List<IChunkData> chunkQueue = new CopyOnWriteArrayList<IChunkData>();
 		if (prevLoc != null) {
 			World world = (World) prevLoc.getExtent();
-			if (LightAPI.isRequireManuallySendingChunks()) {
+			if (LightAPI.isRequireManuallySendingChanges()) {
 				if (LightAPI.deleteLight(world.getName(), LightType.BLOCK, prevLoc.getBlockX(), prevLoc.getBlockY(),
 						prevLoc.getBlockZ())) {
 					for (IChunkData data : LightAPI.collectChunks(world.getName(), prevLoc.getBlockX(),
@@ -135,7 +135,7 @@ public class SpongePlugin {
 		prevLoc = event.getTargetBlock().getLocation().get();
 		World world = (World) prevLoc.getExtent();
 
-		if (LightAPI.isRequireManuallySendingChunks()) {
+		if (LightAPI.isRequireManuallySendingChanges()) {
 			if (LightAPI.createLight(world.getName(), LightType.BLOCK, prevLoc.getBlockX(), prevLoc.getBlockY(),
 					prevLoc.getBlockZ(), 12)) {
 				for (IChunkData data : LightAPI.collectChunks(world.getName(), prevLoc.getBlockX(), prevLoc.getBlockY(),
@@ -146,7 +146,7 @@ public class SpongePlugin {
 				}
 				if (!chunkQueue.isEmpty()) {
 					for (IChunkData data : chunkQueue) {
-						LightAPI.sendChunk(p.getWorld().getName(), data);
+						LightAPI.sendChanges(data);
 					}
 				}
 				chunkQueue.clear();

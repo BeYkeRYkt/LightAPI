@@ -24,62 +24,32 @@
  */
 package ru.beykerykt.minecraft.lightapi.common;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-/**
- * Information about the current LightAPI build
- */
-public class Build {
+public enum LightingEngineVersion {
 
 	/**
-	 * Internal version. May change during any changes in the API. The string should
-	 * change from release to release.
+	 * N/A
 	 */
-	public static final int CURRENT_VERSION = VERSION_CODES.THREE;
+	UNKNOWN(0),
 
 	/**
-	 * Platform that is being used.
+	 * Minecraft version is before 1.14. For update lighting in client-side, need
+	 * send full chunk.
 	 */
-	public static ImplementationPlatform CURRENT_IMPLEMENTATION = LightAPI.getImplementationPlatform();
+	V1(1),
 
-	private static final List<String> map;
+	/**
+	 * Minecraft version is equals or after 1.14. For update lighting in
+	 * client-side, need send only light update packet.
+	 */
+	V2(2);
 
-	static {
-		map = new CopyOnWriteArrayList<String>();
-		map.add(VERSION_CODES.UNKNOWN, "Unknown");
-		map.add(VERSION_CODES.ONE, "One");
-		map.add(VERSION_CODES.TWO, "Two");
-		map.add(VERSION_CODES.THREE, "Three");
+	private final int id;
+
+	private LightingEngineVersion(int id) {
+		this.id = id;
 	}
 
-	public static class VERSION_CODES {
-		/**
-		 * UNKNOWN
-		 */
-		public static int UNKNOWN = 0;
-
-		/**
-		 * 20 March 2019: First version recoded API for LightAPI
-		 */
-		public static int ONE = 1;
-
-		/**
-		 * TBA: Disable LightAPI-Backward. Introduce ImplementationPlatform.
-		 */
-		public static int TWO = 2;
-
-		/**
-		 * TBA: Rewrite API for lighting changes in MC 1.14
-		 */
-		public static int THREE = 3;
-	}
-
-	public static String getNameForInt(int id) {
-		final String name = map.get(id);
-		if (name == null) {
-			return map.get(0);
-		}
-		return name;
+	public int getId() {
+		return id;
 	}
 }

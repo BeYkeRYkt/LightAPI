@@ -27,151 +27,191 @@ package ru.beykerykt.minecraft.lightapi.common;
 import java.util.List;
 
 /**
- *
- * Common interface for various Minecraft server platform implementations
+ * Common interface for various Minecraft server platform implementations.
  *
  * @author BeYkeRYkt
- *
  */
 public interface ILightHandler {
 
 	/**
 	 * Placement of a certain type of light with a given level of illumination in
-	 * the named world in certain coordinates.
+	 * the named world in certain coordinates with the return result.
 	 * 
 	 * @param worldName  - World name
-	 * @param type       - Lighting type
-	 * @param x          - Block X coordinate
-	 * @param y          - Block Y coordinate
-	 * @param z          - Block Z coordinate
-	 * @param lightlevel - Lighting level. Default range - 0 - 15
-	 * @return true - if the task is completed, false - if not
+	 * @param type       - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
 	 */
-	public boolean createLight(String worldName, LightType type, int x, int y, int z, int lightlevel);
+	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
 
 	/**
-	 * Removing a certain type of light in the named world in certain coordinates.
+	 * Removing a certain type of light in the named world in certain coordinates
+	 * with the return result.
 	 * 
 	 * @param worldName - World name
-	 * @param type      - Lighting type
-	 * @param x         - Block X coordinate
-	 * @param y         - Block Y coordinate
-	 * @param z         - Block Z coordinate
-	 * @return true - if the task is completed, false - if not
+	 * @param type      - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
 	 */
-	public boolean deleteLight(String worldName, LightType type, int x, int y, int z);
+	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ);
 
 	/**
-	 * Platform that is being used
+	 * Sets "directly" the level of light in given coordinates without additional
+	 * processing.
+	 * 
+	 * @param worldName  - World name
+	 * @param type       - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 */
+	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
+
+	/**
+	 * Gets "directly" the level of light from given coordinates without additional
+	 * processing.
+	 * 
+	 * @param worldName - World name
+	 * @param type      - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @return lightlevel - Light level. Default range - 0 - 15
+	 */
+	public int getRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ);
+
+	/**
+	 * Performs re-illumination of the light in the given coordinates.
+	 * 
+	 * @param worldName - World name
+	 * @param type      - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 */
+	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ);
+
+	/**
+	 * Platform that is being used.
 	 * 
 	 * @return One of the proposed options from {@link ImplementationPlatform}
 	 */
 	public ImplementationPlatform getImplementationPlatform();
 
 	/**
-	 * Used type of mapping
+	 * Used type of mapping.
 	 * 
 	 * @return One of the proposed options from {@link MappingType}
 	 */
 	public MappingType getMappingType();
 
 	/**
-	 * Is it required to send a chunk after placing/removing light.
+	 * Used lighting engine version.
 	 * 
-	 * @return true - if after changing the chunk, the developer needs to manually
-	 *         send the chunks. false - if the server automatically sends it after
-	 *         the change.
+	 * @return One of the proposed options from {@link LightingEngineVersion}
 	 */
-	public boolean isRequireManuallySendingChunks();
+	public LightingEngineVersion getLightingEngineVersion();
 
 	/**
-	 * 
-	 * Collects in the list СhunkData around the given coordinate. The radius is
-	 * specified in blocks.
-	 * 
-	 * @param worldName    - World name
-	 * @param x            - Block X coordinate
-	 * @param y            - Block Y coordinate
-	 * @param z            - Block Z coordinate
-	 * @param radiusBlocks - radius
-	 * @return List СhunkData around the given coordinate.
+	 * Does the calculation of the lighting in a separate thread.
+	 *
+	 * @return true - if the lighting calculation occurs in a separate thread, false
+	 *         - if in main thread.
 	 */
-	public List<IChunkData> collectChunks(String worldName, int x, int y, int z, int radiusBlocks);
+	public boolean isAsyncLighting();
 
 	/**
+	 * Is it required to send changes after changing light levels.
 	 * 
-	 * Collects in the list СhunkData around the given coordinate. The radius is
-	 * specified in blocks.
+	 * @return true - if after changing light levels, the developer needs to
+	 *         manually send the changes. false - if the server automatically sends
+	 *         it after the change.
+	 */
+	public boolean isRequireManuallySendingChanges();
+
+	/**
+	 * Collects changed chunks in the list around the given coordinate.
+	 * 
+	 * @param worldName  - World name
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - Light level. Default range - 0 - 15
+	 * @return List changed chunks around the given coordinate.
+	 */
+	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int lightlevel);
+
+	/**
+	 * Collects changed chunks in the list around the given coordinate.
 	 * 
 	 * @param worldName - World name
-	 * @param x         - Block X coordinate
-	 * @param y         - Block Y coordinate
-	 * @param z         - Block Z coordinate
-	 * @return List СhunkData around the given coordinate.
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @return List changed chunks around the given coordinate.
 	 */
-	public List<IChunkData> collectChunks(String worldName, int x, int y, int z);
+	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ);
 
 	/**
-	 * Sending a chunk to a player by name
+	 * Sending changes to a player by name
 	 * 
 	 * @param worldName  - World name
 	 * @param chunkX     - Chunk X coordinate
 	 * @param chunkZ     - Chunk Z coordinate
 	 * @param playerName - Player name
 	 */
-	public void sendChunk(String worldName, int chunkX, int chunkZ, String playerName);
+	public void sendChanges(String worldName, int chunkX, int chunkZ, String playerName);
 
 	/**
-	 * Sending a chunk to a player by name
+	 * Sending changes to a player by name
 	 * 
 	 * @param worldName  - World name
 	 * @param chunkX     - Chunk X coordinate
-	 * @param y          - Block Y coordinate
+	 * @param blockY     - Block Y coordinate
 	 * @param chunkZ     - Chunk Z coordinate
 	 * @param playerName - Player name
 	 */
-	public void sendChunk(String worldName, int chunkX, int y, int chunkZ, String playerName);
+	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ, String playerName);
 
 	/**
-	 * Sending a chunk to a player by name
+	 * Sending changes to a player by name
 	 * 
-	 * @param worldName  - World name
 	 * @param chunkData  - {@link IChunkData}
 	 * @param playerName - Player name
 	 */
-	public void sendChunk(String worldName, IChunkData chunkData, String playerName);
+	public void sendChanges(IChunkData chunkData, String playerName);
 
 	/**
-	 * Sending a chunk to world
+	 * Sending changes to world
 	 * 
 	 * @param worldName - World name
 	 * @param chunkX    - Chunk X coordinate
 	 * @param chunkZ    - Chunk Z coordinate
 	 */
-	public void sendChunk(String worldName, int chunkX, int chunkZ);
+	public void sendChanges(String worldName, int chunkX, int chunkZ);
 
 	/**
-	 * Sending a chunk to world
+	 * Sending changes to world
 	 * 
 	 * @param worldName - World name
 	 * @param chunkX    - Chunk X coordinate
-	 * @param y         - Block Y coordinate
+	 * @param blockY    - Block Y coordinate
 	 * @param chunkZ    - Chunk Z coordinate
 	 */
-	public void sendChunk(String worldName, int chunkX, int y, int chunkZ);
+	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ);
 
 	/**
-	 * Sending a chunk to specific world
-	 * 
-	 * @param worldName - World name
-	 * @param chunkData - {@link IChunkData}
-	 */
-	public void sendChunk(String worldName, IChunkData chunkData);
-
-	/**
-	 * Sending a chunk to world
+	 * Sending changes to world
 	 * 
 	 * @param chunkData - {@link IChunkData}
 	 */
-	public void sendChunk(IChunkData chunkData);
+	public void sendChanges(IChunkData chunkData);
 }
