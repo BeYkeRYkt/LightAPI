@@ -70,15 +70,13 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 
 	/***********************************************************************************************************************/
 	@Override
-	public synchronized boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
-			int lightlevel) {
+	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
 		World world = Bukkit.getWorld(worldName);
 		return createLight(world, type, blockX, blockY, blockZ, lightlevel);
 	}
 
 	@Override
-	public synchronized boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ,
-			int lightlevel) {
+	public boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
 		if (world == null || type == null) {
 			return false;
 		}
@@ -95,13 +93,13 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 	}
 
 	@Override
-	public synchronized boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ) {
 		World world = Bukkit.getWorld(worldName);
 		return deleteLight(world, type, blockX, blockY, blockZ);
 	}
 
 	@Override
-	public synchronized boolean deleteLight(World world, LightType type, int blockX, int blockY, int blockZ) {
+	public boolean deleteLight(World world, LightType type, int blockX, int blockY, int blockZ) {
 		if (world == null || type == null) {
 			return false;
 		}
@@ -119,15 +117,13 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 	}
 
 	@Override
-	public synchronized void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ,
-			int lightlevel) {
+	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
 		World world = Bukkit.getWorld(worldName);
 		setRawLightLevel(world, type, blockX, blockY, blockZ, lightlevel);
 	}
 
 	@Override
-	public synchronized void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ,
-			int lightlevel) {
+	public void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
 		if (world == null || type == null) {
 			return;
 		}
@@ -162,13 +158,13 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 	}
 
 	@Override
-	public synchronized int getRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+	public int getRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ) {
 		World world = Bukkit.getWorld(worldName);
 		return getRawLightLevel(world, type, blockX, blockY, blockZ);
 	}
 
 	@Override
-	public synchronized int getRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ) {
+	public int getRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ) {
 		if (world == null || type == null) {
 			return 0;
 		}
@@ -182,13 +178,13 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 	}
 
 	@Override
-	public synchronized void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ) {
 		World world = Bukkit.getWorld(worldName);
 		recalculateLighting(world, type, blockX, blockY, blockZ);
 	}
 
 	@Override
-	public synchronized void recalculateLighting(World world, LightType type, int blockX, int blockY, int blockZ) {
+	public void recalculateLighting(World world, LightType type, int blockX, int blockY, int blockZ) {
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
 
 		// Do not recalculate if no changes!
