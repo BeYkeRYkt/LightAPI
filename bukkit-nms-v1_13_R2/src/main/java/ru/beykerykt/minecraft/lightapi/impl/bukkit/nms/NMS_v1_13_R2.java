@@ -42,9 +42,9 @@ import net.minecraft.server.v1_13_R2.EntityPlayer;
 import net.minecraft.server.v1_13_R2.EnumSkyBlock;
 import net.minecraft.server.v1_13_R2.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_13_R2.WorldServer;
-import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
+import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 import ru.beykerykt.minecraft.lightapi.impl.bukkit.BukkitChunkData;
 import ru.beykerykt.minecraft.lightapi.impl.bukkit.NMSLightHandler;
 

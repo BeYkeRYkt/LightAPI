@@ -45,9 +45,9 @@ import net.minecraft.server.v1_14_R1.LightEngineBlock;
 import net.minecraft.server.v1_14_R1.LightEngineSky;
 import net.minecraft.server.v1_14_R1.PacketPlayOutLightUpdate;
 import net.minecraft.server.v1_14_R1.WorldServer;
-import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
+import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 import ru.beykerykt.minecraft.lightapi.impl.bukkit.BukkitChunkData;
 import ru.beykerykt.minecraft.lightapi.impl.bukkit.NMSLightHandler;
 
@@ -70,13 +70,15 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 
 	/***********************************************************************************************************************/
 	@Override
-	public synchronized boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+	public synchronized boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
+			int lightlevel) {
 		World world = Bukkit.getWorld(worldName);
 		return createLight(world, type, blockX, blockY, blockZ, lightlevel);
 	}
 
 	@Override
-	public synchronized boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+	public synchronized boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ,
+			int lightlevel) {
 		if (world == null || type == null) {
 			return false;
 		}
@@ -117,13 +119,15 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 	}
 
 	@Override
-	public synchronized void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+	public synchronized void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ,
+			int lightlevel) {
 		World world = Bukkit.getWorld(worldName);
 		setRawLightLevel(world, type, blockX, blockY, blockZ, lightlevel);
 	}
 
 	@Override
-	public synchronized void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+	public synchronized void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ,
+			int lightlevel) {
 		if (world == null || type == null) {
 			return;
 		}
