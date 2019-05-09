@@ -157,6 +157,11 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 		if (world == null || type == null) {
 			return;
 		}
+		if (lightlevel < 0) {
+			lightlevel = 0;
+		} else if (lightlevel > 15) {
+			lightlevel = 15;
+		}
 		if (lightlevel == 0) {
 			recalculateLighting(world, type, blockX, blockY, blockZ);
 			return;

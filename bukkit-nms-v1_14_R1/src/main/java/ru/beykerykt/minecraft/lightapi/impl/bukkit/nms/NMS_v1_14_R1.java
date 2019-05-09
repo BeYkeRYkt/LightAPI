@@ -127,10 +127,15 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 		if (world == null || type == null) {
 			return;
 		}
+		if (lightlevel < 0) {
+			lightlevel = 0;
+		} else if (lightlevel > 15) {
+			lightlevel = 15;
+		}
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
 		BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
 
-		if (lightlevel <= 0) {
+		if (lightlevel == 0) {
 			if (type == LightType.BLOCK) {
 				LightEngineBlock leb = (LightEngineBlock) worldServer.getChunkProvider().getLightEngine()
 						.a(EnumSkyBlock.BLOCK);
