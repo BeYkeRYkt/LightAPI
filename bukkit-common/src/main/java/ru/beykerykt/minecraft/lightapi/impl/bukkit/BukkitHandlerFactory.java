@@ -51,9 +51,8 @@ public class BukkitHandlerFactory implements IHandlerFactory {
 			String version = plugin.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
 			plugin.getLogger().info("Your server is using version " + version);
 			try {
-				return (IBukkitLightHandler) Class
-						.forName("ru.beykerykt.minecraft.lightapi.impl.bukkit.nms.NMS_" + version).getConstructor()
-						.newInstance();
+				return (ILightHandler) Class.forName("ru.beykerykt.minecraft.lightapi.impl.bukkit.nms.NMS_" + version)
+						.getConstructor().newInstance();
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException | NoSuchMethodException | SecurityException
 					| ClassNotFoundException e) {
