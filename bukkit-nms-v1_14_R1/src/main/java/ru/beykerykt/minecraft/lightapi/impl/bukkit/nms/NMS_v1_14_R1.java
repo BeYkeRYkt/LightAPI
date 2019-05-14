@@ -24,10 +24,12 @@
  */
 package ru.beykerykt.minecraft.lightapi.impl.bukkit.nms;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -43,7 +45,9 @@ import net.minecraft.server.v1_14_R1.EnumSkyBlock;
 import net.minecraft.server.v1_14_R1.IChunkAccess;
 import net.minecraft.server.v1_14_R1.LightEngineBlock;
 import net.minecraft.server.v1_14_R1.LightEngineSky;
+import net.minecraft.server.v1_14_R1.LightEngineThreaded;
 import net.minecraft.server.v1_14_R1.PacketPlayOutLightUpdate;
+import net.minecraft.server.v1_14_R1.ThreadedMailbox;
 import net.minecraft.server.v1_14_R1.WorldServer;
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
@@ -59,6 +63,42 @@ import ru.beykerykt.minecraft.lightapi.impl.bukkit.NMSLightHandler;
  *
  */
 public class NMS_v1_14_R1 extends NMSLightHandler {
+
+	private static Field cachedMailboxField;
+	private static Method cachedMailboxMethod;
+
+	private static Field getMailboxField(Object lightEngine) throws NoSuchFieldException, SecurityException {
+		if (cachedMailboxField == null) {
+			cachedMailboxField = lightEngine.getClass().getDeclaredField("b");
+			cachedMailboxField.setAccessible(true);
+		}
+		return cachedMailboxField;
+	}
+
+	private static Method getCheckMailboxMethod(Object lightEngine) throws NoSuchMethodException, SecurityException {
+		if (cachedMailboxMethod == null) {
+			cachedMailboxMethod = lightEngine.getClass().getDeclaredMethod("d");
+			cachedMailboxMethod.setAccessible(true);
+		}
+		return cachedMailboxMethod;
+	}
+
+	@SuppressWarnings("unchecked")
+	private boolean isThreadMailboxWorking(LightEngineThreaded lightEngine) {
+		boolean flag = false;
+		try {
+			ThreadedMailbox<Runnable> threadedMailbox = ((ThreadedMailbox<Runnable>) getMailboxField(lightEngine)
+					.get(lightEngine));
+			flag = ((boolean) getCheckMailboxMethod(threadedMailbox).invoke(threadedMailbox, null));
+		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
+		return flag;
+	}
 
 	private int distanceToSquared(Chunk from, Chunk to) {
 		if (!from.world.getWorldData().getName().equals(to.world.getWorldData().getName()))
@@ -134,26 +174,28 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 		}
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
 		BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
+		LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
 
-		if (lightlevel == 0) {
-			if (type == LightType.BLOCK) {
-				LightEngineBlock leb = (LightEngineBlock) worldServer.getChunkProvider().getLightEngine()
-						.a(EnumSkyBlock.BLOCK);
-				leb.a(position);
-			} else {
-				LightEngineSky les = (LightEngineSky) worldServer.getChunkProvider().getLightEngine()
-						.a(EnumSkyBlock.SKY);
-				les.a(position);
+		if (!isThreadMailboxWorking(lightEngine)) {
+			synchronized (this) {
+				if (type == LightType.BLOCK) {
+					LightEngineBlock leb = (LightEngineBlock) worldServer.getChunkProvider().getLightEngine()
+							.a(EnumSkyBlock.BLOCK);
+					if (lightlevel == 0) {
+						leb.a(position);
+					} else {
+						leb.a(position, lightlevel);
+					}
+				} else {
+					LightEngineSky les = (LightEngineSky) worldServer.getChunkProvider().getLightEngine()
+							.a(EnumSkyBlock.SKY);
+					if (lightlevel == 0) {
+						les.a(position);
+					} else {
+						les.a(position, lightlevel);
+					}
+				}
 			}
-			return;
-		}
-		if (type == LightType.BLOCK) {
-			LightEngineBlock leb = (LightEngineBlock) worldServer.getChunkProvider().getLightEngine()
-					.a(EnumSkyBlock.BLOCK);
-			leb.a(position, lightlevel);
-		} else {
-			LightEngineSky les = (LightEngineSky) worldServer.getChunkProvider().getLightEngine().a(EnumSkyBlock.SKY);
-			les.a(position, lightlevel);
 		}
 	}
 
@@ -186,21 +228,39 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 	@Override
 	public void recalculateLighting(World world, LightType type, int blockX, int blockY, int blockZ) {
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
+		LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
 
 		// Do not recalculate if no changes!
 		if (!worldServer.getChunkProvider().getLightEngine().a()) {
 			return;
 		}
 
-		Chunk chunk = worldServer.getChunkAt(blockX >> 4, blockZ >> 4);
-		CompletableFuture<IChunkAccess> future = worldServer.getChunkProvider().getLightEngine().a(chunk, true);
 		if (worldServer.getMinecraftServer().isMainThread()) {
-			worldServer.getMinecraftServer().awaitTasks(future::isDone);
+			// no relight while ThreadMailbox is working
+			if (!isThreadMailboxWorking(lightEngine)) {
+				if (type == LightType.BLOCK) {
+					LightEngineBlock leb = (LightEngineBlock) worldServer.getChunkProvider().getLightEngine()
+							.a(EnumSkyBlock.BLOCK);
+					leb.a(Integer.MAX_VALUE, true, true);
+				} else {
+					LightEngineSky les = (LightEngineSky) worldServer.getChunkProvider().getLightEngine()
+							.a(EnumSkyBlock.SKY);
+					les.a(Integer.MAX_VALUE, true, true);
+				}
+			}
 		} else {
-			try {
-				future.get();
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
+			if (!isThreadMailboxWorking(lightEngine)) {
+				try {
+					synchronized (this) {
+						Chunk chunk = worldServer.getChunkAt(blockX >> 4, blockZ >> 4);
+						CompletableFuture<IChunkAccess> future = worldServer.getChunkProvider().getLightEngine()
+								.a(chunk, true);
+						future.join();
+					}
+				} catch (Exception e) {
+					System.out.println("Ah shit, here we go again");
+					e.printStackTrace();
+				}
 			}
 		}
 	}
