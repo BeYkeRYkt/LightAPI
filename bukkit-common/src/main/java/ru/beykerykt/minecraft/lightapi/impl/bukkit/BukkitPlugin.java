@@ -30,6 +30,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -53,6 +55,8 @@ import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 
 public class BukkitPlugin extends JavaPlugin implements Listener {
 
+	private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
+			BlockFace.WEST };
 	private Location prevLoc;
 
 	@Override
@@ -66,6 +70,22 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 		if (debug) {
 			getServer().getPluginManager().registerEvents(this, this);
 		}
+	}
+
+	public static Block getAdjacentAirBlock(Block block) {
+		for (BlockFace face : SIDES) {
+			if (block.getY() == 0x0 && face == BlockFace.DOWN) // 0
+				continue;
+			if (block.getY() == 0xFF && face == BlockFace.UP) // 255
+				continue;
+
+			Block candidate = block.getRelative(face);
+
+			if (!candidate.getType().isOccluding()) {
+				return candidate;
+			}
+		}
+		return block;
 	}
 
 	public void log(CommandSender sender, String message) {

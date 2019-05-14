@@ -31,7 +31,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -46,6 +45,7 @@ import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
 import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 import ru.beykerykt.minecraft.lightapi.impl.bukkit.BukkitChunkData;
+import ru.beykerykt.minecraft.lightapi.impl.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.impl.bukkit.NMSLightHandler;
 
 /**
@@ -58,25 +58,6 @@ import ru.beykerykt.minecraft.lightapi.impl.bukkit.NMSLightHandler;
 public class NMS_v1_12_R1 extends NMSLightHandler {
 
 	private static Field cachedChunkModified;
-
-	private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
-			BlockFace.WEST };
-
-	private static Block getAdjacentAirBlock(Block block) {
-		for (BlockFace face : SIDES) {
-			if (block.getY() == 0x0 && face == BlockFace.DOWN) // 0
-				continue;
-			if (block.getY() == 0xFF && face == BlockFace.UP) // 255
-				continue;
-
-			Block candidate = block.getRelative(face);
-
-			if (!candidate.getType().isOccluding()) {
-				return candidate;
-			}
-		}
-		return block;
-	}
 
 	private static Field getChunkField(Object chunk) throws NoSuchFieldException, SecurityException {
 		if (cachedChunkModified == null) {
@@ -109,7 +90,7 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 
 		setRawLightLevel(world, type, blockX, blockY, blockZ, lightlevel);
 
-		Block adjacent = getAdjacentAirBlock(world.getBlockAt(blockX, blockY, blockZ));
+		Block adjacent = BukkitPlugin.getAdjacentAirBlock(world.getBlockAt(blockX, blockY, blockZ));
 		int ax = adjacent.getX();
 		int ay = adjacent.getY();
 		int az = adjacent.getZ();
@@ -228,22 +209,6 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 	}
 
 	@Override
-	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int radiusBlocks) {
-		World world = Bukkit.getWorld(worldName);
-		return collectChunks(world, blockX, blockY, blockZ, radiusBlocks);
-	}
-
-	@Override
-	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ) {
-		return collectChunks(worldName, blockX, blockY, blockZ, 15);
-	}
-
-	@Override
-	public List<IChunkData> collectChunks(World world, int blockX, int blockY, int blockZ) {
-		return collectChunks(world, blockX, blockY, blockZ, 15);
-	}
-
-	@Override
 	public List<IChunkData> collectChunks(World world, int blockX, int blockY, int blockZ, int lightlevel) {
 		if (world == null) {
 			return null;
@@ -316,79 +281,6 @@ public class NMS_v1_12_R1 extends NMSLightHandler {
 			// sections: y\16-1, y\16, y\16+1
 			PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, (7 << (y >> 4)) >> 1);
 			human.playerConnection.sendPacket(packet);
-		}
-	}
-
-	@Override
-	public void sendChanges(IChunkData chunkData, Player player) {
-		if (chunkData == null || player == null) {
-			return;
-		}
-		if (chunkData instanceof BukkitChunkData) {
-			BukkitChunkData bcd = (BukkitChunkData) chunkData;
-			sendChanges(bcd.getWorld(), bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), player);
-		}
-	}
-
-	@Override
-	public void sendChanges(World world, int chunkX, int chunkZ) {
-		if (world == null)
-			return;
-		for (Player player : world.getPlayers()) {
-			sendChanges(world, chunkX, chunkZ, player);
-		}
-	}
-
-	@Override
-	public void sendChanges(World world, int chunkX, int blockY, int chunkZ) {
-		if (world == null)
-			return;
-		for (Player player : world.getPlayers()) {
-			sendChanges(world, chunkX, blockY, chunkZ, player);
-		}
-	}
-
-	@Override
-	public void sendChanges(String worldName, int chunkX, int chunkZ, String playerName) {
-		World world = Bukkit.getWorld(worldName);
-		Player player = Bukkit.getPlayer(playerName);
-		sendChanges(world, chunkX, chunkZ, player);
-	}
-
-	@Override
-	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ, String playerName) {
-		World world = Bukkit.getWorld(worldName);
-		Player player = Bukkit.getPlayer(playerName);
-		sendChanges(world, chunkX, blockY, chunkZ, player);
-	}
-
-	@Override
-	public void sendChanges(IChunkData chunkData, String playerName) {
-		Player player = Bukkit.getPlayer(playerName);
-		sendChanges(chunkData, player);
-	}
-
-	@Override
-	public void sendChanges(String worldName, int chunkX, int chunkZ) {
-		World world = Bukkit.getWorld(worldName);
-		sendChanges(world, chunkX, chunkZ);
-	}
-
-	@Override
-	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ) {
-		World world = Bukkit.getWorld(worldName);
-		sendChanges(world, chunkX, blockY, chunkZ);
-	}
-
-	@Override
-	public void sendChanges(IChunkData chunkData) {
-		if (chunkData == null)
-			return;
-		if (chunkData instanceof BukkitChunkData) {
-			BukkitChunkData bcd = (BukkitChunkData) chunkData;
-			for (Player player : bcd.getReceivers()) {
-				sendChanges(bcd.getWorld(), bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), player);
-			}
 		}
 	}
 }
