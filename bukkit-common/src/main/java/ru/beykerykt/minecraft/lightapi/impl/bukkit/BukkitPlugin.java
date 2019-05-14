@@ -61,8 +61,8 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 
 	// testing
 	private Location prevLoc;
-	private boolean debug = true;
-	private boolean flag = true;
+	private boolean debug = false;
+	private boolean flag = false;
 
 	@Override
 	public void onLoad() {
