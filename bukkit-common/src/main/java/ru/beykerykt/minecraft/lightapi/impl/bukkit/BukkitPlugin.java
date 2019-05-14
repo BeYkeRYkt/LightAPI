@@ -55,12 +55,18 @@ import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 
 public class BukkitPlugin extends JavaPlugin implements Listener {
 
+	private static BukkitPlugin plugin;
 	private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
 			BlockFace.WEST };
+
+	// testing
 	private Location prevLoc;
+	private boolean debug = true;
+	private boolean flag = true;
 
 	@Override
 	public void onLoad() {
+		this.plugin = this;
 		// set server implementation
 		LightAPI.setLightHandler(new BukkitHandlerFactory(this).createHandler());
 	}
@@ -70,6 +76,10 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 		if (debug) {
 			getServer().getPluginManager().registerEvents(this, this);
 		}
+	}
+
+	public static BukkitPlugin getInstance() {
+		return plugin;
 	}
 
 	public static Block getAdjacentAirBlock(Block block) {
@@ -184,10 +194,6 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 		}
 		return true;
 	}
-
-	// testing
-	private boolean debug = false;
-	private boolean flag = false;
 
 	private boolean removeLight(Location loc) {
 		List<IChunkData> moddedChunks = new CopyOnWriteArrayList<IChunkData>();
@@ -361,7 +367,7 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 					loc.getBlockZ());
 		}
 		long time_end = System.currentTimeMillis() - time_start;
-		System.out.println("cycle raw + once recalc: " + time_end);
+		System.out.println("< #1 cycle raw + once recalc: " + time_end);
 		LightAPI.deleteLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
 				loc.getBlockZ());
 		LightAPI.recalculateLighting(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
@@ -383,7 +389,7 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 			}
 		}
 		time_end = System.currentTimeMillis() - time_start;
-		System.out.println("cycle raw + cycle recalc: " + time_end);
+		System.out.println("< #2 cycle raw + cycle recalc: " + time_end);
 		LightAPI.deleteLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
 				loc.getBlockZ());
 		LightAPI.recalculateLighting(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
@@ -411,7 +417,7 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 					}
 				}
 				time_end = System.currentTimeMillis() - time_start;
-				System.out.println("cycle raw + cycle recalc: " + time_end);
+				System.out.println("< #3 cycle raw + cycle recalc: " + time_end);
 				LightAPI.deleteLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
 						loc.getBlockZ());
 				LightAPI.recalculateLighting(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(),
@@ -425,7 +431,6 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void onPlayerClick(PlayerInteractEvent event) {
-		Player p = event.getPlayer();
 		int lightlevel = 12;
 		if (!flag || !debug)
 			return;
@@ -566,6 +571,48 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 					for (IChunkData data : list) {
 						LightAPI.sendChanges(data);
 					}
+				}
+			} else if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
+				List<IChunkData> list = new CopyOnWriteArrayList<IChunkData>();
+
+				// pre 1.14
+				if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V1) {
+					if (prevLoc != null) {
+						int blockLight = prevLoc.getBlock().getLightFromBlocks();
+						// remove and collect changed chunks
+						if (LightAPI.deleteLight(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
+								prevLoc.getBlockY(), prevLoc.getBlockZ())) {
+							if (LightAPI.isRequireManuallySendingChanges()) {
+								for (IChunkData data : LightAPI.collectChunks(prevLoc.getWorld().getName(),
+										prevLoc.getBlockX(), prevLoc.getBlockY(), prevLoc.getBlockZ(), blockLight)) {
+									if (!list.contains(data)) {
+										list.add(data);
+									}
+								}
+							}
+						}
+					}
+					// 1.14+
+				} else if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V2) {
+					if (prevLoc != null) {
+						// remove and collect changed chunks
+						int blockLight = event.getClickedBlock().getLightFromBlocks();
+						LightAPI.setRawLightLevel(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
+								prevLoc.getBlockY(), prevLoc.getBlockZ(), 0);
+						LightAPI.recalculateLighting(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
+								prevLoc.getBlockY(), prevLoc.getBlockZ());
+						if (LightAPI.isRequireManuallySendingChanges()) {
+							for (IChunkData data : LightAPI.collectChunks(prevLoc.getWorld().getName(),
+									prevLoc.getBlockX(), prevLoc.getBlockY(), prevLoc.getBlockZ(), blockLight)) {
+								if (!list.contains(data)) {
+									list.add(data);
+								}
+							}
+						}
+					}
+				}
+				for (IChunkData data : list) {
+					LightAPI.sendChanges(data);
 				}
 			}
 		}
