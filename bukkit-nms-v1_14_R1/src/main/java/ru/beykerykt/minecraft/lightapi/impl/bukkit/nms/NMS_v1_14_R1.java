@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -66,6 +67,7 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 
 	private static Field cachedMailboxField;
 	private static Method cachedMailboxMethod;
+	private ReentrantLock locker = new ReentrantLock();
 
 	private static Field getMailboxField(Object lightEngine) throws NoSuchFieldException, SecurityException {
 		if (cachedMailboxField == null) {
@@ -176,24 +178,21 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 		BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
 		LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
 
+		// no relight while ThreadMailbox is working
 		if (!isThreadMailboxWorking(lightEngine)) {
-			synchronized (this) {
-				if (type == LightType.BLOCK) {
-					LightEngineBlock leb = (LightEngineBlock) worldServer.getChunkProvider().getLightEngine()
-							.a(EnumSkyBlock.BLOCK);
-					if (lightlevel == 0) {
-						leb.a(position);
-					} else {
-						leb.a(position, lightlevel);
-					}
+			if (type == LightType.BLOCK) {
+				LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
+				if (lightlevel == 0) {
+					leb.a(position);
 				} else {
-					LightEngineSky les = (LightEngineSky) worldServer.getChunkProvider().getLightEngine()
-							.a(EnumSkyBlock.SKY);
-					if (lightlevel == 0) {
-						les.a(position);
-					} else {
-						les.a(position, lightlevel);
-					}
+					leb.a(position, lightlevel);
+				}
+			} else {
+				LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
+				if (lightlevel == 0) {
+					les.a(position);
+				} else {
+					les.a(position, lightlevel);
 				}
 			}
 		}
@@ -231,7 +230,7 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 		LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
 
 		// Do not recalculate if no changes!
-		if (!worldServer.getChunkProvider().getLightEngine().a()) {
+		if (!lightEngine.a()) {
 			return;
 		}
 
@@ -239,28 +238,27 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 			// no relight while ThreadMailbox is working
 			if (!isThreadMailboxWorking(lightEngine)) {
 				if (type == LightType.BLOCK) {
-					LightEngineBlock leb = (LightEngineBlock) worldServer.getChunkProvider().getLightEngine()
-							.a(EnumSkyBlock.BLOCK);
+					LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
 					leb.a(Integer.MAX_VALUE, true, true);
 				} else {
-					LightEngineSky les = (LightEngineSky) worldServer.getChunkProvider().getLightEngine()
-							.a(EnumSkyBlock.SKY);
+					LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
 					les.a(Integer.MAX_VALUE, true, true);
 				}
 			}
 		} else {
-			if (!isThreadMailboxWorking(lightEngine)) {
-				try {
-					synchronized (this) {
-						Chunk chunk = worldServer.getChunkAt(blockX >> 4, blockZ >> 4);
-						CompletableFuture<IChunkAccess> future = worldServer.getChunkProvider().getLightEngine()
-								.a(chunk, true);
-						future.join();
-					}
-				} catch (Exception e) {
-					System.out.println("Ah shit, here we go again");
-					e.printStackTrace();
+			locker.lock();
+			try {
+				// no relight while ThreadMailbox is working
+				if (!isThreadMailboxWorking(lightEngine)) {
+					Chunk chunk = worldServer.getChunkAt(blockX >> 4, blockZ >> 4);
+					CompletableFuture<IChunkAccess> future = lightEngine.a(chunk, true);
+					future.join();
 				}
+			} catch (Exception e) {
+				System.out.println("Ah shit, here we go again");
+				e.printStackTrace();
+			} finally {
+				locker.unlock();
 			}
 		}
 	}
