@@ -36,7 +36,7 @@ public class Build {
 	 * Internal version. May change during any changes in the API. The string should
 	 * change from release to release.
 	 */
-	public static final int CURRENT_VERSION = VERSION_CODES.THREE;
+	public static final int CURRENT_VERSION = VERSION_CODES.TWO;
 
 	/**
 	 * Platform that is being used.
@@ -65,12 +65,13 @@ public class Build {
 		public static int ONE = 1;
 
 		/**
-		 * TBA: Disable LightAPI-Backward. Introduce ImplementationPlatform.
+		 * TBA: Disable LightAPI-Backward. Introduce ImplementationPlatform. Rewrite API
+		 * for lighting changes in MC 1.14.
 		 */
 		public static int TWO = 2;
 
 		/**
-		 * TBA: Rewrite API for lighting changes in MC 1.14
+		 * TBA: N/A
 		 */
 		public static int THREE = 3;
 	}
