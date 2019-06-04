@@ -68,6 +68,28 @@ public class LightAPI {
 	}
 
 	/**
+	 * Placement of a certain type of light with a given level of illumination in
+	 * the named world in certain coordinates with the return result.
+	 * 
+	 * @param worldName  - World name
+	 * @param type       - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @param callback   - Callback interface
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
+	 */
+	public static boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
+			int lightlevel, LCallback callback) {
+		if (!isInitialized()) {
+			return false;
+		}
+		return getLightHandler().createLight(worldName, type, blockX, blockY, blockZ, lightlevel, callback);
+	}
+
+	/**
 	 * Removing a certain type of light in the named world in certain coordinates
 	 * with the return result.
 	 * 
@@ -87,6 +109,27 @@ public class LightAPI {
 	}
 
 	/**
+	 * Removing a certain type of light in the named world in certain coordinates
+	 * with the return result.
+	 * 
+	 * @param worldName - World name
+	 * @param type      - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @param callback  - Callback interface
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
+	 */
+	public static boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
+			LCallback callback) {
+		if (!isInitialized()) {
+			return false;
+		}
+		return getLightHandler().deleteLight(worldName, type, blockX, blockY, blockZ, callback);
+	}
+
+	/**
 	 * Sets "directly" the level of light in given coordinates without additional
 	 * processing.
 	 * 
@@ -103,6 +146,26 @@ public class LightAPI {
 			return;
 		}
 		getLightHandler().setRawLightLevel(worldName, type, blockX, blockY, blockZ, lightlevel);
+	}
+
+	/**
+	 * Sets "directly" the level of light in given coordinates without additional
+	 * processing.
+	 * 
+	 * @param worldName  - World name
+	 * @param type       - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @param callback   - ???
+	 */
+	public static void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ,
+			int lightlevel, LCallback callback) {
+		if (!isInitialized()) {
+			return;
+		}
+		getLightHandler().setRawLightLevel(worldName, type, blockX, blockY, blockZ, lightlevel, callback);
 	}
 
 	/**
@@ -137,6 +200,24 @@ public class LightAPI {
 			return;
 		}
 		getLightHandler().recalculateLighting(worldName, type, blockX, blockY, blockZ);
+	}
+
+	/**
+	 * Performs re-illumination of the light in the given coordinates.
+	 * 
+	 * @param worldName - World name
+	 * @param type      - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @param callback  - ???
+	 */
+	public static void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ,
+			LCallback callback) {
+		if (!isInitialized()) {
+			return;
+		}
+		getLightHandler().recalculateLighting(worldName, type, blockX, blockY, blockZ, callback);
 	}
 
 	/**
