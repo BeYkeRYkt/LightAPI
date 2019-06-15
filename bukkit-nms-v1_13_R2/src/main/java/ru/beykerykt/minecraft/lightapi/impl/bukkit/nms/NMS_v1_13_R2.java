@@ -28,7 +28,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
@@ -42,6 +41,9 @@ import net.minecraft.server.v1_13_R2.EnumSkyBlock;
 import net.minecraft.server.v1_13_R2.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_13_R2.WorldServer;
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
+import ru.beykerykt.minecraft.lightapi.common.LCallback;
+import ru.beykerykt.minecraft.lightapi.common.LReason;
+import ru.beykerykt.minecraft.lightapi.common.LStage;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
 import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
 import ru.beykerykt.minecraft.lightapi.impl.bukkit.BukkitChunkData;
@@ -77,65 +79,74 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 
 	/***********************************************************************************************************************/
 	@Override
-	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
-		World world = Bukkit.getWorld(worldName);
-		return createLight(world, type, blockX, blockY, blockZ, lightlevel);
-	}
-
-	@Override
-	public boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+	public boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
+			LCallback callback) {
 		if (world == null || type == null) {
+			if (callback != null) {
+				callback.onFailed(world.getName(), type, blockX, blockY, blockZ, lightlevel, LStage.CREATING,
+						LReason.NULL_ARGS);
+			}
 			return false;
 		}
 
-		setRawLightLevel(world, type, blockX, blockY, blockZ, lightlevel);
+		setRawLightLevel(world, type, blockX, blockY, blockZ, lightlevel, callback);
 
 		Block adjacent = BukkitPlugin.getAdjacentAirBlock(world.getBlockAt(blockX, blockY, blockZ));
 		int ax = adjacent.getX();
 		int ay = adjacent.getY();
 		int az = adjacent.getZ();
-		recalculateLighting(world, type, ax, ay, az);
+		recalculateLighting(world, type, ax, ay, az, callback);
 
 		// check light
 		if (world.getBlockAt(blockX, blockY, blockZ).getLightFromBlocks() == lightlevel
 				|| world.getBlockAt(blockX, blockY, blockZ).getLightFromBlocks() >= lightlevel) {
+			if (callback != null) {
+				callback.onSuccess(world.getName(), type, blockX, blockY, blockZ, lightlevel, LStage.CREATING);
+			}
 			return true;
+		}
+		if (callback != null) {
+			callback.onFailed(world.getName(), type, blockX, blockY, blockZ, lightlevel, LStage.CREATING,
+					LReason.NO_LIGHT_CHANGES);
 		}
 		return false;
 	}
 
 	@Override
-	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ) {
-		World world = Bukkit.getWorld(worldName);
-		return deleteLight(world, type, blockX, blockY, blockZ);
-	}
-
-	@Override
-	public boolean deleteLight(World world, LightType type, int blockX, int blockY, int blockZ) {
+	public boolean deleteLight(World world, LightType type, int blockX, int blockY, int blockZ, LCallback callback) {
 		if (world == null || type == null) {
+			if (callback != null) {
+				callback.onFailed(world.getName(), type, blockX, blockY, blockZ, 0, LStage.DELETING, LReason.NULL_ARGS);
+			}
 			return false;
 		}
 		Block candidateBlock = world.getBlockAt(blockX, blockY, blockZ);
 		int oldlightlevel = candidateBlock.getLightFromBlocks();
 
-		recalculateLighting(world, type, blockX, blockY, blockZ);
+		recalculateLighting(world, type, blockX, blockY, blockZ, callback);
 
 		// check light
 		if (candidateBlock.getLightFromBlocks() != oldlightlevel) {
+			if (callback != null) {
+				callback.onSuccess(world.getName(), type, blockX, blockY, blockZ, 0, LStage.DELETING);
+			}
 			return true;
+		}
+		if (callback != null) {
+			callback.onFailed(world.getName(), type, blockX, blockY, blockZ, 0, LStage.DELETING,
+					LReason.NO_LIGHT_CHANGES);
 		}
 		return false;
 	}
 
 	@Override
-	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
-		World world = Bukkit.getWorld(worldName);
-		setRawLightLevel(world, type, blockX, blockY, blockZ, lightlevel);
-	}
-
-	@Override
-	public void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+	public void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
+			LCallback callback) {
 		if (world == null || type == null) {
+			if (callback != null) {
+				callback.onFailed(world.getName(), type, blockX, blockY, blockZ, lightlevel, LStage.WRITTING,
+						LReason.NULL_ARGS);
+			}
 			return;
 		}
 		if (lightlevel < 0) {
@@ -144,7 +155,10 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 			lightlevel = 15;
 		}
 		if (lightlevel == 0) {
-			recalculateLighting(world, type, blockX, blockY, blockZ);
+			recalculateLighting(world, type, blockX, blockY, blockZ, callback);
+			if (callback != null) {
+				callback.onSuccess(world.getName(), type, blockX, blockY, blockZ, lightlevel, LStage.WRITTING);
+			}
 			return;
 		}
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
@@ -154,12 +168,9 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 			esb = EnumSkyBlock.SKY;
 		}
 		worldServer.a(esb, position, lightlevel);
-	}
-
-	@Override
-	public int getRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ) {
-		World world = Bukkit.getWorld(worldName);
-		return getRawLightLevel(world, type, blockX, blockY, blockZ);
+		if (callback != null) {
+			callback.onSuccess(world.getName(), type, blockX, blockY, blockZ, lightlevel, LStage.WRITTING);
+		}
 	}
 
 	@Override
@@ -177,13 +188,15 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 	}
 
 	@Override
-	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ) {
-		World world = Bukkit.getWorld(worldName);
-		recalculateLighting(world, type, blockX, blockY, blockZ);
-	}
-
-	@Override
-	public void recalculateLighting(World world, LightType type, int blockX, int blockY, int blockZ) {
+	public void recalculateLighting(World world, LightType type, int blockX, int blockY, int blockZ,
+			LCallback callback) {
+		if (world == null || type == null) {
+			if (callback != null) {
+				callback.onFailed(world.getName(), type, blockX, blockY, blockZ, 0, LStage.RECALCULATING,
+						LReason.NULL_ARGS);
+			}
+			return;
+		}
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
 		BlockPosition adjacentPosition = new BlockPosition(blockX, blockY, blockZ);
 		EnumSkyBlock esb = EnumSkyBlock.BLOCK;
@@ -191,6 +204,9 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 			esb = EnumSkyBlock.SKY;
 		}
 		worldServer.c(esb, adjacentPosition);
+		if (callback != null) {
+			callback.onSuccess(world.getName(), type, blockX, blockY, blockZ, 0, LStage.RECALCULATING);
+		}
 	}
 
 	@Override
