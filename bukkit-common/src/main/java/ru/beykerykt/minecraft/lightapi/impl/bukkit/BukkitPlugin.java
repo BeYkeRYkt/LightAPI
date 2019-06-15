@@ -542,7 +542,7 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 				} else if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V2) {
 					if (prevLoc != null) {
 						// remove and collect changed chunks
-						int blockLight = event.getClickedBlock().getLightFromBlocks();
+						int blockLight = prevLoc.getBlock().getLightFromBlocks();
 						LightAPI.setRawLightLevel(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
 								prevLoc.getBlockY(), prevLoc.getBlockZ(), 0);
 						if (LightAPI.isRequireManuallySendingChanges()) {
@@ -596,7 +596,7 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 				} else if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V2) {
 					if (prevLoc != null) {
 						// remove and collect changed chunks
-						int blockLight = event.getClickedBlock().getLightFromBlocks();
+						int blockLight = prevLoc.getBlock().getLightFromBlocks();
 						LightAPI.setRawLightLevel(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
 								prevLoc.getBlockY(), prevLoc.getBlockZ(), 0);
 						LightAPI.recalculateLighting(prevLoc.getWorld().getName(), LightType.BLOCK, prevLoc.getBlockX(),
