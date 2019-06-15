@@ -102,12 +102,12 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 		return flag;
 	}
 
-	private int distanceToSquared(Chunk from, Chunk to) {
+	private int distanceTo(Chunk from, Chunk to) {
 		if (!from.world.getWorldData().getName().equals(to.world.getWorldData().getName()))
 			return 100;
 		double var2 = to.getPos().x - from.getPos().x;
 		double var4 = to.getPos().z - from.getPos().z;
-		return (int) (var2 * var2 + var4 * var4);
+		return (int) Math.sqrt(var2 * var2 + var4 * var4);
 	}
 
 	/***********************************************************************************************************************/
@@ -318,7 +318,8 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 		Chunk chunk = ((CraftWorld) world).getHandle().getChunkAt(chunkX, chunkZ);
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
-		if (distanceToSquared(pChunk, chunk) < 5 * 5) {
+		int playerViewDistance = human.clientViewDistance;
+		if (distanceTo(pChunk, chunk) <= playerViewDistance) {
 			PacketPlayOutLightUpdate packet = new PacketPlayOutLightUpdate(chunk.getPos(), chunk.e());
 			human.playerConnection.sendPacket(packet);
 		}
@@ -332,8 +333,8 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 		Chunk chunk = ((CraftWorld) world).getHandle().getChunkAt(chunkX, chunkZ);
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
-		if (distanceToSquared(pChunk, chunk) < 5 * 5) {
-			PacketPlayOutLightUpdate packet = new PacketPlayOutLightUpdate(chunk.getPos(), chunk.e());
+		int playerViewDistance = human.clientViewDistance;
+		if (distanceTo(pChunk, chunk) <= playerViewDistance) {
 			human.playerConnection.sendPacket(packet);
 		}
 	}

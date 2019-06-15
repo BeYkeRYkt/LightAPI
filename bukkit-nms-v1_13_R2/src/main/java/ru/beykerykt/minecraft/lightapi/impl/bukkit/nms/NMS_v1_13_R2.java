@@ -67,12 +67,12 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 		return cachedChunkModified;
 	}
 
-	private int distanceToSquared(Chunk from, Chunk to) {
+	private int distanceTo(Chunk from, Chunk to) {
 		if (!from.world.getWorldData().getName().equals(to.world.getWorldData().getName()))
 			return 100;
 		double var2 = to.locX - from.locX;
 		double var4 = to.locZ - from.locZ;
-		return (int) (var2 * var2 + var4 * var4);
+		return (int) Math.sqrt(var2 * var2 + var4 * var4);
 	}
 
 	/***********************************************************************************************************************/
@@ -252,7 +252,8 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 		Chunk chunk = ((CraftWorld) world).getHandle().getChunkAt(chunkX, chunkZ);
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
-		if (distanceToSquared(pChunk, chunk) < 5 * 5) {
+		int playerViewDistance = human.clientViewDistance;
+		if (distanceTo(pChunk, chunk) <= playerViewDistance) {
 			// Last argument is bit-mask what chunk sections to update. Only lower 16 bits
 			// are used.
 			// There are 16 sections in chunk. Each section height=16. So, y-coordinate
@@ -272,7 +273,8 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 		Chunk chunk = ((CraftWorld) world).getHandle().getChunkAt(chunkX, chunkZ);
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
-		if (distanceToSquared(pChunk, chunk) < 5 * 5) {
+		int playerViewDistance = human.clientViewDistance;
+		if (distanceTo(pChunk, chunk) <= playerViewDistance) {
 			// Last argument is bit-mask what chunk sections to update. Only lower 16 bits
 			// are used.
 			// There are 16 sections in chunk. Each section height=16. So, y-coordinate
