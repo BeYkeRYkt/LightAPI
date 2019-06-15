@@ -169,13 +169,6 @@ public interface ILightHandler {
 	public ImplementationPlatform getImplementationPlatform();
 
 	/**
-	 * Used type of mapping.
-	 * 
-	 * @return One of the proposed options from {@link MappingType}
-	 */
-	public MappingType getMappingType();
-
-	/**
 	 * Used lighting engine version.
 	 * 
 	 * @return One of the proposed options from {@link LightingEngineVersion}
