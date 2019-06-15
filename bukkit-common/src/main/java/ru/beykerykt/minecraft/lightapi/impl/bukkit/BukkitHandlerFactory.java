@@ -41,18 +41,21 @@ public class BukkitHandlerFactory implements IHandlerFactory {
 
 	@Override
 	public ILightHandler createHandler() {
+		String[] line = plugin.getServer().getClass().getPackage().getName().replace(".", ",").split(",");
 		// First, check if CraftBukkit really is, since Bukkit is only an API, and there
 		// may be several implementations (for example, Glowstone and etc)
-		String impl = plugin.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[2];
+		String impl = line[2];
 
 		// Since the biggest modification of CraftBukkit is Spigot and its individual
 		// forks, use the name 'craftbukkit' to define
 		if (impl.equals("craftbukkit")) {
-			String version = plugin.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-			plugin.getLogger().info("Your server is using version " + version);
+			String version = line[3];
 			try {
-				return (ILightHandler) Class.forName("ru.beykerykt.minecraft.lightapi.impl.bukkit.nms.NMS_" + version)
-						.getConstructor().newInstance();
+				ILightHandler handler = (ILightHandler) Class
+						.forName("ru.beykerykt.minecraft.lightapi.impl.bukkit.nms.NMS_" + version).getConstructor()
+						.newInstance();
+				plugin.getLogger().info("Your server is using version " + version);
+				return handler;
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException | NoSuchMethodException | SecurityException
 					| ClassNotFoundException e) {

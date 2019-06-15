@@ -30,6 +30,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
@@ -49,6 +50,9 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
+import ru.beykerykt.minecraft.lightapi.common.LCallback;
+import ru.beykerykt.minecraft.lightapi.common.LReason;
+import ru.beykerykt.minecraft.lightapi.common.LStage;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
 import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
@@ -199,61 +203,156 @@ public class BukkitPlugin extends JavaPlugin implements Listener {
 		List<IChunkData> moddedChunks = new CopyOnWriteArrayList<IChunkData>();
 		int oldBlockLight = loc.getBlock().getLightFromBlocks();
 
-		// delete and collect changed chunks
-		if (LightAPI.deleteLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
-				loc.getBlockZ())) {
-			if (LightAPI.isRequireManuallySendingChanges()) {
-				for (IChunkData data : LightAPI.collectChunks(loc.getWorld().getName(), loc.getBlockX(),
-						loc.getBlockY(), loc.getBlockZ(), oldBlockLight)) {
-					if (!moddedChunks.contains(data)) {
-						moddedChunks.add(data);
+		if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V2) {
+			LightAPI.setRawLightLevel(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ(), 0, new LCallback() {
+
+						@Override
+						public void onSuccess(String worldName, LightType type, int blockX, int blockY, int blockZ,
+								int lightlevel, LStage stage) {
+							LightAPI.recalculateLighting(worldName, type, blockX, blockY, blockZ, new LCallback() {
+
+								@Override
+								public void onSuccess(String worldName, LightType type, int blockX, int blockY,
+										int blockZ, int lightlevel, LStage stage) {
+									if (LightAPI.isRequireManuallySendingChanges()) {
+										for (IChunkData data : LightAPI.collectChunks(loc.getWorld().getName(),
+												loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), lightlevel)) {
+											if (!moddedChunks.contains(data)) {
+												moddedChunks.add(data);
+											}
+										}
+
+										// send changes
+										for (IChunkData data : moddedChunks) {
+											LightAPI.sendChanges(data);
+										}
+									} else {
+										System.out.println(
+												"Seems with sending changes to take care of the server itself. Do not send anything.");
+									}
+								}
+
+								@Override
+								public void onFailed(String worldName, LightType type, int blockX, int blockY,
+										int blockZ, int lightlevel, LStage stage, LReason reason) {
+									// Ah shit, here we go again
+									System.out.println("remove-" + stage.name() + ": Ah shit, here we go again");
+								}
+							});
+						}
+
+						@Override
+						public void onFailed(String worldName, LightType type, int blockX, int blockY, int blockZ,
+								int lightlevel, LStage stage, LReason reason) {
+							// Ah shit, here we go again
+							System.out.println("remove-" + stage.name() + ": Ah shit, here we go again");
+						}
+					});
+
+			moddedChunks.clear();
+			return true;
+		} else if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V1) {
+			// delete and collect changed chunks
+			if (LightAPI.deleteLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ())) {
+				if (LightAPI.isRequireManuallySendingChanges()) {
+					for (IChunkData data : LightAPI.collectChunks(loc.getWorld().getName(), loc.getBlockX(),
+							loc.getBlockY(), loc.getBlockZ(), oldBlockLight)) {
+						if (!moddedChunks.contains(data)) {
+							moddedChunks.add(data);
+						}
 					}
+				} else {
+					System.out.println(
+							"Seems with sending changes to take care of the server itself. Do not send anything.");
 				}
 			} else {
-				System.out
-						.println("Seems with sending changes to take care of the server itself. Do not send anything.");
+				System.out.println("The light level has not changed. Check your arguments.");
+				return false;
 			}
-		} else {
-			System.out.println("The light level has not changed. Check your arguments.");
-			return false;
-		}
 
-		// send changes
-		for (IChunkData data : moddedChunks) {
-			LightAPI.sendChanges(data);
+			// send changes
+			for (IChunkData data : moddedChunks) {
+				LightAPI.sendChanges(data);
+			}
+			moddedChunks.clear();
+			return true;
 		}
-		moddedChunks.clear();
-		return true;
+		return false;
 	}
 
 	private boolean createLight(Location loc, int lightlevel) {
 		List<IChunkData> moddedChunks = new CopyOnWriteArrayList<IChunkData>();
 
-		// create and collect changed chunks
-		if (LightAPI.createLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
-				loc.getBlockZ(), lightlevel)) {
-			if (LightAPI.isRequireManuallySendingChanges()) {
-				for (IChunkData data : LightAPI.collectChunks(loc.getWorld().getName(), loc.getBlockX(),
-						loc.getBlockY(), loc.getBlockZ(), lightlevel)) {
-					if (!moddedChunks.contains(data)) {
-						moddedChunks.add(data);
+		if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V2) {
+			LightAPI.setRawLightLevel(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ(), lightlevel, new BukkitCallback() {
+
+						@Override
+						public void onSuccess(World world, LightType type, int blockX, int blockY, int blockZ,
+								int lightlevel, LStage stage) {
+							LightAPI.recalculateLighting(world.getName(), type, blockX, blockY, blockZ,
+									new BukkitCallback() {
+
+										@Override
+										public void onSuccess(World world, LightType type, int blockX, int blockY,
+												int blockZ, int lightlevel, LStage stage) {
+											if (LightAPI.isRequireManuallySendingChanges()) {
+												for (IChunkData data : LightAPI.collectChunks(world.getName(), blockX,
+														blockY, blockZ, lightlevel)) {
+													LightAPI.sendChanges(data);
+												}
+											}
+										}
+
+										@Override
+										public void onFailed(World world, LightType type, int blockX, int blockY,
+												int blockZ, int lightlevel, LStage stage, LReason reason) {
+											// Ah shit, here we go again
+											System.out.println("create-" + stage.name() + "-" + reason.name()
+													+ ": Ah shit, here we go again");
+										}
+									});
+						}
+
+						@Override
+						public void onFailed(World world, LightType type, int blockX, int blockY, int blockZ,
+								int lightlevel, LStage stage, LReason reason) {
+							// Ah shit, here we go again
+							System.out.println("create-" + stage.name() + ": Ah shit, here we go again");
+						}
+					});
+			moddedChunks.clear();
+			return true;
+		} else if (LightAPI.getLightingEngineVersion() == LightingEngineVersion.V1) {
+			// create and collect changed chunks
+			if (LightAPI.createLight(loc.getWorld().getName(), LightType.BLOCK, loc.getBlockX(), loc.getBlockY(),
+					loc.getBlockZ(), lightlevel)) {
+				if (LightAPI.isRequireManuallySendingChanges()) {
+					for (IChunkData data : LightAPI.collectChunks(loc.getWorld().getName(), loc.getBlockX(),
+							loc.getBlockY(), loc.getBlockZ(), lightlevel)) {
+						if (!moddedChunks.contains(data)) {
+							moddedChunks.add(data);
+						}
 					}
+				} else {
+					System.out.println(
+							"Seems with sending changes to take care of the server itself. Do not send anything.");
 				}
 			} else {
-				System.out
-						.println("Seems with sending changes to take care of the server itself. Do not send anything.");
+				System.out.println("The light level has not changed. Check your arguments.");
+				return false;
 			}
-		} else {
-			System.out.println("The light level has not changed. Check your arguments.");
-			return false;
-		}
 
-		// send changes
-		for (IChunkData data : moddedChunks) {
-			LightAPI.sendChanges(data);
+			// send changes
+			for (IChunkData data : moddedChunks) {
+				LightAPI.sendChanges(data);
+			}
+			moddedChunks.clear();
+			return true;
 		}
-		moddedChunks.clear();
-		return true;
+		return false;
 	}
 
 	private void recreateLight(Location loc) {

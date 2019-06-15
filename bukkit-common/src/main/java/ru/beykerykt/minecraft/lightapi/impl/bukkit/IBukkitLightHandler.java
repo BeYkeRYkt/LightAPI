@@ -31,6 +31,7 @@ import org.bukkit.entity.Player;
 
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.ILightHandler;
+import ru.beykerykt.minecraft.lightapi.common.LCallback;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
 
 /**
@@ -58,6 +59,23 @@ public interface IBukkitLightHandler extends ILightHandler {
 	public boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
 
 	/**
+	 * Placement of a certain type of light with a given level of illumination in
+	 * the named world in certain coordinates with the return result.
+	 * 
+	 * @param world      - World
+	 * @param type       - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @param callback   - Callback interface
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
+	 */
+	public boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
+			LCallback callback);
+
+	/**
 	 * Removing a certain type of light in the named world in certain coordinates
 	 * with the return result.
 	 * 
@@ -72,6 +90,21 @@ public interface IBukkitLightHandler extends ILightHandler {
 	public boolean deleteLight(World world, LightType type, int blockX, int blockY, int blockZ);
 
 	/**
+	 * Removing a certain type of light in the named world in certain coordinates
+	 * with the return result.
+	 * 
+	 * @param world    - World
+	 * @param type     - Light type
+	 * @param blockX   - Block X coordinate
+	 * @param blockY   - Block Y coordinate
+	 * @param blockZ   - Block Z coordinate
+	 * @param callback - Callback interface
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
+	 */
+	public boolean deleteLight(World world, LightType type, int blockX, int blockY, int blockZ, LCallback callback);
+
+	/**
 	 * Sets "directly" the level of light in given coordinates without additional
 	 * processing.
 	 * 
@@ -83,6 +116,21 @@ public interface IBukkitLightHandler extends ILightHandler {
 	 * @param lightlevel - light level. Default range - 0 - 15
 	 */
 	public void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
+
+	/**
+	 * Sets "directly" the level of light in given coordinates without additional
+	 * processing.
+	 * 
+	 * @param world      - World
+	 * @param type       - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @param callback   - ???
+	 */
+	public void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
+			LCallback callback);
 
 	/**
 	 * Gets "directly" the level of light from given coordinates without additional
@@ -107,6 +155,19 @@ public interface IBukkitLightHandler extends ILightHandler {
 	 * @param blockZ - Block Z coordinate
 	 */
 	public void recalculateLighting(World world, LightType type, int blockX, int blockY, int blockZ);
+
+	/**
+	 * Performs re-illumination of the light in the given coordinates.
+	 * 
+	 * @param world    - World
+	 * @param type     - Light type
+	 * @param blockX   - Block X coordinate
+	 * @param blockY   - Block Y coordinate
+	 * @param blockZ   - Block Z coordinate
+	 * @param callback - ???
+	 */
+	public void recalculateLighting(World world, LightType type, int blockX, int blockY, int blockZ,
+			LCallback callback);
 
 	/**
 	 * Collects changed chunks in the list around the given coordinate.
