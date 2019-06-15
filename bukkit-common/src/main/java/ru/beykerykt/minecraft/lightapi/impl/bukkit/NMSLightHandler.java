@@ -32,7 +32,8 @@ import org.bukkit.entity.Player;
 
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.ImplementationPlatform;
-import ru.beykerykt.minecraft.lightapi.common.MappingType;
+import ru.beykerykt.minecraft.lightapi.common.LCallback;
+import ru.beykerykt.minecraft.lightapi.common.LightType;
 
 /**
  * 
@@ -49,10 +50,83 @@ public abstract class NMSLightHandler implements IBukkitLightHandler {
 	}
 
 	@Override
-	public MappingType getMappingType() {
-		return MappingType.CB;
+	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+		World world = Bukkit.getWorld(worldName);
+		return createLight(world, type, blockX, blockY, blockZ, lightlevel);
 	}
-	
+
+	@Override
+	public boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+		return createLight(world, type, blockX, blockY, blockZ, lightlevel, null);
+	}
+
+	@Override
+	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
+			LCallback callback) {
+		World world = Bukkit.getWorld(worldName);
+		return createLight(world, type, blockX, blockY, blockZ, lightlevel, callback);
+	}
+
+	@Override
+	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+		World world = Bukkit.getWorld(worldName);
+		return deleteLight(world, type, blockX, blockY, blockZ);
+	}
+
+	@Override
+	public boolean deleteLight(World world, LightType type, int blockX, int blockY, int blockZ) {
+		return deleteLight(world, type, blockX, blockY, blockZ, null);
+	}
+
+	@Override
+	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
+			LCallback callback) {
+		World world = Bukkit.getWorld(worldName);
+		return deleteLight(world, type, blockX, blockY, blockZ, callback);
+	}
+
+	@Override
+	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+		World world = Bukkit.getWorld(worldName);
+		setRawLightLevel(world, type, blockX, blockY, blockZ, lightlevel);
+	}
+
+	@Override
+	public void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
+		setRawLightLevel(world, type, blockX, blockY, blockZ, lightlevel, null);
+	}
+
+	@Override
+	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
+			LCallback callback) {
+		World world = Bukkit.getWorld(worldName);
+		setRawLightLevel(world, type, blockX, blockY, blockZ, lightlevel, callback);
+	}
+
+	@Override
+	public int getRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+		World world = Bukkit.getWorld(worldName);
+		return getRawLightLevel(world, type, blockX, blockY, blockZ);
+	}
+
+	@Override
+	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+		World world = Bukkit.getWorld(worldName);
+		recalculateLighting(world, type, blockX, blockY, blockZ);
+	}
+
+	@Override
+	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ,
+			LCallback callback) {
+		World world = Bukkit.getWorld(worldName);
+		recalculateLighting(world, type, blockX, blockY, blockZ, callback);
+	}
+
+	@Override
+	public void recalculateLighting(World world, LightType type, int blockX, int blockY, int blockZ) {
+		recalculateLighting(world, type, blockX, blockY, blockZ, null);
+	}
+
 	@Override
 	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int radiusBlocks) {
 		World world = Bukkit.getWorld(worldName);
@@ -68,7 +142,7 @@ public abstract class NMSLightHandler implements IBukkitLightHandler {
 	public List<IChunkData> collectChunks(World world, int blockX, int blockY, int blockZ) {
 		return collectChunks(world, blockX, blockY, blockZ, 15);
 	}
-	
+
 	@Override
 	public void sendChanges(IChunkData chunkData, Player player) {
 		if (chunkData == null || player == null) {
