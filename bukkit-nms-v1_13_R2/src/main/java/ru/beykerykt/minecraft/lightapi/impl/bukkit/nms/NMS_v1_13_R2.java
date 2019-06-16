@@ -230,7 +230,7 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 		if (world == null) {
 			return null;
 		}
-		if (lightlevel > 15) {
+		if (lightlevel > 15 || lightlevel <= 0) {
 			lightlevel = 15;
 		}
 		int radiusBlocks = lightlevel - 1;
