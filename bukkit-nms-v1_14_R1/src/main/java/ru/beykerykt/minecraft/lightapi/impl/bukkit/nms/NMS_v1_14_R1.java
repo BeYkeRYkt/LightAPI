@@ -32,6 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
@@ -363,6 +364,11 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
 		int playerViewDistance = human.clientViewDistance;
+
+		if (playerViewDistance > Bukkit.getViewDistance()) {
+			playerViewDistance = Bukkit.getViewDistance();
+		}
+
 		if (distanceTo(pChunk, chunk) <= playerViewDistance) {
 			PacketPlayOutLightUpdate packet = new PacketPlayOutLightUpdate(chunk.getPos(), chunk.e());
 			human.playerConnection.sendPacket(packet);
@@ -378,6 +384,11 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
 		int playerViewDistance = human.clientViewDistance;
+
+		if (playerViewDistance > Bukkit.getViewDistance()) {
+			playerViewDistance = Bukkit.getViewDistance();
+		}
+
 		if (distanceTo(pChunk, chunk) <= playerViewDistance) {
 			// https://wiki.vg/index.php?title=Pre-release_protocol&oldid=14804#Update_Light
 			// https://github.com/flori-schwa/VarLight/blob/b9349499f9c9fb995c320f95eae9698dd85aad5c/v1_14_R1/src/me/florian/varlight/nms/v1_14_R1/NmsAdapter_1_14_R1.java#L451

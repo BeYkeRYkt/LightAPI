@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
@@ -269,6 +270,11 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
 		int playerViewDistance = human.clientViewDistance;
+
+		if (playerViewDistance > Bukkit.getViewDistance()) {
+			playerViewDistance = Bukkit.getViewDistance();
+		}
+
 		if (distanceTo(pChunk, chunk) <= playerViewDistance) {
 			// Last argument is bit-mask what chunk sections to update. Only lower 16 bits
 			// are used.
@@ -290,6 +296,11 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 		EntityPlayer human = ((CraftPlayer) player).getHandle();
 		Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
 		int playerViewDistance = human.clientViewDistance;
+
+		if (playerViewDistance > Bukkit.getViewDistance()) {
+			playerViewDistance = Bukkit.getViewDistance();
+		}
+
 		if (distanceTo(pChunk, chunk) <= playerViewDistance) {
 			// Last argument is bit-mask what chunk sections to update. Only lower 16 bits
 			// are used.
