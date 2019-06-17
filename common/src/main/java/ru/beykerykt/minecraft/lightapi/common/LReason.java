@@ -44,7 +44,7 @@ public enum LReason {
 	 * N/A
 	 */
 	THROW_EXCEPTION(3),
-	
+
 	/**
 	 * N/A
 	 */

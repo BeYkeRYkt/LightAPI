@@ -68,11 +68,11 @@ import ru.beykerykt.minecraft.lightapi.impl.bukkit.NMSLightHandler;
  */
 public class NMS_v1_14_R1 extends NMSLightHandler {
 
-	private static Field cachedMailboxField;
-	private static Method cachedMailboxMethod;
+	private Field cachedMailboxField;
+	private Method cachedMailboxMethod;
 	private ReentrantLock locker = new ReentrantLock();
 
-	private static Field getMailboxField(Object lightEngine) throws NoSuchFieldException, SecurityException {
+	private Field getMailboxField(Object lightEngine) throws NoSuchFieldException, SecurityException {
 		if (cachedMailboxField == null) {
 			cachedMailboxField = lightEngine.getClass().getDeclaredField("b");
 			cachedMailboxField.setAccessible(true);
@@ -80,7 +80,7 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 		return cachedMailboxField;
 	}
 
-	private static Method getCheckMailboxMethod(Object lightEngine) throws NoSuchMethodException, SecurityException {
+	private Method getCheckMailboxMethod(Object lightEngine) throws NoSuchMethodException, SecurityException {
 		if (cachedMailboxMethod == null) {
 			cachedMailboxMethod = lightEngine.getClass().getDeclaredMethod("d");
 			cachedMailboxMethod.setAccessible(true);
@@ -192,12 +192,12 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 
 		// no relight while ThreadMailbox is working
 		if (isThreadMailboxWorking(lightEngine)) {
-			try {
-				while (isThreadMailboxWorking(lightEngine)) {
+			while (isThreadMailboxWorking(lightEngine)) {
+				try {
 					Thread.sleep(50L); // TEMP FIX: wait a tick
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
 		}
 
@@ -267,7 +267,6 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 					try {
 						Thread.sleep(50L); // TEMP FIX: wait a tick
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -333,24 +332,20 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 		}
 		int radiusBlocks = lightlevel;
 		List<IChunkData> list = new CopyOnWriteArrayList<IChunkData>();
-		try {
-			WorldServer nmsWorld = ((CraftWorld) world).getHandle();
-			for (int dX = -radiusBlocks; dX <= radiusBlocks; dX += radiusBlocks) {
-				for (int dZ = -radiusBlocks; dZ <= radiusBlocks; dZ += radiusBlocks) {
-					int chunkX = (x + dX) >> 4;
-					int chunkZ = (z + dZ) >> 4;
-					if (nmsWorld.isChunkLoaded(chunkX, chunkZ)) {
-						Chunk chunk = nmsWorld.getChunkAt(chunkX, chunkZ);
-						IChunkData cCoord = new BukkitChunkData(world, chunk.getPos().x, y, chunk.getPos().z,
-								world.getPlayers());
-						if (chunk.isNeedsSaving() && !list.contains(cCoord)) {
-							list.add(cCoord);
-						}
+		WorldServer nmsWorld = ((CraftWorld) world).getHandle();
+		for (int dX = -radiusBlocks; dX <= radiusBlocks; dX += radiusBlocks) {
+			for (int dZ = -radiusBlocks; dZ <= radiusBlocks; dZ += radiusBlocks) {
+				int chunkX = (x + dX) >> 4;
+				int chunkZ = (z + dZ) >> 4;
+				if (nmsWorld.isChunkLoaded(chunkX, chunkZ)) {
+					Chunk chunk = nmsWorld.getChunkAt(chunkX, chunkZ);
+					IChunkData cCoord = new BukkitChunkData(world, chunk.getPos().x, y, chunk.getPos().z,
+							world.getPlayers());
+					if (chunk.isNeedsSaving() && !list.contains(cCoord)) {
+						list.add(cCoord);
 					}
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return list;
 	}
