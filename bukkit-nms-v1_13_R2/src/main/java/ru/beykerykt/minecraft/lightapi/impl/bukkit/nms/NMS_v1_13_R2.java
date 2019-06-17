@@ -233,7 +233,7 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 		if (lightlevel > 15 || lightlevel <= 0) {
 			lightlevel = 15;
 		}
-		int radiusBlocks = lightlevel - 1;
+		int radiusBlocks = lightlevel;
 		List<IChunkData> list = new CopyOnWriteArrayList<IChunkData>();
 		try {
 			WorldServer nmsWorld = ((CraftWorld) world).getHandle();
