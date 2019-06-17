@@ -272,7 +272,8 @@ public class LightAPI {
 	}
 
 	/**
-	 * Collects changed chunks in the list around the given coordinate.
+	 * Collects modified сhunks around a given coordinate in the radius of the light
+	 * level. The light level is taken from the arguments.
 	 * 
 	 * @param worldName  - World name
 	 * @param blockX     - Block X coordinate
@@ -289,7 +290,8 @@ public class LightAPI {
 	}
 
 	/**
-	 * Collects changed chunks in the list around the given coordinate.
+	 * Collects modified сhunks around a given coordinate in the radius of the light
+	 * level. The light level is taken from block in the given coordinates.
 	 * 
 	 * @param worldName - World name
 	 * @param blockX    - Block X coordinate

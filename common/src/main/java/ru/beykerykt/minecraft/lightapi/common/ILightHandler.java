@@ -193,7 +193,8 @@ public interface ILightHandler {
 	public boolean isRequireManuallySendingChanges();
 
 	/**
-	 * Collects changed chunks in the list around the given coordinate.
+	 * Collects modified сhunks around a given coordinate in the radius of the light
+	 * level. The light level is taken from the arguments.
 	 * 
 	 * @param worldName  - World name
 	 * @param blockX     - Block X coordinate
@@ -205,7 +206,8 @@ public interface ILightHandler {
 	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int lightlevel);
 
 	/**
-	 * Collects changed chunks in the list around the given coordinate.
+	 * Collects modified сhunks around a given coordinate in the radius of the light
+	 * level. The light level is taken from block in the given coordinates.
 	 * 
 	 * @param worldName - World name
 	 * @param blockX    - Block X coordinate

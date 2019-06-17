@@ -135,12 +135,17 @@ public abstract class NMSLightHandler implements IBukkitLightHandler {
 
 	@Override
 	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ) {
-		return collectChunks(worldName, blockX, blockY, blockZ, 15);
+		World world = Bukkit.getWorld(worldName);
+		return collectChunks(world, blockX, blockY, blockZ);
 	}
 
 	@Override
 	public List<IChunkData> collectChunks(World world, int blockX, int blockY, int blockZ) {
-		return collectChunks(world, blockX, blockY, blockZ, 15);
+		if (world == null) {
+			return null;
+		}
+		int lightlevel = world.getBlockAt(blockX, blockY, blockZ).getLightFromBlocks();
+		return collectChunks(world, blockX, blockY, blockZ, lightlevel);
 	}
 
 	@Override

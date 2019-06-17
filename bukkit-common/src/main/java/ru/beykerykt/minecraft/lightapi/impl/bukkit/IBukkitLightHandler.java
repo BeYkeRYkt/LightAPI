@@ -170,7 +170,8 @@ public interface IBukkitLightHandler extends ILightHandler {
 			LCallback callback);
 
 	/**
-	 * Collects changed chunks in the list around the given coordinate.
+	 * Collects modified сhunks around a given coordinate in the radius of the light
+	 * level. The light level is taken from the arguments.
 	 * 
 	 * @param world      - World
 	 * @param blockX     - Block X coordinate
@@ -182,7 +183,8 @@ public interface IBukkitLightHandler extends ILightHandler {
 	public List<IChunkData> collectChunks(World world, int blockX, int blockY, int blockZ, int lightlevel);
 
 	/**
-	 * Collects changed chunks in the list around the given coordinate.
+	 * Collects modified сhunks around a given coordinate in the radius of the light
+	 * level. The light level is taken from block in the given coordinates.
 	 * 
 	 * @param world  - World
 	 * @param blockX - Block X coordinate
