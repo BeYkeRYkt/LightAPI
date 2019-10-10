@@ -1,8 +1,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com>
- * Copyright (c) 2016-2017 The ImplexDevOne Project
+ * Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.lightapi.server.exceptions;
+package ru.beykerykt.minecraft.lightapi.common;
 
-public class ServerModException extends Exception {
+/**
+ * N/A
+ */
+public interface IPluginImpl {
 
 	/**
-	 * ???
+	 * Platform that is being used
+	 * 
+	 * @return One of the proposed options from {@link ImplementationPlatform}
 	 */
-	private static final long serialVersionUID = -649256823875085117L;
+	public ImplementationPlatform getImplPlatform();
 
-	public ServerModException(String message) {
-		super(message);
-	}
+	/**
+	 * N/A
+	 * 
+	 * @return
+	 */
+	public IHandlerFactory getHandlerFactory();
+
+	/**
+	 * Log message in console
+	 * 
+	 * @param msg - message
+	 */
+	public void log(String msg);
+
 }

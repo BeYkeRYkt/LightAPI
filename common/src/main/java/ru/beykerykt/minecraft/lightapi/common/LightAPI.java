@@ -28,22 +28,70 @@ import java.util.List;
 
 public class LightAPI {
 
-	private static ILightHandler si;
+	private static LightAPI singleton;
+	private static IPluginImpl pluginImpl;
+	private ILightHandler mHandler;
 
-	public static boolean setLightHandler(ILightHandler impl) {
-		if (si != null) {
-			return false;
+	public LightAPI(IPluginImpl pluginImpl, ILightHandler handler) {
+		LightAPI.pluginImpl = pluginImpl;
+		mHandler = handler;
+	}
+
+	/**
+	 * Must be called in onLoad();
+	 * 
+	 * @param impl
+	 */
+	public static void prepare(IPluginImpl impl) {
+		if (singleton == null && impl != null) {
+			impl.log("Preparing LightAPI...");
+			synchronized (LightAPI.class) {
+				if (impl.getHandlerFactory() == null) {
+					throw new IllegalStateException("HandlerFactory not yet initialized");
+				}
+				ILightHandler implHandler = impl.getHandlerFactory().createHandler();
+				if (implHandler == null) {
+					throw new IllegalStateException("ILightHandler not yet initialized");
+				}
+				singleton = new LightAPI(impl, implHandler);
+				impl.log("Done!");
+			}
 		}
-		si = impl;
-		return true;
 	}
 
-	public static ILightHandler getLightHandler() {
-		return si;
+	/**
+	 * N/A
+	 */
+	protected static IPluginImpl getPluginImpl() {
+		if (pluginImpl == null) {
+			throw new IllegalStateException("IPluginImpl not yet initialized! Use prepare() !");
+		}
+		return pluginImpl;
 	}
 
-	public static boolean isInitialized() {
-		return getLightHandler() != null;
+	/**
+	 * N/A
+	 */
+	protected void log(String msg) {
+		getPluginImpl().log(msg);
+	}
+
+	/**
+	 * The global {@link LightAPI} instance.
+	 */
+	public static LightAPI get() {
+		if (singleton == null) {
+			prepare(getPluginImpl());
+		}
+		return singleton;
+	}
+
+	public ILightHandler getLightHandler() {
+		return get().mHandler;
+	}
+
+	public boolean isInitialized() {
+		return singleton != null;
 	}
 
 	/**
@@ -59,8 +107,7 @@ public class LightAPI {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
-	public static boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
-			int lightlevel) {
+	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
 		if (!isInitialized()) {
 			return false;
 		}
@@ -81,8 +128,8 @@ public class LightAPI {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
-	public static boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
-			int lightlevel, LCallback callback) {
+	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
+			LCallback callback) {
 		if (!isInitialized()) {
 			return false;
 		}
@@ -101,7 +148,7 @@ public class LightAPI {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
-	public static boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ) {
 		if (!isInitialized()) {
 			return false;
 		}
@@ -121,7 +168,7 @@ public class LightAPI {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
-	public static boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
+	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
 			LCallback callback) {
 		if (!isInitialized()) {
 			return false;
@@ -140,8 +187,7 @@ public class LightAPI {
 	 * @param blockZ     - Block Z coordinate
 	 * @param lightlevel - light level. Default range - 0 - 15
 	 */
-	public static void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ,
-			int lightlevel) {
+	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
 		if (!isInitialized()) {
 			return;
 		}
@@ -160,8 +206,8 @@ public class LightAPI {
 	 * @param lightlevel - light level. Default range - 0 - 15
 	 * @param callback   - ???
 	 */
-	public static void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ,
-			int lightlevel, LCallback callback) {
+	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
+			LCallback callback) {
 		if (!isInitialized()) {
 			return;
 		}
@@ -179,7 +225,7 @@ public class LightAPI {
 	 * @param blockZ    - Block Z coordinate
 	 * @return lightlevel - Light level. Default range - 0 - 15
 	 */
-	public static int getRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+	public int getRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ) {
 		if (!isInitialized()) {
 			return 0;
 		}
@@ -195,11 +241,11 @@ public class LightAPI {
 	 * @param blockY    - Block Y coordinate
 	 * @param blockZ    - Block Z coordinate
 	 */
-	public static void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ) {
+	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ) {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().recalculateLighting(worldName, type, blockX, blockY, blockZ);
+		get().getLightHandler().recalculateLighting(worldName, type, blockX, blockY, blockZ);
 	}
 
 	/**
@@ -212,7 +258,7 @@ public class LightAPI {
 	 * @param blockZ    - Block Z coordinate
 	 * @param callback  - ???
 	 */
-	public static void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ,
+	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ,
 			LCallback callback) {
 		if (!isInitialized()) {
 			return;
@@ -225,11 +271,11 @@ public class LightAPI {
 	 * 
 	 * @return One of the proposed options from {@link ImplementationPlatform}
 	 */
-	public static ImplementationPlatform getImplementationPlatform() {
+	public ImplementationPlatform getImplementationPlatform() {
 		if (!isInitialized()) {
 			return ImplementationPlatform.UNKNOWN;
 		}
-		return getLightHandler().getImplementationPlatform();
+		return getPluginImpl().getImplPlatform();
 	}
 
 	/**
@@ -237,7 +283,7 @@ public class LightAPI {
 	 * 
 	 * @return One of the proposed options from {@link LightingEngineVersion}
 	 */
-	public static LightingEngineVersion getLightingEngineVersion() {
+	public LightingEngineVersion getLightingEngineVersion() {
 		if (!isInitialized()) {
 			return LightingEngineVersion.UNKNOWN;
 		}
@@ -250,7 +296,7 @@ public class LightAPI {
 	 * @return true - if the lighting calculation occurs in a separate thread, false
 	 *         - if in main thread.
 	 */
-	public static boolean isAsyncLighting() {
+	public boolean isAsyncLighting() {
 		if (!isInitialized()) {
 			return false;
 		}
@@ -264,7 +310,7 @@ public class LightAPI {
 	 *         manually send the changes. false - if the server automatically sends
 	 *         it after the change.
 	 */
-	public static boolean isRequireManuallySendingChanges() {
+	public boolean isRequireManuallySendingChanges() {
 		if (!isInitialized()) {
 			return false;
 		}
@@ -282,7 +328,7 @@ public class LightAPI {
 	 * @param lightlevel - Light level. Default range - 0 - 15
 	 * @return List changed chunks around the given coordinate.
 	 */
-	public static List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int lightlevel) {
+	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int lightlevel) {
 		if (!isInitialized()) {
 			return null;
 		}
@@ -299,7 +345,7 @@ public class LightAPI {
 	 * @param blockZ    - Block Z coordinate
 	 * @return List changed chunks around the given coordinate.
 	 */
-	public static List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ) {
+	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ) {
 		if (!isInitialized()) {
 			return null;
 		}
@@ -314,7 +360,7 @@ public class LightAPI {
 	 * @param chunkZ     - Chunk Z coordinate
 	 * @param playerName - Player name
 	 */
-	public static void sendChanges(String worldName, int chunkX, int chunkZ, String playerName) {
+	public void sendChanges(String worldName, int chunkX, int chunkZ, String playerName) {
 		if (!isInitialized()) {
 			return;
 		}
@@ -330,7 +376,7 @@ public class LightAPI {
 	 * @param chunkZ     - Chunk Z coordinate
 	 * @param playerName - Player name
 	 */
-	public static void sendChanges(String worldName, int chunkX, int blockY, int chunkZ, String playerName) {
+	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ, String playerName) {
 		if (!isInitialized()) {
 			return;
 		}
@@ -343,7 +389,7 @@ public class LightAPI {
 	 * @param chunkData  - {@link IChunkData}
 	 * @param playerName - Player name
 	 */
-	public static void sendChanges(IChunkData chunkData, String playerName) {
+	public void sendChanges(IChunkData chunkData, String playerName) {
 		if (!isInitialized()) {
 			return;
 		}
@@ -357,7 +403,7 @@ public class LightAPI {
 	 * @param chunkX    - Chunk X coordinate
 	 * @param chunkZ    - Chunk Z coordinate
 	 */
-	public static void sendChanges(String worldName, int chunkX, int chunkZ) {
+	public void sendChanges(String worldName, int chunkX, int chunkZ) {
 		if (!isInitialized()) {
 			return;
 		}
@@ -372,7 +418,7 @@ public class LightAPI {
 	 * @param blockY    - Block Y coordinate
 	 * @param chunkZ    - Chunk Z coordinate
 	 */
-	public static void sendChanges(String worldName, int chunkX, int blockY, int chunkZ) {
+	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ) {
 		if (!isInitialized()) {
 			return;
 		}
@@ -384,7 +430,7 @@ public class LightAPI {
 	 * 
 	 * @param chunkData - {@link IChunkData}
 	 */
-	public static void sendChanges(IChunkData chunkData) {
+	public void sendChanges(IChunkData chunkData) {
 		if (!isInitialized()) {
 			return;
 		}

@@ -41,7 +41,7 @@ public class Build {
 	/**
 	 * Platform that is being used.
 	 */
-	public static ImplementationPlatform CURRENT_IMPLEMENTATION = LightAPI.getImplementationPlatform();
+	public static ImplementationPlatform CURRENT_IMPLEMENTATION = LightAPI.get().getImplementationPlatform();
 
 	private static final List<String> map;
 
