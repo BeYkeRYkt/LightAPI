@@ -47,14 +47,6 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		<!-- Backward support -->
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>lightapi-bukkit-backward-support</artifactId>
-			<version>${project.version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
