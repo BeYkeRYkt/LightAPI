@@ -216,14 +216,6 @@ public interface IBukkitLightHandler extends ILightHandler {
 	public void sendChanges(World world, int chunkX, int blockY, int chunkZ, Player player);
 
 	/**
-	 * Sending changes to a player by name
-	 * 
-	 * @param chunkData - {@link IChunkData}
-	 * @param player    - Player
-	 */
-	public void sendChanges(IChunkData chunkData, Player player);
-
-	/**
 	 * Sending changes to world
 	 * 
 	 * @param world  - World

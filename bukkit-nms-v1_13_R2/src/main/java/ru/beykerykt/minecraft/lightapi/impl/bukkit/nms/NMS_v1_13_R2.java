@@ -245,8 +245,7 @@ public class NMS_v1_13_R2 extends NMSLightHandler {
 						Chunk chunk = nmsWorld.getChunkAt(chunkX, chunkZ);
 						Field isModified = getChunkField(chunk);
 						if (isModified.getBoolean(chunk)) {
-							IChunkData cCoord = new BukkitChunkData(world, chunk.locX, blockY, chunk.locZ,
-									world.getPlayers());
+							IChunkData cCoord = new BukkitChunkData(world, chunk.locX, blockY, chunk.locZ);
 							if (!list.contains(cCoord)) {
 								list.add(cCoord);
 							}

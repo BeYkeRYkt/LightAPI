@@ -339,8 +339,7 @@ public class NMS_v1_14_R1 extends NMSLightHandler {
 				int chunkZ = (z + dZ) >> 4;
 				if (nmsWorld.isChunkLoaded(chunkX, chunkZ)) {
 					Chunk chunk = nmsWorld.getChunkAt(chunkX, chunkZ);
-					IChunkData cCoord = new BukkitChunkData(world, chunk.getPos().x, y, chunk.getPos().z,
-							world.getPlayers());
+					IChunkData cCoord = new BukkitChunkData(world, chunk.getPos().x, y, chunk.getPos().z);
 					if (chunk.isNeedsSaving() && !list.contains(cCoord)) {
 						list.add(cCoord);
 					}

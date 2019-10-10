@@ -218,35 +218,6 @@ public interface ILightHandler {
 	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ);
 
 	/**
-	 * Sending changes to a player by name
-	 * 
-	 * @param worldName  - World name
-	 * @param chunkX     - Chunk X coordinate
-	 * @param chunkZ     - Chunk Z coordinate
-	 * @param playerName - Player name
-	 */
-	public void sendChanges(String worldName, int chunkX, int chunkZ, String playerName);
-
-	/**
-	 * Sending changes to a player by name
-	 * 
-	 * @param worldName  - World name
-	 * @param chunkX     - Chunk X coordinate
-	 * @param blockY     - Block Y coordinate
-	 * @param chunkZ     - Chunk Z coordinate
-	 * @param playerName - Player name
-	 */
-	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ, String playerName);
-
-	/**
-	 * Sending changes to a player by name
-	 * 
-	 * @param chunkData  - {@link IChunkData}
-	 * @param playerName - Player name
-	 */
-	public void sendChanges(IChunkData chunkData, String playerName);
-
-	/**
 	 * Sending changes to world
 	 * 
 	 * @param worldName - World name

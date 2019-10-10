@@ -24,10 +24,7 @@
  */
 package ru.beykerykt.minecraft.lightapi.impl.bukkit;
 
-import java.util.Collection;
-
 import org.bukkit.World;
-import org.bukkit.entity.Player;
 
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 
@@ -43,18 +40,16 @@ public class BukkitChunkData implements IChunkData {
 	private int x;
 	private int y;
 	private int z;
-	private Collection<Player> receivers;
 
-	public BukkitChunkData(World world, int chunkX, int chunkZ, Collection<Player> playersName) {
-		this(world, chunkX, 255, chunkZ, playersName);
+	public BukkitChunkData(World world, int chunkX, int chunkZ) {
+		this(world, chunkX, 255, chunkZ);
 	}
 
-	public BukkitChunkData(World world, int chunkX, int chunk_y_height, int chunkZ, Collection<Player> playersName) {
+	public BukkitChunkData(World world, int chunkX, int chunk_y_height, int chunkZ) {
 		this.world = world;
 		this.x = chunkX;
 		this.y = chunk_y_height;
 		this.z = chunkZ;
-		this.receivers = playersName;
 	}
 
 	public World getWorld() {
@@ -98,17 +93,6 @@ public class BukkitChunkData implements IChunkData {
 
 	public void setChunkYHeight(int y) {
 		this.y = y;
-	}
-
-	/**
-	 * @return A list of player to which this chunk can be sent.
-	 */
-	public Collection<Player> getReceivers() {
-		return receivers;
-	}
-
-	public void setReceivers(Collection<Player> receivers) {
-		this.receivers = receivers;
 	}
 
 	@Override

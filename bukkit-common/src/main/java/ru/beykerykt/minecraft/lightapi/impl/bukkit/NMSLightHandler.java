@@ -149,17 +149,6 @@ public abstract class NMSLightHandler implements IBukkitLightHandler {
 	}
 
 	@Override
-	public void sendChanges(IChunkData chunkData, Player player) {
-		if (chunkData == null || player == null) {
-			return;
-		}
-		if (chunkData instanceof BukkitChunkData) {
-			BukkitChunkData bcd = (BukkitChunkData) chunkData;
-			sendChanges(bcd.getWorld(), bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), player);
-		}
-	}
-
-	@Override
 	public void sendChanges(World world, int chunkX, int chunkZ) {
 		if (world == null)
 			return;
@@ -175,26 +164,6 @@ public abstract class NMSLightHandler implements IBukkitLightHandler {
 		for (Player player : world.getPlayers()) {
 			sendChanges(world, chunkX, blockY, chunkZ, player);
 		}
-	}
-
-	@Override
-	public void sendChanges(String worldName, int chunkX, int chunkZ, String playerName) {
-		World world = Bukkit.getWorld(worldName);
-		Player player = Bukkit.getPlayer(playerName);
-		sendChanges(world, chunkX, chunkZ, player);
-	}
-
-	@Override
-	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ, String playerName) {
-		World world = Bukkit.getWorld(worldName);
-		Player player = Bukkit.getPlayer(playerName);
-		sendChanges(world, chunkX, blockY, chunkZ, player);
-	}
-
-	@Override
-	public void sendChanges(IChunkData chunkData, String playerName) {
-		Player player = Bukkit.getPlayer(playerName);
-		sendChanges(chunkData, player);
 	}
 
 	@Override
@@ -215,9 +184,7 @@ public abstract class NMSLightHandler implements IBukkitLightHandler {
 			return;
 		if (chunkData instanceof BukkitChunkData) {
 			BukkitChunkData bcd = (BukkitChunkData) chunkData;
-			for (Player player : bcd.getReceivers()) {
-				sendChanges(bcd.getWorld(), bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ(), player);
-			}
+			sendChanges(bcd.getWorld(), bcd.getChunkX(), bcd.getChunkYHeight(), bcd.getChunkZ());
 		}
 	}
 }
