@@ -31,7 +31,7 @@ import java.util.List;
  *
  * @author BeYkeRYkt
  */
-public interface ILightHandler {
+public interface IHandlerImpl {
 
 	/**
 	 * Placement of a certain type of light with a given level of illumination in
@@ -46,6 +46,7 @@ public interface ILightHandler {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
+	@Deprecated
 	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
 
 	/**
@@ -62,6 +63,7 @@ public interface ILightHandler {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
+	@Deprecated
 	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
 			LCallback callback);
 
@@ -77,6 +79,7 @@ public interface ILightHandler {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
+	@Deprecated
 	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ);
 
 	/**
@@ -92,6 +95,7 @@ public interface ILightHandler {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
+	@Deprecated
 	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
 			LCallback callback);
 
@@ -166,6 +170,7 @@ public interface ILightHandler {
 	 * 
 	 * @return One of the proposed options from {@link ImplementationPlatform}
 	 */
+	@Deprecated
 	public ImplementationPlatform getImplementationPlatform();
 
 	/**
@@ -182,7 +187,7 @@ public interface ILightHandler {
 	 *         - if in main thread.
 	 */
 	public boolean isAsyncLighting();
-
+	
 	/**
 	 * Is it required to send changes after changing light levels.
 	 * 

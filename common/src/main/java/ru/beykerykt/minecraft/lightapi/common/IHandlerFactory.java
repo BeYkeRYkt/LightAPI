@@ -27,9 +27,9 @@ package ru.beykerykt.minecraft.lightapi.common;
 public interface IHandlerFactory {
 
 	/**
-	 * Create a ILightHandler
+	 * Create a IHandlerImpl
 	 * 
-	 * @return {@link ILightHandler}
+	 * @return {@link IHandlerImpl}
 	 */
-	public ILightHandler createHandler();
+	public IHandlerImpl createHandler();
 }

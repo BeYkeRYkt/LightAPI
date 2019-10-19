@@ -30,9 +30,9 @@ public class LightAPI {
 
 	private static LightAPI singleton;
 	private static IPluginImpl pluginImpl;
-	private ILightHandler mHandler;
+	private IHandlerImpl mHandler;
 
-	public LightAPI(IPluginImpl pluginImpl, ILightHandler handler) {
+	private LightAPI(IPluginImpl pluginImpl, IHandlerImpl handler) {
 		LightAPI.pluginImpl = pluginImpl;
 		mHandler = handler;
 	}
@@ -49,7 +49,7 @@ public class LightAPI {
 				if (impl.getHandlerFactory() == null) {
 					throw new IllegalStateException("HandlerFactory not yet initialized");
 				}
-				ILightHandler implHandler = impl.getHandlerFactory().createHandler();
+				IHandlerImpl implHandler = impl.getHandlerFactory().createHandler();
 				if (implHandler == null) {
 					throw new IllegalStateException("ILightHandler not yet initialized");
 				}
@@ -86,7 +86,7 @@ public class LightAPI {
 		return singleton;
 	}
 
-	public ILightHandler getLightHandler() {
+	public IHandlerImpl getHandlerImpl() {
 		return get().mHandler;
 	}
 
@@ -107,11 +107,12 @@ public class LightAPI {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
+	@Deprecated
 	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
 		if (!isInitialized()) {
 			return false;
 		}
-		return getLightHandler().createLight(worldName, type, blockX, blockY, blockZ, lightlevel);
+		return getHandlerImpl().createLight(worldName, type, blockX, blockY, blockZ, lightlevel);
 	}
 
 	/**
@@ -128,12 +129,13 @@ public class LightAPI {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
+	@Deprecated
 	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
 			LCallback callback) {
 		if (!isInitialized()) {
 			return false;
 		}
-		return getLightHandler().createLight(worldName, type, blockX, blockY, blockZ, lightlevel, callback);
+		return getHandlerImpl().createLight(worldName, type, blockX, blockY, blockZ, lightlevel, callback);
 	}
 
 	/**
@@ -148,11 +150,12 @@ public class LightAPI {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
+	@Deprecated
 	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ) {
 		if (!isInitialized()) {
 			return false;
 		}
-		return getLightHandler().deleteLight(worldName, type, blockX, blockY, blockZ);
+		return getHandlerImpl().deleteLight(worldName, type, blockX, blockY, blockZ);
 	}
 
 	/**
@@ -168,12 +171,13 @@ public class LightAPI {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
+	@Deprecated
 	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
 			LCallback callback) {
 		if (!isInitialized()) {
 			return false;
 		}
-		return getLightHandler().deleteLight(worldName, type, blockX, blockY, blockZ, callback);
+		return getHandlerImpl().deleteLight(worldName, type, blockX, blockY, blockZ, callback);
 	}
 
 	/**
@@ -191,7 +195,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().setRawLightLevel(worldName, type, blockX, blockY, blockZ, lightlevel);
+		getHandlerImpl().setRawLightLevel(worldName, type, blockX, blockY, blockZ, lightlevel);
 	}
 
 	/**
@@ -211,7 +215,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().setRawLightLevel(worldName, type, blockX, blockY, blockZ, lightlevel, callback);
+		getHandlerImpl().setRawLightLevel(worldName, type, blockX, blockY, blockZ, lightlevel, callback);
 	}
 
 	/**
@@ -229,7 +233,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return 0;
 		}
-		return getLightHandler().getRawLightLevel(worldName, type, blockX, blockY, blockZ);
+		return getHandlerImpl().getRawLightLevel(worldName, type, blockX, blockY, blockZ);
 	}
 
 	/**
@@ -245,7 +249,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return;
 		}
-		get().getLightHandler().recalculateLighting(worldName, type, blockX, blockY, blockZ);
+		getHandlerImpl().recalculateLighting(worldName, type, blockX, blockY, blockZ);
 	}
 
 	/**
@@ -263,7 +267,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().recalculateLighting(worldName, type, blockX, blockY, blockZ, callback);
+		getHandlerImpl().recalculateLighting(worldName, type, blockX, blockY, blockZ, callback);
 	}
 
 	/**
@@ -287,7 +291,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return LightingEngineVersion.UNKNOWN;
 		}
-		return getLightHandler().getLightingEngineVersion();
+		return getHandlerImpl().getLightingEngineVersion();
 	}
 
 	/**
@@ -300,7 +304,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return false;
 		}
-		return getLightHandler().isAsyncLighting();
+		return getHandlerImpl().isAsyncLighting();
 	}
 
 	/**
@@ -314,7 +318,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return false;
 		}
-		return getLightHandler().isRequireManuallySendingChanges();
+		return getHandlerImpl().isRequireManuallySendingChanges();
 	}
 
 	/**
@@ -332,7 +336,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return null;
 		}
-		return getLightHandler().collectChunks(worldName, blockX, blockY, blockZ, lightlevel);
+		return getHandlerImpl().collectChunks(worldName, blockX, blockY, blockZ, lightlevel);
 	}
 
 	/**
@@ -349,7 +353,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return null;
 		}
-		return getLightHandler().collectChunks(worldName, blockX, blockY, blockZ);
+		return getHandlerImpl().collectChunks(worldName, blockX, blockY, blockZ);
 	}
 
 	/**
@@ -363,7 +367,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().sendChanges(worldName, chunkX, chunkZ);
+		getHandlerImpl().sendChanges(worldName, chunkX, chunkZ);
 	}
 
 	/**
@@ -378,7 +382,7 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().sendChanges(worldName, chunkX, blockY, chunkZ);
+		getHandlerImpl().sendChanges(worldName, chunkX, blockY, chunkZ);
 	}
 
 	/**
@@ -390,6 +394,6 @@ public class LightAPI {
 		if (!isInitialized()) {
 			return;
 		}
-		getLightHandler().sendChanges(chunkData);
+		getHandlerImpl().sendChanges(chunkData);
 	}
 }

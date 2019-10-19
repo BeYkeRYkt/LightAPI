@@ -47,11 +47,13 @@ public enum ImplementationPlatform {
 	/**
 	 * Platforms built on CraftBukkit. Spigot, Paper and etc
 	 */
+	@Deprecated
 	CRAFTBUKKIT(2),
 
 	/**
 	 * Platforms built on SpongePowered.
 	 */
+	@Deprecated
 	SPONGE(3);
 
 	// TODO
