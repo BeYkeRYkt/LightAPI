@@ -295,19 +295,6 @@ public class LightAPI {
 	}
 
 	/**
-	 * Does the calculation of the lighting in a separate thread.
-	 *
-	 * @return true - if the lighting calculation occurs in a separate thread, false
-	 *         - if in main thread.
-	 */
-	public boolean isAsyncLighting() {
-		if (!isInitialized()) {
-			return false;
-		}
-		return getHandlerImpl().isAsyncLighting();
-	}
-
-	/**
 	 * Is it required to send changes after changing light levels.
 	 * 
 	 * @return true - if after changing light levels, the developer needs to
@@ -354,35 +341,6 @@ public class LightAPI {
 			return null;
 		}
 		return getHandlerImpl().collectChunks(worldName, blockX, blockY, blockZ);
-	}
-
-	/**
-	 * Sending changes to world
-	 * 
-	 * @param worldName - World name
-	 * @param chunkX    - Chunk X coordinate
-	 * @param chunkZ    - Chunk Z coordinate
-	 */
-	public void sendChanges(String worldName, int chunkX, int chunkZ) {
-		if (!isInitialized()) {
-			return;
-		}
-		getHandlerImpl().sendChanges(worldName, chunkX, chunkZ);
-	}
-
-	/**
-	 * Sending changes to world
-	 * 
-	 * @param worldName - World name
-	 * @param chunkX    - Chunk X coordinate
-	 * @param blockY    - Block Y coordinate
-	 * @param chunkZ    - Chunk Z coordinate
-	 */
-	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ) {
-		if (!isInitialized()) {
-			return;
-		}
-		getHandlerImpl().sendChanges(worldName, chunkX, blockY, chunkZ);
 	}
 
 	/**

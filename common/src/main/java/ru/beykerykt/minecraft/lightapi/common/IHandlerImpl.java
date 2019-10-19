@@ -166,28 +166,12 @@ public interface IHandlerImpl {
 			LCallback callback);
 
 	/**
-	 * Platform that is being used.
-	 * 
-	 * @return One of the proposed options from {@link ImplementationPlatform}
-	 */
-	@Deprecated
-	public ImplementationPlatform getImplementationPlatform();
-
-	/**
 	 * Used lighting engine version.
 	 * 
 	 * @return One of the proposed options from {@link LightingEngineVersion}
 	 */
 	public LightingEngineVersion getLightingEngineVersion();
 
-	/**
-	 * Does the calculation of the lighting in a separate thread.
-	 *
-	 * @return true - if the lighting calculation occurs in a separate thread, false
-	 *         - if in main thread.
-	 */
-	public boolean isAsyncLighting();
-	
 	/**
 	 * Is it required to send changes after changing light levels.
 	 * 
@@ -221,25 +205,6 @@ public interface IHandlerImpl {
 	 * @return List changed chunks around the given coordinate.
 	 */
 	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ);
-
-	/**
-	 * Sending changes to world
-	 * 
-	 * @param worldName - World name
-	 * @param chunkX    - Chunk X coordinate
-	 * @param chunkZ    - Chunk Z coordinate
-	 */
-	public void sendChanges(String worldName, int chunkX, int chunkZ);
-
-	/**
-	 * Sending changes to world
-	 * 
-	 * @param worldName - World name
-	 * @param chunkX    - Chunk X coordinate
-	 * @param blockY    - Block Y coordinate
-	 * @param chunkZ    - Chunk Z coordinate
-	 */
-	public void sendChanges(String worldName, int chunkX, int blockY, int chunkZ);
 
 	/**
 	 * Sending changes to world
