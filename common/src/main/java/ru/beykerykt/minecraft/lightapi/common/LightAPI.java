@@ -325,18 +325,18 @@ public class LightAPI {
 	 * Collects modified сhunks around a given coordinate in the radius of the light
 	 * level. The light level is taken from the arguments.
 	 * 
-	 * @param worldName  - World name
-	 * @param blockX     - Block X coordinate
-	 * @param blockY     - Block Y coordinate
-	 * @param blockZ     - Block Z coordinate
-	 * @param lightlevel - Light level. Default range - 0 - 15
+	 * @param worldName - World name
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @param radius    - Radius in blocks
 	 * @return List changed chunks around the given coordinate.
 	 */
-	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int lightlevel) {
+	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int radius) {
 		if (!isInitialized()) {
 			return null;
 		}
-		return getHandlerImpl().collectChunks(worldName, blockX, blockY, blockZ, lightlevel);
+		return getHandlerImpl().collectChunks(worldName, blockX, blockY, blockZ, radius);
 	}
 
 	/**
