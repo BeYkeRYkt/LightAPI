@@ -21,6 +21,13 @@
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
+		<!-- CraftBukkit -->
+		<dependency>
+			<groupId>org.bukkit</groupId>
+			<artifactId>CraftBukkit</artifactId>
+			<version>1.13.2-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<defaultGoal>clean package install</defaultGoal>
