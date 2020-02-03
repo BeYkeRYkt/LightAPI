@@ -1,8 +1,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com>
- * Copyright (c) 2016-2017 The ImplexDevOne Project
+ * Copyright (c) 2020 Vladimir Mikhailov <beykerykt@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,51 +21,66 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.impl.bukkit;
+package ru.beykerykt.minecraft.lightapi.bukkit.impl;
 
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import ru.beykerykt.minecraft.lightapi.common.IHandlerFactory;
-import ru.beykerykt.minecraft.lightapi.common.ILightHandler;
+import ru.beykerykt.minecraft.lightapi.common.impl.IHandlerFactory;
+import ru.beykerykt.minecraft.lightapi.common.impl.IHandlerImpl;
 
 public class BukkitHandlerFactory implements IHandlerFactory {
 
 	private BukkitPlugin plugin;
+
+	// current supported bukkit impl
+	private static final String CRAFTBUKKIT_PKG = "org.bukkit.craftbukkit";
+	private static final String NMS_PKG = "net.minecraft.server";
 
 	public BukkitHandlerFactory(BukkitPlugin plugin) {
 		this.plugin = plugin;
 	}
 
 	@Override
-	public ILightHandler createHandler() {
-		String[] line = plugin.getServer().getClass().getPackage().getName().replace(".", ",").split(",");
-		// First, check if CraftBukkit really is, since Bukkit is only an API, and there
-		// may be several implementations (for example, Glowstone and etc)
-		String impl = line[2];
+	public IHandlerImpl createHandler() {
+		IHandlerImpl handler = null;
 
-		// Since the biggest modification of CraftBukkit is Spigot and its individual
-		// forks, use the name 'craftbukkit' to define
-		if (impl.equals("craftbukkit")) {
-			String version = line[3];
+		// load specific nms pkg if available
+		String specificPkg = plugin.getConfig().getString("specific-nms-handler");
+		if (specificPkg != null && !specificPkg.equalsIgnoreCase("none")) {
+			plugin.log("Initial load specific handler");
 			try {
-				ILightHandler handler = (ILightHandler) Class
-						.forName("ru.beykerykt.minecraft.lightapi.impl.bukkit.nms.NMS_" + version).getConstructor()
-						.newInstance();
-				plugin.getLogger().info("Your server is using version " + version);
-				return handler;
+				handler = (IHandlerImpl) Class.forName(specificPkg).getConstructor().newInstance();
+				plugin.log("Custom handler is initialized: " + handler.getClass().getName());
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException | NoSuchMethodException | SecurityException
 					| ClassNotFoundException e) {
 				e.printStackTrace();
 			}
-		} else if (plugin.getServer().getName().equals("Glowstone")) {
-			// may be it's Glowstone ???
-			throw new NotImplementedException("Glowstone is currently not supported."); // TODO: support this
-		} else {
+			return handler;
+		}
+
+		// First, check if CraftBukkit really is, since Bukkit is only an API, and there
+		// may be several implementations (for example: Spigot, Glowstone and etc)
+		String serverImplPackage = plugin.getServer().getClass().getPackage().getName();
+		if (serverImplPackage.startsWith(CRAFTBUKKIT_PKG)) { // i think it's craftbukkit (?)
+			// start using nms handler
+			String[] line = serverImplPackage.replace(".", ",").split(",");
+			String version = line[3];
+			plugin.log("Your server is using version " + version);
+			try {
+				handler = (IHandlerImpl) Class.forName("ru.beykerykt.minecraft.lightapi.bukkit.nms.NMS_" + version)
+						.getConstructor().newInstance();
+				plugin.log("Handler is initialized: " + version);
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | NoSuchMethodException | SecurityException
+					| ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		} else { // something else
 			throw new NotImplementedException(plugin.getServer().getName() + " is currently not supported.");
 		}
-		return null;
+		return handler;
 	}
 }

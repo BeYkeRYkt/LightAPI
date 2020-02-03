@@ -22,11 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.impl.bukkit;
+package ru.beykerykt.minecraft.lightapi.bukkit;
 
 import org.bukkit.World;
 
-import ru.beykerykt.minecraft.lightapi.common.IChunkData;
+import ru.beykerykt.minecraft.lightapi.common.IChunkSectionsData;
 
 /**
  * https://wiki.vg/Chunk_Format#Packet_structure
@@ -34,22 +34,26 @@ import ru.beykerykt.minecraft.lightapi.common.IChunkData;
  * @author BeYkeRYkt
  *
  */
-public class BukkitChunkData implements IChunkData {
+public class BukkitChunkSectionsData implements IChunkSectionsData {
 
 	private World world;
 	private int x;
-	private int y;
 	private int z;
+	private int sectionMaskSky;
+	private int sectionMaskBlock;
 
-	public BukkitChunkData(World world, int chunkX, int chunkZ) {
-		this(world, chunkX, 255, chunkZ);
+	public final static int FULL_MASK = 0x1ffff;
+
+	public BukkitChunkSectionsData(World world, int chunkX, int chunkZ) {
+		this(world, chunkX, chunkZ, FULL_MASK, FULL_MASK);
 	}
 
-	public BukkitChunkData(World world, int chunkX, int chunk_y_height, int chunkZ) {
+	public BukkitChunkSectionsData(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
 		this.world = world;
 		this.x = chunkX;
-		this.y = chunk_y_height;
 		this.z = chunkZ;
+		this.sectionMaskSky = sectionMaskSky;
+		this.sectionMaskBlock = sectionMaskBlock;
 	}
 
 	public World getWorld() {
@@ -80,28 +84,32 @@ public class BukkitChunkData implements IChunkData {
 		return z;
 	}
 
-	/**
-	 * Bitmask with bits set to 1 for every 16×16×16 chunk section whose data is
-	 * included in Data. The least significant bit represents the chunk section at
-	 * the bottom of the chunk column (from y=0 to y=15).
-	 * 
-	 * @return The height (0 - 255) on which the chunk column depends
-	 */
-	public int getChunkYHeight() {
-		return y;
+	@Override
+	public int getSectionMaskSky() {
+		return sectionMaskSky;
 	}
 
-	public void setChunkYHeight(int y) {
-		this.y = y;
+	public void addSectionMaskSky(int sectionMaskSky) {
+		this.sectionMaskSky |= sectionMaskSky;
+	}
+
+	@Override
+	public int getSectionMaskBlock() {
+		return sectionMaskBlock;
+	}
+
+	public void addSectionMaskBlock(int sectionMaskBlock) {
+		this.sectionMaskBlock |= sectionMaskBlock;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + sectionMaskBlock;
+		result = prime * result + sectionMaskSky;
 		result = prime * result + ((world == null) ? 0 : world.hashCode());
 		result = prime * result + x;
-		result = prime * result + (y >> 4);
 		result = prime * result + z;
 		return result;
 	}
@@ -114,15 +122,17 @@ public class BukkitChunkData implements IChunkData {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		BukkitChunkData other = (BukkitChunkData) obj;
+		BukkitChunkSectionsData other = (BukkitChunkSectionsData) obj;
+		if (sectionMaskBlock != other.sectionMaskBlock)
+			return false;
+		if (sectionMaskSky != other.sectionMaskSky)
+			return false;
 		if (world == null) {
 			if (other.world != null)
 				return false;
 		} else if (!world.getName().equals(other.world.getName()))
 			return false;
 		if (x != other.x)
-			return false;
-		if ((y >> 4) != (other.y >> 4))
 			return false;
 		if (z != other.z)
 			return false;
@@ -131,6 +141,7 @@ public class BukkitChunkData implements IChunkData {
 
 	@Override
 	public String toString() {
-		return "BukkitChunkData [worldName=" + world.getName() + ", x=" + x + ", y=" + y + ", z=" + z + "]";
+		return "BukkitChunkSectionData [world=" + world + ", x=" + x + ", z=" + z + ", sectionMaskSky=" + sectionMaskSky
+				+ ", sectionMaskBlock=" + sectionMaskBlock + "]";
 	}
 }

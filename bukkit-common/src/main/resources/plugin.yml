@@ -1,9 +1,9 @@
 name: LightAPI
-main: ru.beykerykt.minecraft.lightapi.impl.bukkit.BukkitPlugin
+main: ru.beykerykt.minecraft.lightapi.bukkit.impl.BukkitPlugin
 version: ${SERVER_API}-${project.version} (build ${BUILD_NUMBER})
 description: Bukkit library for create invisible light source
 author: BeYkeRYkt
-authors: [The ImplexDevOne Project, other contributors in GitHub]
+authors: [Qvesh, other contributors in GitHub]
 website: https://github.com/BeYkeRYkt/LightAPI
 commands:
    lightapi:
