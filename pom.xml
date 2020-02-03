@@ -22,6 +22,7 @@
 		<module>bukkit-common</module>
 		<module>bukkit-nms-v1_13_R2</module>
 		<module>bukkit-nms-v1_14_R1</module>
+		<module>bukkit-nms-v1_15_R1</module>
 		<module>bukkit-nms-all</module>
 		<!-- Sponge -->
 		<module>sponge-common</module>
