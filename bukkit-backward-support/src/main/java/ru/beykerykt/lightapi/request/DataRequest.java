@@ -22,27 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common;
+package ru.beykerykt.lightapi.request;
 
-public enum LightType {
+@Deprecated
+public interface DataRequest {
 
-	/**
-	 * Light emanates from the block (torch, glowstone, etc.)
-	 */
-	BLOCK(0),
-
-	/**
-	 * N/A
-	 */
-	SKY(1);
-
-	private final int id;
-
-	private LightType(int id) {
-		this.id = id;
-	}
-
-	public int getId() {
-		return id;
-	}
+	public void process();
 }

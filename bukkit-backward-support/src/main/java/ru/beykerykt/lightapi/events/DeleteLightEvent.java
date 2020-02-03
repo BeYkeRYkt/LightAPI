@@ -22,35 +22,88 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.impl.bukkit;
+package ru.beykerykt.lightapi.events;
 
-import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
-import ru.beykerykt.minecraft.lightapi.common.LCallback;
-import ru.beykerykt.minecraft.lightapi.common.LReason;
-import ru.beykerykt.minecraft.lightapi.common.LStage;
-import ru.beykerykt.minecraft.lightapi.common.LightType;
+@Deprecated
+public class DeleteLightEvent extends Event implements Cancellable {
 
-public abstract class BukkitCallback implements LCallback {
+	private boolean cancel;
+	private static final HandlerList handlers = new HandlerList();
+	private World world;
+	private int x;
+	private int y;
+	private int z;
+	private boolean async;
 
-	public abstract void onSuccess(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
-			LStage stage);
-
-	public abstract void onFailed(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
-			LStage stage, LReason reason);
-
-	@Override
-	public void onSuccess(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
-			LStage stage) {
-		World world = Bukkit.getWorld(worldName);
-		onSuccess(world, type, blockX, blockY, blockZ, lightlevel, stage);
+	public DeleteLightEvent(World world, int x, int y, int z, boolean async) {
+		this.world = world;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.async = async;
 	}
 
 	@Override
-	public void onFailed(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
-			LStage stage, LReason reason) {
-		World world = Bukkit.getWorld(worldName);
-		onFailed(world, type, blockX, blockY, blockZ, lightlevel, stage, reason);
+	public HandlerList getHandlers() {
+		return handlers;
+	}
+
+	public static HandlerList getHandlerList() {
+		return handlers;
+	}
+
+	@Override
+	public boolean isCancelled() {
+		return cancel;
+	}
+
+	@Override
+	public void setCancelled(boolean arg0) {
+		this.cancel = arg0;
+	}
+
+	public int getX() {
+		return x;
+	}
+
+	public void setX(int x) {
+		this.x = x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(int y) {
+		this.y = y;
+	}
+
+	public int getZ() {
+		return z;
+	}
+
+	public void setZ(int z) {
+		this.z = z;
+	}
+
+	public World getWorld() {
+		return world;
+	}
+
+	public void setWorld(World world) {
+		this.world = world;
+	}
+
+	public boolean isAsync() {
+		return async;
+	}
+
+	public void setAsync(boolean flag) {
+		this.async = flag;
 	}
 }
