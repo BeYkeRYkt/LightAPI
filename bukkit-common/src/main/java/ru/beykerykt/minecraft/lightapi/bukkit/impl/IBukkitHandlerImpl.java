@@ -1,8 +1,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com>
- * Copyright (c) 2016-2017 The ImplexDevOne Project
+ * Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +26,6 @@ package ru.beykerykt.minecraft.lightapi.bukkit.impl;
 import java.util.List;
 
 import org.bukkit.World;
-import org.bukkit.entity.Player;
 
 import ru.beykerykt.minecraft.lightapi.common.IChunkSectionsData;
 import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;

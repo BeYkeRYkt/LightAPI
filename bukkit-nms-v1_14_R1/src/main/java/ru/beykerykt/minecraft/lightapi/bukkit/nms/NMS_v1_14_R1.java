@@ -1,4 +1,4 @@
-/*
+/**
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
