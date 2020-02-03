@@ -1,8 +1,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com>
- * Copyright (c) 2016-2017 The ImplexDevOne Project
+ * Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +21,65 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common;
+package ru.beykerykt.minecraft.lightapi.common.impl;
 
 import java.util.List;
 
+import ru.beykerykt.minecraft.lightapi.common.IChunkSectionsData;
+import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
+
 /**
- * Common interface for various Minecraft server platform implementations.
+ * An interface is an implementation for a specific platform and may contain
+ * unique functions for a specific platform on which it is implemented. It can
+ * be used as the main interface for third-party developers of a specific
+ * platform.
  *
  * @author BeYkeRYkt
  */
-public interface IHandlerImpl {
+public interface IPluginImpl {
+
+	/**
+	 * Platform that is being used
+	 * 
+	 * @return One of the proposed options from {@link ImplementationPlatform}
+	 */
+	public ImplementationPlatform getImplPlatform();
+
+	/**
+	 * N/A
+	 * 
+	 * @return
+	 */
+	public IHandlerImpl getHandlerImpl();
+
+	/**
+	 * Log message in console
+	 * 
+	 * @param msg - message
+	 */
+	public void log(String msg);
+
+	/**
+	 * Used lighting engine version.
+	 * 
+	 * @return One of the proposed options from {@link LightingEngineVersion}
+	 */
+	public LightingEngineVersion getLightingEngineVersion();
+
+	/**
+	 * Does the calculation of the lighting in a separate thread.
+	 *
+	 * @return true - if the lighting calculation occurs in a separate thread, false
+	 *         - if in main thread.
+	 */
+	public boolean isAsyncLighting();
 
 	/**
 	 * Placement of a certain type of light with a given level of illumination in
 	 * the named world in certain coordinates with the return result.
 	 * 
 	 * @param worldName  - World name
-	 * @param type       - Light type
+	 * @param flags      - Light type
 	 * @param blockX     - Block X coordinate
 	 * @param blockY     - Block Y coordinate
 	 * @param blockZ     - Block Z coordinate
@@ -46,15 +87,14 @@ public interface IHandlerImpl {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
-	@Deprecated
-	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
+	public boolean createLight(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel);
 
 	/**
 	 * Placement of a certain type of light with a given level of illumination in
 	 * the named world in certain coordinates with the return result.
 	 * 
 	 * @param worldName  - World name
-	 * @param type       - Light type
+	 * @param flags      - Light type
 	 * @param blockX     - Block X coordinate
 	 * @param blockY     - Block Y coordinate
 	 * @param blockZ     - Block Z coordinate
@@ -63,8 +103,7 @@ public interface IHandlerImpl {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
-	@Deprecated
-	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
+	public boolean createLight(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel,
 			LCallback callback);
 
 	/**
@@ -72,22 +111,21 @@ public interface IHandlerImpl {
 	 * with the return result.
 	 * 
 	 * @param worldName - World name
-	 * @param type      - Light type
+	 * @param flags     - Light type
 	 * @param blockX    - Block X coordinate
 	 * @param blockY    - Block Y coordinate
 	 * @param blockZ    - Block Z coordinate
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
-	@Deprecated
-	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ);
+	public boolean deleteLight(String worldName, int flags, int blockX, int blockY, int blockZ);
 
 	/**
 	 * Removing a certain type of light in the named world in certain coordinates
 	 * with the return result.
 	 * 
 	 * @param worldName - World name
-	 * @param type      - Light type
+	 * @param flags     - Light type
 	 * @param blockX    - Block X coordinate
 	 * @param blockY    - Block Y coordinate
 	 * @param blockZ    - Block Z coordinate
@@ -95,36 +133,34 @@ public interface IHandlerImpl {
 	 * @return true - if the light in the given coordinates has changed, false - if
 	 *         not
 	 */
-	@Deprecated
-	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
-			LCallback callback);
+	public boolean deleteLight(String worldName, int flags, int blockX, int blockY, int blockZ, LCallback callback);
 
 	/**
 	 * Sets "directly" the level of light in given coordinates without additional
 	 * processing.
 	 * 
 	 * @param worldName  - World name
-	 * @param type       - Light type
+	 * @param flags      - Light type
 	 * @param blockX     - Block X coordinate
 	 * @param blockY     - Block Y coordinate
 	 * @param blockZ     - Block Z coordinate
 	 * @param lightlevel - light level. Default range - 0 - 15
 	 */
-	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
+	public void setRawLightLevel(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel);
 
 	/**
 	 * Sets "directly" the level of light in given coordinates without additional
 	 * processing.
 	 * 
 	 * @param worldName  - World name
-	 * @param type       - Light type
+	 * @param flags      - Light type
 	 * @param blockX     - Block X coordinate
 	 * @param blockY     - Block Y coordinate
 	 * @param blockZ     - Block Z coordinate
 	 * @param lightlevel - light level. Default range - 0 - 15
-	 * @param callback   - ???
+	 * @param callback   - Callback interface
 	 */
-	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
+	public void setRawLightLevel(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel,
 			LCallback callback);
 
 	/**
@@ -132,45 +168,45 @@ public interface IHandlerImpl {
 	 * processing.
 	 * 
 	 * @param worldName - World name
-	 * @param type      - Light type
+	 * @param flags     - Light type
 	 * @param blockX    - Block X coordinate
 	 * @param blockY    - Block Y coordinate
 	 * @param blockZ    - Block Z coordinate
 	 * @return lightlevel - Light level. Default range - 0 - 15
 	 */
-	public int getRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ);
+	public int getRawLightLevel(String worldName, int flags, int blockX, int blockY, int blockZ);
+
+	/**
+	 * N/A
+	 * 
+	 * @return
+	 */
+	public boolean isRequireRecalculateLighting();
 
 	/**
 	 * Performs re-illumination of the light in the given coordinates.
 	 * 
 	 * @param worldName - World name
-	 * @param type      - Light type
+	 * @param flags     - Light type
 	 * @param blockX    - Block X coordinate
 	 * @param blockY    - Block Y coordinate
 	 * @param blockZ    - Block Z coordinate
-	 * @param callback  - ???
+	 * @param callback  - Callback interface
 	 */
-	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ);
+	public void recalculateLighting(String worldName, int flags, int blockX, int blockY, int blockZ);
 
 	/**
 	 * Performs re-illumination of the light in the given coordinates.
 	 * 
 	 * @param worldName - World name
-	 * @param type      - Light type
+	 * @param flags     - Light type
 	 * @param blockX    - Block X coordinate
 	 * @param blockY    - Block Y coordinate
 	 * @param blockZ    - Block Z coordinate
-	 * @param callback  - ???
+	 * @param callback  - Callback interface
 	 */
-	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ,
+	public void recalculateLighting(String worldName, int flags, int blockX, int blockY, int blockZ,
 			LCallback callback);
-
-	/**
-	 * Used lighting engine version.
-	 * 
-	 * @return One of the proposed options from {@link LightingEngineVersion}
-	 */
-	public LightingEngineVersion getLightingEngineVersion();
 
 	/**
 	 * Is it required to send changes after changing light levels.
@@ -182,34 +218,45 @@ public interface IHandlerImpl {
 	public boolean isRequireManuallySendingChanges();
 
 	/**
-	 * Collects modified сhunks around a given coordinate in the radius of the light
-	 * level. The light level is taken from the arguments.
+	 * Collects modified сhunks with sections around a given coordinate in the
+	 * radius of the light level. The light level is taken from the arguments.
+	 * 
+	 * @param worldName  - World name
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - Radius in blocks (lightlevel)
+	 * @return List changed chunk sections around the given coordinate.
+	 */
+	public List<IChunkSectionsData> collectChunkSections(String worldName, int blockX, int blockY, int blockZ,
+			int lightlevel);
+
+	/**
+	 * Collects modified сhunks with sections around a given coordinate in the
+	 * radius of the light level. The light level is taken from block in the given
+	 * coordinates.
 	 * 
 	 * @param worldName - World name
 	 * @param blockX    - Block X coordinate
 	 * @param blockY    - Block Y coordinate
 	 * @param blockZ    - Block Z coordinate
-	 * @param radius    - Radius in blocks
-	 * @return List changed chunks around the given coordinate.
+	 * @return List changed chunk sections around the given coordinate.
 	 */
-	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int radius);
+	public List<IChunkSectionsData> collectChunkSections(String worldName, int blockX, int blockY, int blockZ);
 
 	/**
-	 * Collects modified сhunks around a given coordinate in the radius of the light
-	 * level. The light level is taken from block in the given coordinates.
+	 * Instant sending a full chunk to players in the world. Sends a single packet.
 	 * 
 	 * @param worldName - World name
-	 * @param blockX    - Block X coordinate
-	 * @param blockY    - Block Y coordinate
-	 * @param blockZ    - Block Z coordinate
-	 * @return List changed chunks around the given coordinate.
+	 * @param chunkX    - Chunk X coordinate
+	 * @param chunkZ    - Chunk Z coordinate
 	 */
-	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ);
+	public void sendChanges(String worldName, int chunkX, int chunkZ);
 
 	/**
-	 * Sending changes to world
+	 * Instant sending a chunk to players in the world. Sends a single packet.
 	 * 
-	 * @param chunkData - {@link IChunkData}
+	 * @param chunkData - {@link IChunkSectionsData}
 	 */
-	public void sendChanges(IChunkData chunkData);
+	public void sendChanges(IChunkSectionsData chunkData);
 }

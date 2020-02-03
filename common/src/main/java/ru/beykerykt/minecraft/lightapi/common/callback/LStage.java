@@ -22,22 +22,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common;
+package ru.beykerykt.minecraft.lightapi.common.callback;
 
-public interface IChunkData {
+public enum LStage {
+	/**
+	 * Called from setRawLightLevel().
+	 */
+	WRITTING(0),
 
 	/**
-	 * @return World name
+	 * Called from recalculateLighting().
 	 */
-	public String getWorldName();
+	RECALCULATING(1),
 
 	/**
-	 * @return Chunk X Coordinate
+	 * Called from createLight().
 	 */
-	public int getChunkX();
+	CREATING(2),
 
 	/**
-	 * @return Chunk Z Coordinate
+	 * Called from deleteLight().
 	 */
-	public int getChunkZ();
+	DELETING(3);
+
+	private final int id;
+
+	private LStage(int id) {
+		this.id = id;
+	}
+
+	public int getId() {
+		return id;
+	}
 }

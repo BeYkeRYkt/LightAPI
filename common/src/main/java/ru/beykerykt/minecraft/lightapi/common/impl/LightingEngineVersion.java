@@ -22,46 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common;
+package ru.beykerykt.minecraft.lightapi.common.impl;
 
-/**
- * 
- * Supported Platforms
- * 
- * @author BeYkeRYkt
- *
- */
-public enum ImplementationPlatform {
+public enum LightingEngineVersion {
 
 	/**
-	 * UNKNOWN
+	 * N/A
 	 */
 	UNKNOWN(0),
 
 	/**
-	 * Platforms built on the Bukkit API. The implication is that pure Bukkit API is
-	 * used without NMS and other implementations.
+	 * Minecraft version is before 1.14. For update lighting in client-side, need
+	 * send full chunk.
 	 */
-	BUKKIT(1),
+	V1(1),
 
 	/**
-	 * Platforms built on CraftBukkit. Spigot, Paper and etc
+	 * Minecraft version is equals or after 1.14. For update lighting in
+	 * client-side, need send only light update packet.
 	 */
-	@Deprecated
-	CRAFTBUKKIT(2),
-
-	/**
-	 * Platforms built on SpongePowered.
-	 */
-	@Deprecated
-	SPONGE(3);
-
-	// TODO
-	// GLOWSTONE(4)
+	V2(2);
 
 	private final int id;
 
-	private ImplementationPlatform(int id) {
+	private LightingEngineVersion(int id) {
 		this.id = id;
 	}
 

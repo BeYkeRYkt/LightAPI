@@ -1,8 +1,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com>
- * Copyright (c) 2016-2017 The ImplexDevOne Project
+ * Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +23,31 @@
  */
 package ru.beykerykt.minecraft.lightapi.common;
 
-public enum LightingEngineVersion {
+public class LightFlags {
 
 	/**
 	 * N/A
 	 */
-	UNKNOWN(0),
+	public static final int NONE = 0;
 
 	/**
-	 * Minecraft version is before 1.14. For update lighting in client-side, need
-	 * send full chunk.
+	 * Light from the blocks (torch, glowstone, etc.)
 	 */
-	V1(1),
+	public static final int BLOCK_LIGHTING = 1;
 
 	/**
-	 * Minecraft version is equals or after 1.14. For update lighting in
-	 * client-side, need send only light update packet.
+	 * Light from sky
 	 */
-	V2(2);
+	public static final int SKY_LIGHTING = 2;
 
-	private final int id;
-
-	private LightingEngineVersion(int id) {
-		this.id = id;
-	}
-
-	public int getId() {
-		return id;
-	}
+	/**
+	 * <ul>
+	 * <li>At setting light level: Applies new parameters for BLOCK_LIGHTING and
+	 * SKY_LIGHTING.
+	 * <li>At recalculating: Makes a BLOCK_LIGHTING allocation based on
+	 * SKY_LIGHTING.
+	 * <li>At getting light level: returns the overall lighting level.
+	 * </ul>
+	 */
+	public static final int COMBO_LIGHTING = 4; // 15
 }

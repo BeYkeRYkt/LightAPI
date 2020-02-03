@@ -27,6 +27,8 @@ package ru.beykerykt.minecraft.lightapi.common;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import ru.beykerykt.minecraft.lightapi.common.impl.ImplementationPlatform;
+
 /**
  * Information about the current LightAPI build
  */
@@ -36,7 +38,7 @@ public class Build {
 	 * Internal version. May change during any changes in the API. The string should
 	 * change from release to release.
 	 */
-	public static final int CURRENT_VERSION = VERSION_CODES.TWO;
+	public static final int CURRENT_VERSION = VERSION_CODES.THREE;
 
 	/**
 	 * Platform that is being used.
@@ -51,6 +53,7 @@ public class Build {
 		map.add(VERSION_CODES.ONE, "One");
 		map.add(VERSION_CODES.TWO, "Two");
 		map.add(VERSION_CODES.THREE, "Three");
+		map.add(VERSION_CODES.FOUR, "Four");
 	}
 
 	public static class VERSION_CODES {
@@ -65,15 +68,21 @@ public class Build {
 		public static int ONE = 1;
 
 		/**
-		 * TBA: Disable LightAPI-Backward. Introduce ImplementationPlatform. Rewrite API
-		 * for lighting changes in MC 1.14.
+		 * NO_DATA: Disable LightAPI-Backward. Introduce ImplementationPlatform. Rewrite
+		 * API for lighting changes in MC 1.14.
 		 */
 		public static int TWO = 2;
 
 		/**
-		 * TBA: N/A
+		 * NO_DATA: Global rewrite API for local unknown project changes. Preparatory
+		 * phase.
 		 */
 		public static int THREE = 3;
+
+		/**
+		 * TBA: First public rewrited API version.
+		 */
+		public static int FOUR = 4;
 	}
 
 	public static String getNameForInt(int id) {

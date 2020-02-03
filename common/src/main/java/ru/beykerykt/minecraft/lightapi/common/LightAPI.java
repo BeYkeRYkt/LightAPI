@@ -26,19 +26,29 @@ package ru.beykerykt.minecraft.lightapi.common;
 
 import java.util.List;
 
+import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
+import ru.beykerykt.minecraft.lightapi.common.impl.IPluginImpl;
+import ru.beykerykt.minecraft.lightapi.common.impl.ImplementationPlatform;
+import ru.beykerykt.minecraft.lightapi.common.impl.LightingEngineVersion;
+
+/**
+ * Main class for all platforms. Contains basic methods for all implementations.
+ * 
+ * @author BeYkeRYkt
+ *
+ */
 public class LightAPI {
 
 	private static LightAPI singleton;
-	private static IPluginImpl pluginImpl;
-	private IHandlerImpl mHandler;
 
-	private LightAPI(IPluginImpl pluginImpl, IHandlerImpl handler) {
-		LightAPI.pluginImpl = pluginImpl;
-		mHandler = handler;
+	private IPluginImpl mPluginImpl;
+
+	private LightAPI(IPluginImpl pluginImpl) {
+		mPluginImpl = pluginImpl;
 	}
 
 	/**
-	 * Must be called in onLoad();
+	 * Must be called in onEnable();
 	 * 
 	 * @param impl
 	 */
@@ -46,15 +56,11 @@ public class LightAPI {
 		if (singleton == null && impl != null) {
 			impl.log("Preparing LightAPI...");
 			synchronized (LightAPI.class) {
-				if (impl.getHandlerFactory() == null) {
-					throw new IllegalStateException("HandlerFactory not yet initialized");
+				if (impl.getHandlerImpl() == null) {
+					throw new IllegalStateException("HandlerImpl not yet initialized");
 				}
-				IHandlerImpl implHandler = impl.getHandlerFactory().createHandler();
-				if (implHandler == null) {
-					throw new IllegalStateException("ILightHandler not yet initialized");
-				}
-				singleton = new LightAPI(impl, implHandler);
-				impl.log("Done!");
+				singleton = new LightAPI(impl);
+				impl.log("Preparing done!");
 			}
 		}
 	}
@@ -62,11 +68,11 @@ public class LightAPI {
 	/**
 	 * N/A
 	 */
-	protected static IPluginImpl getPluginImpl() {
-		if (pluginImpl == null) {
+	public IPluginImpl getPluginImpl() {
+		if (get().mPluginImpl == null) {
 			throw new IllegalStateException("IPluginImpl not yet initialized! Use prepare() !");
 		}
-		return pluginImpl;
+		return get().mPluginImpl;
 	}
 
 	/**
@@ -81,193 +87,9 @@ public class LightAPI {
 	 */
 	public static LightAPI get() {
 		if (singleton == null) {
-			prepare(getPluginImpl());
+			throw new IllegalStateException("Singleton not yet initialized! Use prepare() !");
 		}
 		return singleton;
-	}
-
-	public IHandlerImpl getHandlerImpl() {
-		return get().mHandler;
-	}
-
-	public boolean isInitialized() {
-		return singleton != null;
-	}
-
-	/**
-	 * Placement of a certain type of light with a given level of illumination in
-	 * the named world in certain coordinates with the return result.
-	 * 
-	 * @param worldName  - World name
-	 * @param type       - Light type
-	 * @param blockX     - Block X coordinate
-	 * @param blockY     - Block Y coordinate
-	 * @param blockZ     - Block Z coordinate
-	 * @param lightlevel - light level. Default range - 0 - 15
-	 * @return true - if the light in the given coordinates has changed, false - if
-	 *         not
-	 */
-	@Deprecated
-	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
-		if (!isInitialized()) {
-			return false;
-		}
-		return getHandlerImpl().createLight(worldName, type, blockX, blockY, blockZ, lightlevel);
-	}
-
-	/**
-	 * Placement of a certain type of light with a given level of illumination in
-	 * the named world in certain coordinates with the return result.
-	 * 
-	 * @param worldName  - World name
-	 * @param type       - Light type
-	 * @param blockX     - Block X coordinate
-	 * @param blockY     - Block Y coordinate
-	 * @param blockZ     - Block Z coordinate
-	 * @param lightlevel - light level. Default range - 0 - 15
-	 * @param callback   - Callback interface
-	 * @return true - if the light in the given coordinates has changed, false - if
-	 *         not
-	 */
-	@Deprecated
-	public boolean createLight(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
-			LCallback callback) {
-		if (!isInitialized()) {
-			return false;
-		}
-		return getHandlerImpl().createLight(worldName, type, blockX, blockY, blockZ, lightlevel, callback);
-	}
-
-	/**
-	 * Removing a certain type of light in the named world in certain coordinates
-	 * with the return result.
-	 * 
-	 * @param worldName - World name
-	 * @param type      - Light type
-	 * @param blockX    - Block X coordinate
-	 * @param blockY    - Block Y coordinate
-	 * @param blockZ    - Block Z coordinate
-	 * @return true - if the light in the given coordinates has changed, false - if
-	 *         not
-	 */
-	@Deprecated
-	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ) {
-		if (!isInitialized()) {
-			return false;
-		}
-		return getHandlerImpl().deleteLight(worldName, type, blockX, blockY, blockZ);
-	}
-
-	/**
-	 * Removing a certain type of light in the named world in certain coordinates
-	 * with the return result.
-	 * 
-	 * @param worldName - World name
-	 * @param type      - Light type
-	 * @param blockX    - Block X coordinate
-	 * @param blockY    - Block Y coordinate
-	 * @param blockZ    - Block Z coordinate
-	 * @param callback  - Callback interface
-	 * @return true - if the light in the given coordinates has changed, false - if
-	 *         not
-	 */
-	@Deprecated
-	public boolean deleteLight(String worldName, LightType type, int blockX, int blockY, int blockZ,
-			LCallback callback) {
-		if (!isInitialized()) {
-			return false;
-		}
-		return getHandlerImpl().deleteLight(worldName, type, blockX, blockY, blockZ, callback);
-	}
-
-	/**
-	 * Sets "directly" the level of light in given coordinates without additional
-	 * processing.
-	 * 
-	 * @param worldName  - World name
-	 * @param type       - Light type
-	 * @param blockX     - Block X coordinate
-	 * @param blockY     - Block Y coordinate
-	 * @param blockZ     - Block Z coordinate
-	 * @param lightlevel - light level. Default range - 0 - 15
-	 */
-	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel) {
-		if (!isInitialized()) {
-			return;
-		}
-		getHandlerImpl().setRawLightLevel(worldName, type, blockX, blockY, blockZ, lightlevel);
-	}
-
-	/**
-	 * Sets "directly" the level of light in given coordinates without additional
-	 * processing.
-	 * 
-	 * @param worldName  - World name
-	 * @param type       - Light type
-	 * @param blockX     - Block X coordinate
-	 * @param blockY     - Block Y coordinate
-	 * @param blockZ     - Block Z coordinate
-	 * @param lightlevel - light level. Default range - 0 - 15
-	 * @param callback   - ???
-	 */
-	public void setRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
-			LCallback callback) {
-		if (!isInitialized()) {
-			return;
-		}
-		getHandlerImpl().setRawLightLevel(worldName, type, blockX, blockY, blockZ, lightlevel, callback);
-	}
-
-	/**
-	 * Gets "directly" the level of light from given coordinates without additional
-	 * processing.
-	 * 
-	 * @param worldName - World name
-	 * @param type      - Light type
-	 * @param blockX    - Block X coordinate
-	 * @param blockY    - Block Y coordinate
-	 * @param blockZ    - Block Z coordinate
-	 * @return lightlevel - Light level. Default range - 0 - 15
-	 */
-	public int getRawLightLevel(String worldName, LightType type, int blockX, int blockY, int blockZ) {
-		if (!isInitialized()) {
-			return 0;
-		}
-		return getHandlerImpl().getRawLightLevel(worldName, type, blockX, blockY, blockZ);
-	}
-
-	/**
-	 * Performs re-illumination of the light in the given coordinates.
-	 * 
-	 * @param worldName - World name
-	 * @param type      - Light type
-	 * @param blockX    - Block X coordinate
-	 * @param blockY    - Block Y coordinate
-	 * @param blockZ    - Block Z coordinate
-	 */
-	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ) {
-		if (!isInitialized()) {
-			return;
-		}
-		getHandlerImpl().recalculateLighting(worldName, type, blockX, blockY, blockZ);
-	}
-
-	/**
-	 * Performs re-illumination of the light in the given coordinates.
-	 * 
-	 * @param worldName - World name
-	 * @param type      - Light type
-	 * @param blockX    - Block X coordinate
-	 * @param blockY    - Block Y coordinate
-	 * @param blockZ    - Block Z coordinate
-	 * @param callback  - ???
-	 */
-	public void recalculateLighting(String worldName, LightType type, int blockX, int blockY, int blockZ,
-			LCallback callback) {
-		if (!isInitialized()) {
-			return;
-		}
-		getHandlerImpl().recalculateLighting(worldName, type, blockX, blockY, blockZ, callback);
 	}
 
 	/**
@@ -276,22 +98,183 @@ public class LightAPI {
 	 * @return One of the proposed options from {@link ImplementationPlatform}
 	 */
 	public ImplementationPlatform getImplementationPlatform() {
-		if (!isInitialized()) {
+		if (singleton == null) {
 			return ImplementationPlatform.UNKNOWN;
 		}
 		return getPluginImpl().getImplPlatform();
 	}
 
+	/// Handler common methods ///
 	/**
 	 * Used lighting engine version.
 	 * 
 	 * @return One of the proposed options from {@link LightingEngineVersion}
 	 */
 	public LightingEngineVersion getLightingEngineVersion() {
-		if (!isInitialized()) {
-			return LightingEngineVersion.UNKNOWN;
-		}
-		return getHandlerImpl().getLightingEngineVersion();
+		return getPluginImpl().getLightingEngineVersion();
+	}
+
+	/**
+	 * N/A
+	 * 
+	 * @return
+	 */
+	public boolean isAsyncLighting() {
+		return getPluginImpl().isAsyncLighting();
+	}
+
+	/**
+	 * Placement of a certain type of light with a given level of illumination in
+	 * the named world in certain coordinates with the return result.
+	 * 
+	 * @param worldName  - World name
+	 * @param flags      - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
+	 */
+	public boolean createLight(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel) {
+		return getPluginImpl().createLight(worldName, flags, blockX, blockY, blockZ, lightlevel);
+	}
+
+	/**
+	 * Placement of a certain type of light with a given level of illumination in
+	 * the named world in certain coordinates with the return result.
+	 * 
+	 * @param worldName  - World name
+	 * @param flags      - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @param callback   - Callback interface
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
+	 */
+	public boolean createLight(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel,
+			LCallback callback) {
+		return getPluginImpl().createLight(worldName, flags, blockX, blockY, blockZ, lightlevel, callback);
+	}
+
+	/**
+	 * Removing a certain type of light in the named world in certain coordinates
+	 * with the return result.
+	 * 
+	 * @param worldName - World name
+	 * @param flags     - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
+	 */
+	public boolean deleteLight(String worldName, int flags, int blockX, int blockY, int blockZ) {
+		return getPluginImpl().deleteLight(worldName, flags, blockX, blockY, blockZ);
+	}
+
+	/**
+	 * Removing a certain type of light in the named world in certain coordinates
+	 * with the return result.
+	 * 
+	 * @param worldName - World name
+	 * @param flags     - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @param callback  - Callback interface
+	 * @return true - if the light in the given coordinates has changed, false - if
+	 *         not
+	 */
+	public boolean deleteLight(String worldName, int flags, int blockX, int blockY, int blockZ, LCallback callback) {
+		return getPluginImpl().deleteLight(worldName, flags, blockX, blockY, blockZ, callback);
+	}
+
+	/**
+	 * Sets "directly" the level of light in given coordinates without additional
+	 * processing.
+	 * 
+	 * @param worldName  - World name
+	 * @param flags      - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 */
+	public void setRawLightLevel(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel) {
+		getPluginImpl().setRawLightLevel(worldName, flags, blockX, blockY, blockZ, lightlevel);
+	}
+
+	/**
+	 * Sets "directly" the level of light in given coordinates without additional
+	 * processing.
+	 * 
+	 * @param worldName  - World name
+	 * @param flags      - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @param callback   - ???
+	 */
+	public void setRawLightLevel(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel,
+			LCallback callback) {
+		getPluginImpl().setRawLightLevel(worldName, flags, blockX, blockY, blockZ, lightlevel, callback);
+	}
+
+	/**
+	 * Gets "directly" the level of light from given coordinates without additional
+	 * processing.
+	 * 
+	 * @param worldName - World name
+	 * @param flags     - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @return lightlevel - Light level. Default range - 0 - 15
+	 */
+	public int getRawLightLevel(String worldName, int flags, int blockX, int blockY, int blockZ) {
+		return getPluginImpl().getRawLightLevel(worldName, flags, blockX, blockY, blockZ);
+	}
+
+	/**
+	 * N/A
+	 * 
+	 * @return
+	 */
+	public boolean isRequireRecalculateLighting() {
+		return getPluginImpl().isRequireRecalculateLighting();
+	}
+
+	/**
+	 * Performs re-illumination of the light in the given coordinates.
+	 * 
+	 * @param worldName - World name
+	 * @param flags     - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @param callback  - ???
+	 */
+	public void recalculateLighting(String worldName, int flags, int blockX, int blockY, int blockZ) {
+		getPluginImpl().recalculateLighting(worldName, flags, blockX, blockY, blockZ);
+	}
+
+	/**
+	 * Performs re-illumination of the light in the given coordinates.
+	 * 
+	 * @param worldName - World name
+	 * @param flags     - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @param callback  - ???
+	 */
+	public void recalculateLighting(String worldName, int flags, int blockX, int blockY, int blockZ,
+			LCallback callback) {
+		getPluginImpl().recalculateLighting(worldName, flags, blockX, blockY, blockZ, callback);
 	}
 
 	/**
@@ -302,33 +285,29 @@ public class LightAPI {
 	 *         it after the change.
 	 */
 	public boolean isRequireManuallySendingChanges() {
-		if (!isInitialized()) {
-			return false;
-		}
-		return getHandlerImpl().isRequireManuallySendingChanges();
+		return getPluginImpl().isRequireManuallySendingChanges();
 	}
 
 	/**
-	 * Collects modified сhunks around a given coordinate in the radius of the light
-	 * level. The light level is taken from the arguments.
+	 * Collects modified сhunks with sections around a given coordinate in the
+	 * radius of the light level. The light level is taken from the arguments.
 	 * 
-	 * @param worldName - World name
-	 * @param blockX    - Block X coordinate
-	 * @param blockY    - Block Y coordinate
-	 * @param blockZ    - Block Z coordinate
-	 * @param radius    - Radius in blocks
+	 * @param worldName  - World name
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - Radius in blocks (lightlevel)
 	 * @return List changed chunks around the given coordinate.
 	 */
-	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int radius) {
-		if (!isInitialized()) {
-			return null;
-		}
-		return getHandlerImpl().collectChunks(worldName, blockX, blockY, blockZ, radius);
+	public List<IChunkSectionsData> collectChunkSections(String worldName, int blockX, int blockY, int blockZ,
+			int lightlevel) {
+		return getPluginImpl().collectChunkSections(worldName, blockX, blockY, blockZ, lightlevel);
 	}
 
 	/**
-	 * Collects modified сhunks around a given coordinate in the radius of the light
-	 * level. The light level is taken from block in the given coordinates.
+	 * Collects modified сhunks with sections around a given coordinate in the
+	 * radius of the light level. The light level is taken from block in the given
+	 * coordinates.
 	 * 
 	 * @param worldName - World name
 	 * @param blockX    - Block X coordinate
@@ -336,22 +315,27 @@ public class LightAPI {
 	 * @param blockZ    - Block Z coordinate
 	 * @return List changed chunks around the given coordinate.
 	 */
-	public List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ) {
-		if (!isInitialized()) {
-			return null;
-		}
-		return getHandlerImpl().collectChunks(worldName, blockX, blockY, blockZ);
+	public List<IChunkSectionsData> collectChunkSections(String worldName, int blockX, int blockY, int blockZ) {
+		return getPluginImpl().collectChunkSections(worldName, blockX, blockY, blockZ);
 	}
 
 	/**
-	 * Sending changes to world
+	 * Instant sending a full chunk to players in the world. Sends a single packet.
 	 * 
-	 * @param chunkData - {@link IChunkData}
+	 * @param worldName - World name
+	 * @param chunkX    - Chunk X coordinate
+	 * @param chunkZ    - Chunk Z coordinate
 	 */
-	public void sendChanges(IChunkData chunkData) {
-		if (!isInitialized()) {
-			return;
-		}
-		getHandlerImpl().sendChanges(chunkData);
+	public void sendChanges(String worldName, int chunkX, int chunkZ) {
+		getPluginImpl().sendChanges(worldName, chunkX, chunkZ);
+	}
+
+	/**
+	 * Instant sending a chunk to players in the world. Sends a single packet.
+	 * 
+	 * @param chunkData - {@link IChunkSectionsData}
+	 */
+	public void sendChanges(IChunkSectionsData chunkData) {
+		getPluginImpl().sendChanges(chunkData);
 	}
 }

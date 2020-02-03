@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
+ * Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com>
+ * Copyright (c) 2016-2017 The ImplexDevOne Project
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,32 +22,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common;
+package ru.beykerykt.minecraft.lightapi.common.callback;
 
-/**
- * N/A
- */
-public interface IPluginImpl {
+public interface LCallback {
 
 	/**
-	 * Platform that is being used
+	 * Called after successful execution.
 	 * 
-	 * @return One of the proposed options from {@link ImplementationPlatform}
+	 * @param worldName  - World name
+	 * @param type       - Light type
+	 * @param blockX     - Block X coordinate
+	 * @param blockY     - Block Y coordinate
+	 * @param blockZ     - Block Z coordinate
+	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @param LStage     - Execution stage
 	 */
-	public ImplementationPlatform getImplPlatform();
+	public void onSuccess(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel,
+			LStage stage);
 
 	/**
-	 * N/A
+	 * Called if something went wrong during execution.
 	 * 
-	 * @return
+	 * @param worldName - World name
+	 * @param type      - Light type
+	 * @param blockX    - Block X coordinate
+	 * @param blockY    - Block Y coordinate
+	 * @param blockZ    - Block Z coordinate
+	 * @param LStage    - Execution stage
 	 */
-	public IHandlerFactory getHandlerFactory();
-
-	/**
-	 * Log message in console
-	 * 
-	 * @param msg - message
-	 */
-	public void log(String msg);
+	public void onFailed(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel, LStage stage);
 
 }

@@ -22,36 +22,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common;
+package ru.beykerykt.minecraft.lightapi.common.impl;
 
-public enum LStage {
-	/**
-	 * Called from setRawLightLevel().
-	 */
-	WRITTING(0),
+public interface IHandlerFactory {
 
 	/**
-	 * Called from recalculateLighting().
+	 * Create a IHandlerImpl
+	 * 
+	 * @return {@link IHandlerImpl}
 	 */
-	RECALCULATING(1),
-
-	/**
-	 * Called from createLight().
-	 */
-	CREATING(2),
-
-	/**
-	 * Called from deleteLight().
-	 */
-	DELETING(3);
-
-	private final int id;
-
-	private LStage(int id) {
-		this.id = id;
-	}
-
-	public int getId() {
-		return id;
-	}
+	public IHandlerImpl createHandler();
 }

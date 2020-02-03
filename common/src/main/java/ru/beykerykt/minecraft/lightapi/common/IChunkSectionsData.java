@@ -24,32 +24,44 @@
  */
 package ru.beykerykt.minecraft.lightapi.common;
 
-public interface LCallback {
+public interface IChunkSectionsData {
 
 	/**
-	 * Called after successful execution.
-	 * 
-	 * @param worldName  - World name
-	 * @param type       - Light type
-	 * @param blockX     - Block X coordinate
-	 * @param blockY     - Block Y coordinate
-	 * @param blockZ     - Block Z coordinate
-	 * @param lightlevel - light level. Default range - 0 - 15
+	 * @return World name
 	 */
-	public void onSuccess(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
-			LStage stage);
+	public String getWorldName();
 
 	/**
-	 * Called if something went wrong during execution.
-	 * 
-	 * @param worldName - World name
-	 * @param type      - Light type
-	 * @param blockX    - Block X coordinate
-	 * @param blockY    - Block Y coordinate
-	 * @param blockZ    - Block Z coordinate
-	 * @param reason    - Reason
+	 * @return Chunk X Coordinate
 	 */
-	public void onFailed(String worldName, LightType type, int blockX, int blockY, int blockZ, int lightlevel,
-			LStage stage, LReason reason);
+	public int getChunkX();
 
+	/**
+	 * @return Chunk Z Coordinate
+	 */
+	public int getChunkZ();
+
+	/**
+	 * @return N/A
+	 */
+	public int getSectionMaskSky();
+
+	/**
+	 * @return N/A
+	 */
+	public int getSectionMaskBlock();
+
+	/**
+	 * N/A
+	 * 
+	 * @param sectionMaskSky
+	 */
+	public void addSectionMaskSky(int sectionMaskSky);
+
+	/**
+	 * N/A
+	 * 
+	 * @param sectionMaskBlock
+	 */
+	public void addSectionMaskBlock(int sectionMaskBlock);
 }
