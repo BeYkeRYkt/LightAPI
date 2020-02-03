@@ -8,7 +8,7 @@
 	<artifactId>lightapi-parent</artifactId>
 	<version>5.0.0</version>
 	<build>
-		<defaultGoal>clean package install</defaultGoal>
+		<defaultGoal>clean compile install</defaultGoal>
 	</build>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
