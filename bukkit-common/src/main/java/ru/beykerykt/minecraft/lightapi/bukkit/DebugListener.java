@@ -73,7 +73,6 @@ public class DebugListener implements Listener {
 		if (event.getItem().getType() == Material.STICK) {
 			event.setCancelled(true);
 			if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-				System.out.print("test (lightlevel=" + lightlevel + ")");
 				List<IChunkSectionsData> list = new CopyOnWriteArrayList<IChunkSectionsData>();
 				if (mPluginImpl.getLightingEngineVersion() == LightingEngineVersion.V1) {
 					if (prevLoc != null) {
@@ -165,7 +164,6 @@ public class DebugListener implements Listener {
 				}
 				for (int j = 0; j < list.size(); j++) {
 					IChunkSectionsData coords = list.get(j);
-					System.out.print(coords.toString());
 					mPluginImpl.sendChanges(coords);
 				}
 			} else if (event.getAction() == Action.LEFT_CLICK_BLOCK) {

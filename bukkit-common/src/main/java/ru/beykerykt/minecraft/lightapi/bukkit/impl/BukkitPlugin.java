@@ -169,7 +169,6 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (command.getName().equalsIgnoreCase("lightapi")) {
-			sender.sendMessage("mService: " + mService.isStarted());
 			if (sender instanceof Player) {
 				Player player = (Player) sender;
 				if (args.length == 0) {
