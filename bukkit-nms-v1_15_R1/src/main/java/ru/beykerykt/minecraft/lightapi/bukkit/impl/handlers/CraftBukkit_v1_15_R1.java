@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.nms;
+package ru.beykerykt.minecraft.lightapi.bukkit.impl.handlers;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -52,6 +52,7 @@ import net.minecraft.server.v1_15_R1.SectionPosition;
 import net.minecraft.server.v1_15_R1.ThreadedMailbox;
 import net.minecraft.server.v1_15_R1.WorldServer;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitChunkSectionsData;
+import ru.beykerykt.minecraft.lightapi.bukkit.impl.BukkitHandlerImpl;
 import ru.beykerykt.minecraft.lightapi.common.IChunkSectionsData;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.LightFlags;
@@ -59,7 +60,7 @@ import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
 import ru.beykerykt.minecraft.lightapi.common.callback.LStage;
 import ru.beykerykt.minecraft.lightapi.common.impl.LightingEngineVersion;
 
-public class NMS_v1_15_R1 extends NMSHandlerImpl {
+public class CraftBukkit_v1_15_R1 extends BukkitHandlerImpl {
 
 	// Qveshn - start
 	private Field lightEngine_ThreadedMailbox;
@@ -69,7 +70,7 @@ public class NMS_v1_15_R1 extends NMSHandlerImpl {
 	private Method lightEngineStorage_d;
 	private Method lightEngineGraph_a;
 
-	public NMS_v1_15_R1() {
+	public CraftBukkit_v1_15_R1() {
 		try {
 			threadedMailbox_DoLoopStep = ThreadedMailbox.class.getDeclaredMethod("f");
 			threadedMailbox_DoLoopStep.setAccessible(true);

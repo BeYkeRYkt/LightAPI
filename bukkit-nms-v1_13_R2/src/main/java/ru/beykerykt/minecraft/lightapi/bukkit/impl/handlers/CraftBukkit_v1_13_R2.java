@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.nms;
+package ru.beykerykt.minecraft.lightapi.bukkit.impl.handlers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,13 +42,14 @@ import net.minecraft.server.v1_13_R2.EnumSkyBlock;
 import net.minecraft.server.v1_13_R2.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_13_R2.WorldServer;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitChunkSectionsData;
+import ru.beykerykt.minecraft.lightapi.bukkit.impl.BukkitHandlerImpl;
 import ru.beykerykt.minecraft.lightapi.common.IChunkSectionsData;
 import ru.beykerykt.minecraft.lightapi.common.LightFlags;
 import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
 import ru.beykerykt.minecraft.lightapi.common.callback.LStage;
 import ru.beykerykt.minecraft.lightapi.common.impl.LightingEngineVersion;
 
-public class NMS_v1_13_R2 extends NMSHandlerImpl {
+public class CraftBukkit_v1_13_R2 extends BukkitHandlerImpl {
 
 	private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
 			BlockFace.WEST };

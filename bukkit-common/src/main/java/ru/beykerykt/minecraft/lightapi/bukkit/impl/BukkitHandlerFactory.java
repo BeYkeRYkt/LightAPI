@@ -70,7 +70,8 @@ public class BukkitHandlerFactory implements IHandlerFactory {
 			String version = line[3];
 			plugin.log("Your server is using version " + version);
 			try {
-				handler = (IHandlerImpl) Class.forName("ru.beykerykt.minecraft.lightapi.bukkit.nms.NMS_" + version)
+				handler = (IHandlerImpl) Class
+						.forName("ru.beykerykt.minecraft.lightapi.bukkit.impl.handlers.CraftBukkit_" + version)
 						.getConstructor().newInstance();
 				plugin.log("Handler is initialized: " + version);
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException

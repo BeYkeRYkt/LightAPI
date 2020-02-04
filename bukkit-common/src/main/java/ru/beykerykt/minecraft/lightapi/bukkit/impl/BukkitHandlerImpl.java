@@ -21,25 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.nms;
+package ru.beykerykt.minecraft.lightapi.bukkit.impl;
 
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.impl.IBukkitHandlerImpl;
 import ru.beykerykt.minecraft.lightapi.common.IChunkSectionsData;
 import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
 
 /**
  * 
- * Interface implementation for NMS (Net Minecraft Server)
+ * Abstract class for Bukkit implementations
  * 
  * @author BeYkeRYkt
  *
  */
-public abstract class NMSHandlerImpl implements IBukkitHandlerImpl {
+public abstract class BukkitHandlerImpl implements IBukkitHandlerImpl {
 
 	@Override
 	public boolean createLight(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel,
