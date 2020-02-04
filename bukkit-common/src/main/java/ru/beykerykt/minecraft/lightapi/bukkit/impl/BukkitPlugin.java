@@ -161,7 +161,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 		if (!file.exists()) {
 			fc.set("version", mConfigVersion);
 			fc.set("specific-nms-handler", "none");
-			fc.set("merge-chunk-sections", true);
+			fc.set("merge-chunk-sections", false);
 			saveConfig();
 		}
 	}
