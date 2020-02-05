@@ -58,10 +58,9 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 
 	private static BukkitPlugin plugin;
 	private static IBukkitHandlerImpl mHandler;
+	private static final String CRAFTBUKKIT_PKG = "org.bukkit.craftbukkit";
 
 	private static final int mConfigVersion = 1;
-
-	private static final String CRAFTBUKKIT_PKG = "org.bukkit.craftbukkit";
 
 	public ChunkSenderExecutorService mService = null;
 
@@ -113,6 +112,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 			getServer().getPluginManager().disablePlugin(this);
 			return;
 		}
+
 		// set server implementation
 		LightAPI.prepare(getInstance());
 		int repeat_delay = 1;
