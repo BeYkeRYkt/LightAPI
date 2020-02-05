@@ -37,6 +37,13 @@ import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
 public interface IHandlerImpl {
 
 	/**
+	 * N/A
+	 * 
+	 * @return
+	 */
+	public List<String> getAuthors();
+
+	/**
 	 * Used lighting engine version.
 	 * 
 	 * @return One of the proposed options from {@link LightingEngineVersion}

@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -210,6 +211,11 @@ public class CraftBukkit_v1_14_R1 extends BukkitHandlerImpl {
 	}
 
 	/***********************************************************************************************************************/
+	@Override
+	public List<String> getAuthors() {
+		return new ArrayList<String>(Arrays.asList("BeYkeRYkt", "Qvesh"));
+	}
+
 	@Override
 	public boolean createLight(World world, int flags, int blockX, int blockY, int blockZ, int lightlevel,
 			LCallback callback) {

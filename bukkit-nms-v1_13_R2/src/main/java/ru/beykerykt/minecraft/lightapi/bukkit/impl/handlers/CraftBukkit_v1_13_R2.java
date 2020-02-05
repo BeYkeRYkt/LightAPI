@@ -25,6 +25,7 @@
 package ru.beykerykt.minecraft.lightapi.bukkit.impl.handlers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -111,6 +112,11 @@ public class CraftBukkit_v1_13_R2 extends BukkitHandlerImpl {
 	}
 
 	/***********************************************************************************************************************/
+	@Override
+	public List<String> getAuthors() {
+		return new ArrayList<String>(Arrays.asList("BeYkeRYkt", "Qvesh"));
+	}
+
 	@Override
 	public boolean createLight(World world, int flags, int blockX, int blockY, int blockZ, int lightlevel,
 			LCallback callback) {

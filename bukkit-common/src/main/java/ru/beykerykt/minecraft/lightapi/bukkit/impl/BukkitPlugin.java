@@ -25,6 +25,7 @@ package ru.beykerykt.minecraft.lightapi.bukkit.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.ChatColor;
@@ -138,6 +139,17 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 		getServer().getConsoleSender().sendMessage(ChatColor.AQUA + "<LightAPI>: " + ChatColor.WHITE + msg);
 	}
 
+	public List<String> getAuthors() {
+		List<String> list = new ArrayList<String>(getDescription().getAuthors());
+		for (int i = 0; i < getHandlerImpl().getAuthors().size(); i++) {
+			String name = getHandlerImpl().getAuthors().get(i);
+			if (!list.contains(name)) {
+				list.add(1, name);
+			}
+		}
+		return list;
+	}
+
 	public static BukkitPlugin getInstance() {
 		return plugin;
 	}
@@ -199,7 +211,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 					text.addExtra(new TextComponent(ChatColor.WHITE + " | "));
 
 					TextComponent developer = new TextComponent(ChatColor.AQUA + "Developers");
-					List<String> authors = getDescription().getAuthors();
+					List<String> authors = getAuthors();
 					String authorsLine = "none";
 					if (authors.size() > 0) {
 						authorsLine = authors.get(0);
@@ -253,7 +265,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 							ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
 					console.sendMessage(ChatColor.AQUA + " Source code: " + ChatColor.WHITE
 							+ "http://github.com/BeYkeRYkt/LightAPI/");
-					List<String> authors = getDescription().getAuthors();
+					List<String> authors = getAuthors();
 					String authorsLine = "none";
 					if (authors.size() > 0) {
 						authorsLine = authors.get(0);
