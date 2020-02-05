@@ -66,7 +66,8 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 	public ChunkSenderExecutorService mService = null;
 
 	// testing
-	private boolean debug = true;
+	private static final String DEBUG_CODE = "715697087";
+	private boolean debug = false;
 
 	@Override
 	public void onLoad() {
@@ -93,6 +94,15 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 
 	@Override
 	public void onEnable() {
+		// load debug code
+		String debugCode = getConfig().getString("debug-code");
+		if (debugCode != null && !debugCode.equals("")) {
+			if (debugCode.hashCode() == Integer.parseInt(DEBUG_CODE)) {
+				debug = true;
+				log("DEBUG MODE ON!");
+			}
+		}
+
 		try {
 			mHandler = (IBukkitHandlerImpl) getHandlerFactory().createHandler();
 			if (mHandler == null) {
