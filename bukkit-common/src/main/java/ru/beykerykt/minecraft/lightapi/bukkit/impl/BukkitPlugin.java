@@ -109,6 +109,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 				return;
 			}
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			getServer().getPluginManager().disablePlugin(this);
 			return;
 		}
