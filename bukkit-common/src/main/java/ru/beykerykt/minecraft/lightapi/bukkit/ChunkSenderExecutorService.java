@@ -39,14 +39,13 @@ import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 public class ChunkSenderExecutorService implements Runnable {
 
 	private ScheduledFuture<?> sch;
-	private static ScheduledExecutorService executor;
+	private static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 	private Queue<Runnable> REQUEST_QUEUE = new ConcurrentLinkedQueue<Runnable>();
 	private List<IChunkSectionsData> chunksToUpdate = new ArrayList<IChunkSectionsData>();
 	private List<IChunkSectionsData> chunksToSend = new ArrayList<IChunkSectionsData>();
 	private boolean mergeSections;
 
 	public void start(int delayTicks, boolean mergeChunkSections) {
-		executor = Executors.newSingleThreadScheduledExecutor();
 		sch = executor.scheduleWithFixedDelay(this, 0, 50 * delayTicks, TimeUnit.MILLISECONDS);
 		this.mergeSections = mergeChunkSections;
 	}
@@ -54,7 +53,9 @@ public class ChunkSenderExecutorService implements Runnable {
 	public void shutdown() {
 		REQUEST_QUEUE.clear();
 		chunksToUpdate.clear();
-		sch.cancel(false);
+		if (sch != null) {
+			sch.cancel(false);
+		}
 		executor.shutdownNow();
 	}
 
