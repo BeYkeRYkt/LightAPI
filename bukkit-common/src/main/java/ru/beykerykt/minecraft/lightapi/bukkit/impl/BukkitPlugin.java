@@ -305,7 +305,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 	@Override
 	public IBukkitHandlerImpl getHandlerImpl() {
 		if (mHandler == null) {
-			throw new IllegalStateException("HandlerImpl not yet initialized! Use prepare() !");
+			throw new IllegalStateException("HandlerImpl not yet initialized!");
 		}
 		return mHandler;
 	}
