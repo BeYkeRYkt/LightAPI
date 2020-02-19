@@ -38,7 +38,7 @@ import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
  * @author BeYkeRYkt
  *
  */
-public abstract class BukkitHandlerImpl implements IBukkitHandlerImpl {
+public abstract class BukkitAdapterImpl implements IBukkitAdapterImpl {
 
 	@Override
 	public boolean createLight(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel,

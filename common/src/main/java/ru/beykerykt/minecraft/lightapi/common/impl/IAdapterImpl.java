@@ -34,7 +34,7 @@ import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
  *
  * @author BeYkeRYkt
  */
-public interface IHandlerImpl {
+public interface IAdapterImpl {
 
 	/**
 	 * N/A

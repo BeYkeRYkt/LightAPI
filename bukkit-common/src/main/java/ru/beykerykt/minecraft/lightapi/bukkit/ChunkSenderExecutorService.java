@@ -32,7 +32,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.impl.IBukkitHandlerImpl;
+import ru.beykerykt.minecraft.lightapi.bukkit.impl.IBukkitAdapterImpl;
 import ru.beykerykt.minecraft.lightapi.common.IChunkSectionsData;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 
@@ -104,7 +104,7 @@ public class ChunkSenderExecutorService implements Runnable {
 
 			for (int i = 0; i < chunksToSend.size(); i++) {
 				IChunkSectionsData chunkData = chunksToSend.get(i);
-				IBukkitHandlerImpl impl = (IBukkitHandlerImpl) LightAPI.get().getPluginImpl().getHandlerImpl();
+				IBukkitAdapterImpl impl = (IBukkitAdapterImpl) LightAPI.get().getPluginImpl().getAdapterImpl();
 				if (chunkData.getSectionMaskSky() == BukkitChunkSectionsData.FULL_MASK
 						&& chunkData.getSectionMaskBlock() == BukkitChunkSectionsData.FULL_MASK) {
 					impl.sendChanges(chunkData.getWorldName(), chunkData.getChunkX(), chunkData.getChunkZ());

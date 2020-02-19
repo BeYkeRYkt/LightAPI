@@ -55,8 +55,8 @@ public class LightAPI {
 		if (singleton == null && impl != null) {
 			impl.log("Preparing LightAPI...");
 			synchronized (LightAPI.class) {
-				if (impl.getHandlerImpl() == null) {
-					throw new IllegalStateException("HandlerImpl not yet initialized");
+				if (impl.getAdapterImpl() == null) {
+					throw new IllegalStateException("Adapter not yet initialized");
 				}
 				singleton = new LightAPI(impl);
 				impl.log("Preparing done!");

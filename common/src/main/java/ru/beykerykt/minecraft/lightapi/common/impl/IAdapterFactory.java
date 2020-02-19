@@ -23,12 +23,12 @@
  */
 package ru.beykerykt.minecraft.lightapi.common.impl;
 
-public interface IHandlerFactory {
+public interface IAdapterFactory {
 
 	/**
-	 * Create a IHandlerImpl
+	 * Create a IAdapterImpl
 	 * 
-	 * @return {@link IHandlerImpl}
+	 * @return {@link IAdapterImpl}
 	 */
-	public IHandlerImpl createHandler();
+	public IAdapterImpl createAdapter();
 }

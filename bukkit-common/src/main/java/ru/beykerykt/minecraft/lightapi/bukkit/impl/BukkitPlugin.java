@@ -50,14 +50,14 @@ import ru.beykerykt.minecraft.lightapi.common.IChunkSectionsData;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.LightFlags;
 import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
-import ru.beykerykt.minecraft.lightapi.common.impl.IHandlerFactory;
+import ru.beykerykt.minecraft.lightapi.common.impl.IAdapterFactory;
 import ru.beykerykt.minecraft.lightapi.common.impl.ImplementationPlatform;
 import ru.beykerykt.minecraft.lightapi.common.impl.LightingEngineVersion;
 
 public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 
 	private static BukkitPlugin plugin;
-	private static IBukkitHandlerImpl mHandler;
+	private static IBukkitAdapterImpl mHandler;
 	private static final String CRAFTBUKKIT_PKG = "org.bukkit.craftbukkit";
 
 	private static final int mConfigVersion = 1;
@@ -103,7 +103,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 		}
 
 		try {
-			mHandler = (IBukkitHandlerImpl) getHandlerFactory().createHandler();
+			mHandler = (IBukkitAdapterImpl) getHandlerFactory().createAdapter();
 			if (mHandler == null) {
 				getServer().getPluginManager().disablePlugin(this);
 				return;
@@ -141,8 +141,8 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 		return platform;
 	}
 
-	private IHandlerFactory getHandlerFactory() {
-		return new BukkitHandlerFactory(this);
+	private IAdapterFactory getHandlerFactory() {
+		return new BukkitAdapterFactory(this);
 	}
 
 	@Override
@@ -152,8 +152,8 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 
 	public List<String> getAuthors() {
 		List<String> list = new ArrayList<String>(getDescription().getAuthors());
-		for (int i = 0; i < getHandlerImpl().getAuthors().size(); i++) {
-			String name = getHandlerImpl().getAuthors().get(i);
+		for (int i = 0; i < getAdapterImpl().getAuthors().size(); i++) {
+			String name = getAdapterImpl().getAuthors().get(i);
 			if (!list.contains(name)) {
 				list.add(1, name);
 			}
@@ -303,7 +303,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 	}
 
 	@Override
-	public IBukkitHandlerImpl getHandlerImpl() {
+	public IBukkitAdapterImpl getAdapterImpl() {
 		if (mHandler == null) {
 			throw new IllegalStateException("HandlerImpl not yet initialized!");
 		}
@@ -312,12 +312,12 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 
 	@Override
 	public LightingEngineVersion getLightingEngineVersion() {
-		return getHandlerImpl().getLightingEngineVersion();
+		return getAdapterImpl().getLightingEngineVersion();
 	}
 
 	@Override
 	public boolean isAsyncLighting() {
-		return getHandlerImpl().isAsyncLighting();
+		return getAdapterImpl().isAsyncLighting();
 	}
 
 	@Override
@@ -351,17 +351,17 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 	@Override
 	public void setRawLightLevel(String worldName, int flags, int blockX, int blockY, int blockZ, int lightlevel,
 			LCallback callback) {
-		getHandlerImpl().setRawLightLevel(worldName, flags, blockX, blockY, blockZ, lightlevel, null);
+		getAdapterImpl().setRawLightLevel(worldName, flags, blockX, blockY, blockZ, lightlevel, null);
 	}
 
 	@Override
 	public int getRawLightLevel(String worldName, int flags, int blockX, int blockY, int blockZ) {
-		return getHandlerImpl().getRawLightLevel(worldName, flags, blockX, blockY, blockZ);
+		return getAdapterImpl().getRawLightLevel(worldName, flags, blockX, blockY, blockZ);
 	}
 
 	@Override
 	public boolean isRequireRecalculateLighting() {
-		return getHandlerImpl().isRequireRecalculateLighting();
+		return getAdapterImpl().isRequireRecalculateLighting();
 	}
 
 	@Override
@@ -372,18 +372,18 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 	@Override
 	public void recalculateLighting(String worldName, int flags, int blockX, int blockY, int blockZ,
 			LCallback callback) {
-		getHandlerImpl().recalculateLighting(worldName, flags, blockX, blockY, blockZ, callback);
+		getAdapterImpl().recalculateLighting(worldName, flags, blockX, blockY, blockZ, callback);
 	}
 
 	@Override
 	public boolean isRequireManuallySendingChanges() {
-		return getHandlerImpl().isRequireManuallySendingChanges();
+		return getAdapterImpl().isRequireManuallySendingChanges();
 	}
 
 	@Override
 	public List<IChunkSectionsData> collectChunkSections(String worldName, int blockX, int blockY, int blockZ,
 			int lightlevel) {
-		return getHandlerImpl().collectChunkSections(worldName, blockX, blockY, blockZ, lightlevel);
+		return getAdapterImpl().collectChunkSections(worldName, blockX, blockY, blockZ, lightlevel);
 	}
 
 	@Override
@@ -417,7 +417,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 	@Override
 	public boolean createLight(World world, int flags, int blockX, int blockY, int blockZ, int lightlevel,
 			LCallback callback) {
-		return getHandlerImpl().createLight(world, flags, blockX, blockY, blockZ, lightlevel, callback);
+		return getAdapterImpl().createLight(world, flags, blockX, blockY, blockZ, lightlevel, callback);
 	}
 
 	@Override
@@ -439,7 +439,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 
 	@Override
 	public boolean deleteLight(World world, int flags, int blockX, int blockY, int blockZ, LCallback callback) {
-		return getHandlerImpl().deleteLight(world, flags, blockX, blockY, blockZ, callback);
+		return getAdapterImpl().deleteLight(world, flags, blockX, blockY, blockZ, callback);
 	}
 
 	@Override
@@ -456,7 +456,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 	@Override
 	public void setRawLightLevel(World world, int flags, int blockX, int blockY, int blockZ, int lightlevel,
 			LCallback callback) {
-		getHandlerImpl().setRawLightLevel(world, flags, blockX, blockY, blockZ, lightlevel, callback);
+		getAdapterImpl().setRawLightLevel(world, flags, blockX, blockY, blockZ, lightlevel, callback);
 	}
 
 	@Override
@@ -472,7 +472,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 
 	@Override
 	public int getRawLightLevel(World world, int flags, int blockX, int blockY, int blockZ) {
-		return getHandlerImpl().getRawLightLevel(world, flags, blockX, blockY, blockZ);
+		return getAdapterImpl().getRawLightLevel(world, flags, blockX, blockY, blockZ);
 	}
 
 	@Override
@@ -488,7 +488,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 
 	@Override
 	public void recalculateLighting(World world, int flags, int blockX, int blockY, int blockZ, LCallback callback) {
-		getHandlerImpl().recalculateLighting(world, flags, blockX, blockY, blockZ, callback);
+		getAdapterImpl().recalculateLighting(world, flags, blockX, blockY, blockZ, callback);
 	}
 
 	@Override
@@ -505,7 +505,7 @@ public class BukkitPlugin extends JavaPlugin implements IBukkitPluginImpl {
 	@Override
 	public List<IChunkSectionsData> collectChunkSections(World world, int blockX, int blockY, int blockZ,
 			int lightlevel) {
-		return getHandlerImpl().collectChunkSections(world, blockX, blockY, blockZ, lightlevel);
+		return getAdapterImpl().collectChunkSections(world, blockX, blockY, blockZ, lightlevel);
 	}
 
 	@Override

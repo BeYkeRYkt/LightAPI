@@ -50,7 +50,7 @@ public interface IPluginImpl {
 	 * 
 	 * @return
 	 */
-	public IHandlerImpl getHandlerImpl();
+	public IAdapterImpl getAdapterImpl();
 
 	/**
 	 * Log message in console

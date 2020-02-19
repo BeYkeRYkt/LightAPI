@@ -29,7 +29,7 @@ import org.bukkit.World;
 
 import ru.beykerykt.minecraft.lightapi.common.IChunkSectionsData;
 import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
-import ru.beykerykt.minecraft.lightapi.common.impl.IHandlerImpl;
+import ru.beykerykt.minecraft.lightapi.common.impl.IAdapterImpl;
 
 /**
  *
@@ -38,7 +38,7 @@ import ru.beykerykt.minecraft.lightapi.common.impl.IHandlerImpl;
  * @author BeYkeRYkt
  *
  */
-public interface IBukkitHandlerImpl extends IHandlerImpl {
+public interface IBukkitAdapterImpl extends IAdapterImpl {
 
 	/**
 	 * Placement of a certain type of light with a given level of illumination in

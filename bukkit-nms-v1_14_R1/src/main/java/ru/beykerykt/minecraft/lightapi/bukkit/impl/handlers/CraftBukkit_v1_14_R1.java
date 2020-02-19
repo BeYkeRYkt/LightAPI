@@ -53,7 +53,7 @@ import net.minecraft.server.v1_14_R1.SectionPosition;
 import net.minecraft.server.v1_14_R1.ThreadedMailbox;
 import net.minecraft.server.v1_14_R1.WorldServer;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitChunkSectionsData;
-import ru.beykerykt.minecraft.lightapi.bukkit.impl.BukkitHandlerImpl;
+import ru.beykerykt.minecraft.lightapi.bukkit.impl.BukkitAdapterImpl;
 import ru.beykerykt.minecraft.lightapi.common.IChunkSectionsData;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.LightFlags;
@@ -61,7 +61,7 @@ import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
 import ru.beykerykt.minecraft.lightapi.common.callback.LStage;
 import ru.beykerykt.minecraft.lightapi.common.impl.LightingEngineVersion;
 
-public class CraftBukkit_v1_14_R1 extends BukkitHandlerImpl {
+public class CraftBukkit_v1_14_R1 extends BukkitAdapterImpl {
 
 	// Qveshn - start
 	private Field lightEngine_ThreadedMailbox;

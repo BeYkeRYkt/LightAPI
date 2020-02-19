@@ -43,14 +43,14 @@ import net.minecraft.server.v1_13_R2.EnumSkyBlock;
 import net.minecraft.server.v1_13_R2.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_13_R2.WorldServer;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitChunkSectionsData;
-import ru.beykerykt.minecraft.lightapi.bukkit.impl.BukkitHandlerImpl;
+import ru.beykerykt.minecraft.lightapi.bukkit.impl.BukkitAdapterImpl;
 import ru.beykerykt.minecraft.lightapi.common.IChunkSectionsData;
 import ru.beykerykt.minecraft.lightapi.common.LightFlags;
 import ru.beykerykt.minecraft.lightapi.common.callback.LCallback;
 import ru.beykerykt.minecraft.lightapi.common.callback.LStage;
 import ru.beykerykt.minecraft.lightapi.common.impl.LightingEngineVersion;
 
-public class CraftBukkit_v1_13_R2 extends BukkitHandlerImpl {
+public class CraftBukkit_v1_13_R2 extends BukkitAdapterImpl {
 
 	private static BlockFace[] SIDES = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
 			BlockFace.WEST };

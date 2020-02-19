@@ -27,10 +27,10 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import ru.beykerykt.minecraft.lightapi.common.impl.IHandlerFactory;
-import ru.beykerykt.minecraft.lightapi.common.impl.IHandlerImpl;
+import ru.beykerykt.minecraft.lightapi.common.impl.IAdapterFactory;
+import ru.beykerykt.minecraft.lightapi.common.impl.IAdapterImpl;
 
-public class BukkitHandlerFactory implements IHandlerFactory {
+public class BukkitAdapterFactory implements IAdapterFactory {
 
 	private BukkitPlugin plugin;
 
@@ -38,20 +38,20 @@ public class BukkitHandlerFactory implements IHandlerFactory {
 	private static final String CRAFTBUKKIT_PKG = "org.bukkit.craftbukkit";
 	private static final String NMS_PKG = "net.minecraft.server";
 
-	public BukkitHandlerFactory(BukkitPlugin plugin) {
+	public BukkitAdapterFactory(BukkitPlugin plugin) {
 		this.plugin = plugin;
 	}
 
 	@Override
-	public IHandlerImpl createHandler() {
-		IHandlerImpl handler = null;
+	public IAdapterImpl createAdapter() {
+		IAdapterImpl handler = null;
 
 		// load specific nms pkg if available
 		String specificPkg = plugin.getConfig().getString("specific-nms-handler");
 		if (specificPkg != null && !specificPkg.equalsIgnoreCase("none")) {
 			plugin.log("Initial load specific handler");
 			try {
-				handler = (IHandlerImpl) Class.forName(specificPkg).getConstructor().newInstance();
+				handler = (IAdapterImpl) Class.forName(specificPkg).getConstructor().newInstance();
 				plugin.log("Custom handler is initialized: " + handler.getClass().getName());
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException | NoSuchMethodException | SecurityException
@@ -70,7 +70,7 @@ public class BukkitHandlerFactory implements IHandlerFactory {
 			String version = line[3];
 			plugin.log("Your server is using version " + version);
 			try {
-				handler = (IHandlerImpl) Class
+				handler = (IAdapterImpl) Class
 						.forName("ru.beykerykt.minecraft.lightapi.bukkit.impl.handlers.CraftBukkit_" + version)
 						.getConstructor().newInstance();
 				plugin.log("Handler is initialized: " + version);
