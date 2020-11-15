@@ -1,19 +1,19 @@
 /**
  * The MIT License (MIT)
- * 
+ * <p>
  * Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com>
  * Copyright (c) 2016-2017 The ImplexDevOne Project
- * 
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *  
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,19 +26,19 @@ package ru.beykerykt.lightapi.server.exceptions;
 
 public class UnknownModImplementationException extends ServerModException {
 
-	/**
-	 * ???
-	 */
-	private static final long serialVersionUID = -1754539191843175633L;
+    /**
+     * ???
+     */
+    private static final long serialVersionUID = -1754539191843175633L;
 
-	private final String modName;
+    private final String modName;
 
-	public UnknownModImplementationException(String modName) {
-		super("Could not find handler for this Bukkit implementation: " + modName);
-		this.modName = modName;
-	}
+    public UnknownModImplementationException(String modName) {
+        super("Could not find handler for this Bukkit implementation: " + modName);
+        this.modName = modName;
+    }
 
-	public String getModName() {
-		return modName;
-	}
+    public String getModName() {
+        return modName;
+    }
 }

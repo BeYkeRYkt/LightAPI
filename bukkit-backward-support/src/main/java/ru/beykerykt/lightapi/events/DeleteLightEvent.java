@@ -1,19 +1,19 @@
 /**
  * The MIT License (MIT)
- * 
+ * <p>
  * Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com>
  * Copyright (c) 2016-2017 The ImplexDevOne Project
- * 
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *  
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,78 +32,78 @@ import org.bukkit.event.HandlerList;
 @Deprecated
 public class DeleteLightEvent extends Event implements Cancellable {
 
-	private boolean cancel;
-	private static final HandlerList handlers = new HandlerList();
-	private World world;
-	private int x;
-	private int y;
-	private int z;
-	private boolean async;
+    private static final HandlerList handlers = new HandlerList();
+    private boolean cancel;
+    private World world;
+    private int x;
+    private int y;
+    private int z;
+    private boolean async;
 
-	public DeleteLightEvent(World world, int x, int y, int z, boolean async) {
-		this.world = world;
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.async = async;
-	}
+    public DeleteLightEvent(World world, int x, int y, int z, boolean async) {
+        this.world = world;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.async = async;
+    }
 
-	@Override
-	public HandlerList getHandlers() {
-		return handlers;
-	}
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
 
-	public static HandlerList getHandlerList() {
-		return handlers;
-	}
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
 
-	@Override
-	public boolean isCancelled() {
-		return cancel;
-	}
+    @Override
+    public boolean isCancelled() {
+        return cancel;
+    }
 
-	@Override
-	public void setCancelled(boolean arg0) {
-		this.cancel = arg0;
-	}
+    @Override
+    public void setCancelled(boolean arg0) {
+        this.cancel = arg0;
+    }
 
-	public int getX() {
-		return x;
-	}
+    public int getX() {
+        return x;
+    }
 
-	public void setX(int x) {
-		this.x = x;
-	}
+    public void setX(int x) {
+        this.x = x;
+    }
 
-	public int getY() {
-		return y;
-	}
+    public int getY() {
+        return y;
+    }
 
-	public void setY(int y) {
-		this.y = y;
-	}
+    public void setY(int y) {
+        this.y = y;
+    }
 
-	public int getZ() {
-		return z;
-	}
+    public int getZ() {
+        return z;
+    }
 
-	public void setZ(int z) {
-		this.z = z;
-	}
+    public void setZ(int z) {
+        this.z = z;
+    }
 
-	public World getWorld() {
-		return world;
-	}
+    public World getWorld() {
+        return world;
+    }
 
-	public void setWorld(World world) {
-		this.world = world;
-	}
+    public void setWorld(World world) {
+        this.world = world;
+    }
 
-	public boolean isAsync() {
-		return async;
-	}
+    public boolean isAsync() {
+        return async;
+    }
 
-	public void setAsync(boolean flag) {
-		this.async = flag;
-	}
+    public void setAsync(boolean flag) {
+        this.async = flag;
+    }
 }
