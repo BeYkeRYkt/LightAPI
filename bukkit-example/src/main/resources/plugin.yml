@@ -1,0 +1,11 @@
+name: LightTest
+main: ru.beykerykt.minecraft.lightapi.bukkit.example.BukkitPlugin
+version: ${SERVER_API}-${project.version} (build ${BUILD_NUMBER})
+description: Test plugin for LightAPI
+depend: [ LightAPI ]
+author: BeYkeRYkt
+authors: [ other contributors in GitHub ]
+website: https://github.com/BeYkeRYkt/LightAPI
+commands:
+  lighttest:
+    description: Main command
