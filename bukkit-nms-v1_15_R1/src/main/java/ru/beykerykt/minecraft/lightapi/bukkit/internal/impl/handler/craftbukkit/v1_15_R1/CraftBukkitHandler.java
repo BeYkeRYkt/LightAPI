@@ -23,6 +23,7 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.impl.handler.craftbukkit.v1_15_R1;
 
+import com.google.common.collect.Lists;
 import net.minecraft.server.v1_15_R1.*;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -31,30 +32,21 @@ import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.impl.handler.BukkitHandlerInternal;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.impl.handler.craftbukkit.CommonCraftBukkitHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ChunkData;
 import ru.beykerykt.minecraft.lightapi.common.api.LightFlags;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCodes;
-import ru.beykerykt.minecraft.lightapi.common.api.SendMode;
-import ru.beykerykt.minecraft.lightapi.common.api.impl.PlatformType;
-import ru.beykerykt.minecraft.lightapi.common.internal.chunks.IChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.impl.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.impl.LightEngineVersion;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class CraftBukkitHandler extends BukkitHandlerInternal {
-
-    private IPlatformImpl mImpl;
-
+public class CraftBukkitHandler extends CommonCraftBukkitHandler {
     private Field lightEngine_ThreadedMailbox;
     private Field threadedMailbox_State;
     private Method threadedMailbox_DoLoopStep;
@@ -72,12 +64,15 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
                 e.getMessage()), e);
     }
 
-    private IPlatformImpl getPlatformImpl() {
-        return mImpl;
-    }
-
-    private IChunkObserver getChunkObserver() {
-        return getPlatformImpl().getChunkObserver();
+    private boolean isLightingSupported(World world, int flags) {
+        WorldServer worldServer = ((CraftWorld) world).getHandle();
+        LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
+        if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
+            return lightEngine.a(EnumSkyBlock.SKY) instanceof LightEngineSky;
+        } else if ((flags & LightFlags.BLOCK_LIGHTING) == LightFlags.BLOCK_LIGHTING) {
+            return lightEngine.a(EnumSkyBlock.BLOCK) instanceof LightEngineBlock;
+        }
+        return false;
     }
 
     private int distanceTo(Chunk from, Chunk to) {
@@ -105,21 +100,10 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
         return (((x ^ ((-dx >> 4) & 15)) + 1) & (-(dx & 1)));
     }
 
-    @Override
-    public int asSectionMask(int sectionY) {
-        return 1 << sectionY + 1;
-    }
-
-    @Override
-    public int getSectionFromY(int blockY) {
-        return (blockY >> 4) + 1;
-    }
-
     public boolean isValidSectionY(int sectionY) {
         return sectionY >= -1 && sectionY <= 16;
     }
 
-    @SuppressWarnings({"unchecked"})
     private void executeSync(LightEngineThreaded lightEngine, Runnable task) {
         try {
             // ##### STEP 1: Pause light engine mailbox to process its tasks. #####
@@ -194,8 +178,129 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
     }
 
     @Override
-    public PlatformType getPlatformType() {
-        return PlatformType.CRAFTBUKKIT;
+    protected int setRawLightLevelLocked(World world, int blockX, int blockY, int blockZ, int lightLevel, int flags) {
+        WorldServer worldServer = ((CraftWorld) world).getHandle();
+        final BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
+        final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
+        final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
+
+        executeSync(lightEngine, () -> {
+            // block lighting
+            if ((flags & LightFlags.BLOCK_LIGHTING) == LightFlags.BLOCK_LIGHTING) {
+                if (isLightingSupported(world, LightFlags.BLOCK_LIGHTING)) {
+                    LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
+                    if (finalLightLevel == 0) {
+                        leb.a(position);
+                    } else if (leb.a(SectionPosition.a(position)) != null) {
+                        try {
+                            leb.a(position, finalLightLevel);
+                        } catch (NullPointerException ignore) {
+                            // To prevent problems with the absence of the NibbleArray, even
+                            // if leb.a(SectionPosition.a(position)) returns non-null value (corrupted data)
+                        }
+                    }
+                }
+            }
+
+            // sky lighting
+            if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
+                if (isLightingSupported(world, LightFlags.SKY_LIGHTING)) {
+                    LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
+                    if (finalLightLevel == 0) {
+                        les.a(position);
+                    } else if (les.a(SectionPosition.a(position)) != null) {
+                        try {
+                            lightEngineLayer_a(les, position, finalLightLevel);
+                        } catch (NullPointerException ignore) {
+                            // To prevent problems with the absence of the NibbleArray, even
+                            // if les.a(SectionPosition.a(position)) returns non-null value (corrupted data)
+                        }
+                    }
+                }
+            }
+        });
+        return ResultCodes.SUCCESS;
+    }
+
+    @Override
+    protected int getRawLightLevelLocked(World world, int blockX, int blockY, int blockZ, int flags) {
+        int lightLevel = -1;
+        WorldServer worldServer = ((CraftWorld) world).getHandle();
+        BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
+        if ((flags & LightFlags.BLOCK_LIGHTING) == LightFlags.BLOCK_LIGHTING
+                && (flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
+            lightLevel = worldServer.getLightLevel(position);
+        } else if ((flags & LightFlags.BLOCK_LIGHTING) == LightFlags.BLOCK_LIGHTING) {
+            lightLevel = worldServer.getBrightness(EnumSkyBlock.BLOCK, position);
+        } else if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
+            lightLevel = worldServer.getBrightness(EnumSkyBlock.SKY, position);
+        }
+        return lightLevel;
+    }
+
+    @Override
+    protected int recalculateLightingLocked(World world, int blockX, int blockY, int blockZ, int flags) {
+        WorldServer worldServer = ((CraftWorld) world).getHandle();
+        final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
+
+        // Do not recalculate if no changes!
+        if (!lightEngine.a()) {
+            return ResultCodes.RECALCULATE_NO_CHANGES;
+        }
+
+        executeSync(lightEngine, () -> {
+            if ((flags & LightFlags.BLOCK_LIGHTING) == LightFlags.BLOCK_LIGHTING
+                    && (flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
+                if (isLightingSupported(world, LightFlags.SKY_LIGHTING) && isLightingSupported(world,
+                        LightFlags.BLOCK_LIGHTING)) {
+                    LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
+                    LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
+
+                    // nms
+                    int maxUpdateCount = Integer.MAX_VALUE;
+                    int integer4 = maxUpdateCount / 2;
+                    int integer5 = leb.a(integer4, true, true);
+                    int integer6 = maxUpdateCount - integer4 + integer5;
+                    int integer7 = les.a(integer6, true, true);
+                    if (integer5 == 0 && integer7 > 0) {
+                        leb.a(integer7, true, true);
+                    }
+                } else {
+                    // block lighting
+                    if ((flags & LightFlags.BLOCK_LIGHTING) == LightFlags.BLOCK_LIGHTING) {
+                        if (isLightingSupported(world, LightFlags.BLOCK_LIGHTING)) {
+                            LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
+                            leb.a(Integer.MAX_VALUE, true, true);
+                        }
+                    }
+
+                    // sky lighting
+                    if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
+                        if (isLightingSupported(world, LightFlags.SKY_LIGHTING)) {
+                            LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
+                            les.a(Integer.MAX_VALUE, true, true);
+                        }
+                    }
+                }
+            } else {
+                // block lighting
+                if ((flags & LightFlags.BLOCK_LIGHTING) == LightFlags.BLOCK_LIGHTING) {
+                    if (isLightingSupported(world, LightFlags.BLOCK_LIGHTING)) {
+                        LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
+                        leb.a(Integer.MAX_VALUE, true, true);
+                    }
+                }
+
+                // sky lighting
+                if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
+                    if (isLightingSupported(world, LightFlags.SKY_LIGHTING)) {
+                        LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
+                        les.a(Integer.MAX_VALUE, true, true);
+                    }
+                }
+            }
+        });
+        return ResultCodes.SUCCESS;
     }
 
     @Override
@@ -214,243 +319,8 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
     }
 
     @Override
-    public int setLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int flags, SendMode mode,
-                             List<ChunkData> outputChunks) {
-        if (world == null) {
-            return ResultCodes.WORLD_NOT_AVAILABLE;
-        }
-
-        // go set
-        int blockLightLevel = getRawLightLevel(world, blockX, blockY, blockZ, flags);
-        int setResultCode = setRawLightLevel(world, blockX, blockY, blockZ, lightLevel, flags);
-        switch (setResultCode) {
-            case ResultCodes.SUCCESS: {
-                // go recalculate
-                int recalcResultCode = recalculateLighting(world, blockX, blockY, blockZ, flags);
-                switch (recalcResultCode) {
-                    // go send chunks
-                    case ResultCodes.SUCCESS: {
-                        switch (mode) {
-                            case INSTANT: {
-                                List<ChunkData> chunks = collectChunkSections(world, blockX, blockY, blockZ,
-                                        lightLevel == 0 ? blockLightLevel : lightLevel);
-                                for (int i = 0; i < chunks.size(); i++) {
-                                    ChunkData data = chunks.get(i);
-                                    sendChunk(data);
-                                }
-                                return ResultCodes.SUCCESS;
-                            }
-                            case DELAYED: {
-                                getChunkObserver().notifyUpdateChunks(world.getName(), blockX, blockY, blockZ,
-                                        lightLevel == 0 ? blockLightLevel : lightLevel);
-                                return ResultCodes.SUCCESS;
-                            }
-                            case MANUAL: {
-                                if (outputChunks == null) {
-                                    return ResultCodes.MANUAL_MODE_CHUNK_LIST_IS_NULL;
-                                }
-                                List<ChunkData> chunks = collectChunkSections(world, blockX, blockY, blockZ,
-                                        lightLevel == 0 ? blockLightLevel : lightLevel);
-                                outputChunks.addAll(chunks);
-                                return ResultCodes.SUCCESS;
-                            }
-                        }
-                        break;
-                    }
-                    default:
-                        return recalcResultCode;
-                }
-                break;
-            }
-            default:
-                return setResultCode;
-        }
-        return ResultCodes.FAILED;
-    }
-
-    /**
-     * @hide
-     **/
-    private int setRawLightLevelLocked(World world, int blockX, int blockY, int blockZ, int lightLevel, int flags) {
-        WorldServer worldServer = ((CraftWorld) world).getHandle();
-        final BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
-        final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
-        final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
-
-        if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
-            LightEngineLayerEventListener lightLayer = lightEngine.a(EnumSkyBlock.SKY);
-            if (lightLayer == null || lightLayer == LightEngineLayerEventListener.Void.INSTANCE) {
-                return ResultCodes.SKYLIGHT_DATA_NOT_AVAILABLE;
-            }
-        }
-
-        executeSync(lightEngine, () -> {
-            // block lighting
-            if ((flags & LightFlags.BLOCK_LIGHTING) == LightFlags.BLOCK_LIGHTING) {
-                LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
-                if (finalLightLevel == 0) {
-                    leb.a(position);
-                } else if (leb.a(SectionPosition.a(position)) != null) {
-                    try {
-                        leb.a(position, finalLightLevel);
-                    } catch (NullPointerException ignore) {
-                        // To prevent problems with the absence of the NibbleArray, even
-                        // if leb.a(SectionPosition.a(position)) returns non-null value (corrupted data)
-                    }
-                }
-            }
-
-            // sky lighting
-            if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
-                LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
-                if (finalLightLevel == 0) {
-                    les.a(position);
-                } else if (les.a(SectionPosition.a(position)) != null) {
-                    try {
-                        lightEngineLayer_a(les, position, finalLightLevel);
-                    } catch (NullPointerException ignore) {
-                        // To prevent problems with the absence of the NibbleArray, even
-                        // if les.a(SectionPosition.a(position)) returns non-null value (corrupted data)
-                    }
-                }
-            }
-        });
-        return ResultCodes.SUCCESS;
-    }
-
-    @Override
-    public int setRawLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int flags) {
-        if (world == null) {
-            return ResultCodes.WORLD_NOT_AVAILABLE;
-        }
-
-        int resultCode = ResultCodes.FAILED;
-        if (isMainThread()) {
-            resultCode = setRawLightLevelLocked(world, blockX, blockY, blockZ, lightLevel, flags);
-        } else {
-            CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> setRawLightLevelLocked(world,
-                    blockX, blockY, blockZ,
-                    lightLevel, flags));
-            try {
-                resultCode = future.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-        return resultCode;
-    }
-
-    /**
-     * @hide
-     **/
-    private int getRawLightLevelLocked(World world, int blockX, int blockY, int blockZ, int flags) {
-        int lightlevel = -1;
-        WorldServer worldServer = ((CraftWorld) world).getHandle();
-        BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
-        if ((flags & LightFlags.BLOCK_LIGHTING) == LightFlags.BLOCK_LIGHTING) {
-            lightlevel = worldServer.getBrightness(EnumSkyBlock.BLOCK, position);
-        } else if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
-            lightlevel = worldServer.getBrightness(EnumSkyBlock.SKY, position);
-        }
-        return lightlevel;
-    }
-
-    @Override
-    public int getRawLightLevel(World world, int blockX, int blockY, int blockZ, int flags) {
-        if (world == null) {
-            return ResultCodes.WORLD_NOT_AVAILABLE;
-        }
-        int lightLevel = -1;
-        if (isMainThread()) {
-            lightLevel = getRawLightLevelLocked(world, blockX, blockY, blockZ, flags);
-        } else {
-            CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> getRawLightLevelLocked(world,
-                    blockX, blockY, blockZ, flags));
-            try {
-                lightLevel = future.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-        return lightLevel;
-    }
-
-    /**
-     * @hide
-     **/
-    private int recalculateLightingLocked(World world, int blockX, int blockY, int blockZ, int flags) {
-        WorldServer worldServer = ((CraftWorld) world).getHandle();
-        final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
-
-        // Do not recalculate if no changes!
-        if (!lightEngine.a()) {
-            return ResultCodes.RECALCULATE_NO_CHANGES;
-        }
-
-        executeSync(lightEngine, () -> {
-            // block lighting
-            if ((flags & LightFlags.BLOCK_LIGHTING) == LightFlags.BLOCK_LIGHTING) {
-                LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
-                leb.a(Integer.MAX_VALUE, true, true);
-            }
-
-            // sky lighting
-            if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
-                LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
-                les.a(Integer.MAX_VALUE, true, true);
-            }
-
-            // TODO: recalculate for both lighting
-            /*
-            if ((flags & LightFlags.COMBO_LIGHTING) == LightFlags.COMBO_LIGHTING) {
-                LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
-                LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
-
-                // nms
-                int maxUpdateCount = Integer.MAX_VALUE;
-                int integer4 = maxUpdateCount / 2;
-                int integer5 = leb.a(integer4, true, true);
-                int integer6 = maxUpdateCount - integer4 + integer5;
-                int integer7 = les.a(integer6, true, true);
-                if (integer5 == 0 && integer7 > 0) {
-                    leb.a(integer7, true, true);
-                }
-            }
-             */
-        });
-        return ResultCodes.SUCCESS;
-    }
-
-    @Override
-    public int recalculateLighting(World world, int blockX, int blockY, int blockZ, int flags) {
-        if (world == null) {
-            return ResultCodes.WORLD_NOT_AVAILABLE;
-        }
-
-        int resultCode = ResultCodes.FAILED;
-        if (isMainThread()) {
-            resultCode = recalculateLightingLocked(world, blockX, blockY, blockZ, flags);
-        } else {
-            CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> recalculateLightingLocked(world,
-                    blockX, blockY, blockZ, flags));
-            try {
-                resultCode = future.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-        return resultCode;
-    }
-
-    @Override
     public List<ChunkData> collectChunkSections(World world, int blockX, int blockY, int blockZ, int lightLevel) {
-        List<ChunkData> list = new ArrayList<ChunkData>();
+        List<ChunkData> list = Lists.newArrayList();
         int finalLightLevel = lightLevel;
 
         if (world == null) {
@@ -533,8 +403,7 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
             if (distanceTo(pChunk, chunk) <= playerViewDistance) {
                 // https://wiki.vg/index.php?title=Pre-release_protocol&oldid=14804#Update_Light
                 // https://github.com/flori-schwa/VarLight/blob/b9349499f9c9fb995c320f95eae9698dd85aad5c/v1_14_R1/src
-                // /me/florian/varlight/nms
-                // /v1_14_R1/NmsAdapter_1_14_R1.java#L451
+                // /me/florian/varlight/nms/v1_14_R1/NmsAdapter_1_14_R1.java#L451
                 //
                 // Two last argument is bit-mask what chunk sections to update. Mask containing
                 // 18 bits, with the lowest bit corresponding to chunk section -1 (in the void,
@@ -571,8 +440,7 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
             if (distanceTo(pChunk, chunk) <= playerViewDistance) {
                 // https://wiki.vg/index.php?title=Pre-release_protocol&oldid=14804#Update_Light
                 // https://github.com/flori-schwa/VarLight/blob/b9349499f9c9fb995c320f95eae9698dd85aad5c/v1_14_R1/src
-                // /me/florian/varlight/nms
-                // /v1_14_R1/NmsAdapter_1_14_R1.java#L451
+                // /me/florian/varlight/nms/v1_14_R1/NmsAdapter_1_14_R1.java#L451
                 //
                 // Two last argument is bit-mask what chunk sections to update. Mask containing
                 // 18 bits, with the lowest bit corresponding to chunk section -1 (in the void,
@@ -588,7 +456,7 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
 
     @Override
     public void initialization(IPlatformImpl impl) throws Exception {
-        mImpl = impl;
+        super.initialization(impl);
         try {
             threadedMailbox_DoLoopStep = ThreadedMailbox.class.getDeclaredMethod("f");
             threadedMailbox_DoLoopStep.setAccessible(true);
@@ -631,12 +499,12 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
     }
 
     @Override
-    public boolean isRequireRecalculateLighting() {
-        return true;
+    public int asSectionMask(int sectionY) {
+        return 1 << sectionY + 1;
     }
 
     @Override
-    public boolean isRequireManuallySendingChanges() {
-        return true;
+    public int getSectionFromY(int blockY) {
+        return (blockY >> 4) + 1;
     }
 }

@@ -40,11 +40,11 @@ public abstract class CommonCraftBukkitHandler extends BukkitHandlerInternal {
 
     private IPlatformImpl mImpl;
 
-    private IPlatformImpl getPlatformImpl() {
+    protected IPlatformImpl getPlatformImpl() {
         return mImpl;
     }
 
-    private IChunkObserver getChunkObserver() {
+    protected IChunkObserver getChunkObserver() {
         return getPlatformImpl().getChunkObserver();
     }
 
@@ -108,6 +108,9 @@ public abstract class CommonCraftBukkitHandler extends BukkitHandlerInternal {
         return ResultCodes.FAILED;
     }
 
+    /**
+     * @hide
+     **/
     protected abstract int setRawLightLevelLocked(World world, int blockX, int blockY, int blockZ, int lightLevel,
                                                   int flags);
 
