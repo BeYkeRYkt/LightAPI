@@ -27,17 +27,24 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.LightFlags;
+import ru.beykerykt.minecraft.lightapi.common.api.SendMode;
+import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 public class DebugListener implements Listener {
 
     // testing
+    private LightAPI mAPI;
     private BukkitPlugin mPlugin;
     private Location prevLoc;
 
     public DebugListener(BukkitPlugin plugin) {
         mPlugin = plugin;
+        mAPI = LightAPI.get();
     }
 
     @EventHandler
@@ -50,6 +57,36 @@ public class DebugListener implements Listener {
 
         if (event.getItem().getType() == Material.STICK) {
 
+        }
+    }
+
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event) {
+        if (event.getBlock() == null) return;
+
+        int lightlevel = 15;
+        int flags = LightFlags.BLOCK_LIGHTING;
+        flags = FlagUtils.addFlag(flags, LightFlags.SKY_LIGHTING);
+        SendMode mode = SendMode.DELAYED;
+        Location location = event.getBlock().getLocation();
+        if (event.getBlock().getType() == Material.BEDROCK) {
+            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
+                    location.getBlockZ(), lightlevel, flags, mode, null);
+        }
+    }
+
+    @EventHandler
+    public void onBlockPlace(BlockBreakEvent event) {
+        if (event.getBlock() == null) return;
+
+        int lightlevel = 0;
+        int flags = LightFlags.BLOCK_LIGHTING;
+        flags = FlagUtils.addFlag(flags, LightFlags.SKY_LIGHTING);
+        SendMode mode = SendMode.DELAYED;
+        Location location = event.getBlock().getLocation();
+        if (event.getBlock().getType() == Material.BEDROCK) {
+            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
+                    location.getBlockZ(), lightlevel, flags, mode, null);
         }
     }
 

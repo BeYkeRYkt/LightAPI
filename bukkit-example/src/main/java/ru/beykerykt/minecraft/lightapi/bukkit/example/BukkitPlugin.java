@@ -167,6 +167,7 @@ public class BukkitPlugin extends JavaPlugin {
         getServer().getScheduler().runTaskAsynchronously(this, () -> {
             // LightAPI (instant)
             ///////////////////////////////////////////
+            log(getServer().getConsoleSender(), "< #1 LightAPI (instant mode : raw + recalc cycle): start");
             long time_start = System.currentTimeMillis();
             for (int i = 0; i < cycle; i++) {
                 setLightLevel(loc, 0, 0, flag, SendMode.INSTANT);
@@ -178,6 +179,7 @@ public class BukkitPlugin extends JavaPlugin {
 
             // LightAPI (delayed)
             ///////////////////////////////////////////
+            log(getServer().getConsoleSender(), "< #2 LightAPI (delayed mode : raw + recalc cycle): start");
             time_start = System.currentTimeMillis();
             for (int i = 0; i < cycle; i++) {
                 setLightLevel(loc, 0, 0, flag, SendMode.DELAYED);
@@ -189,6 +191,7 @@ public class BukkitPlugin extends JavaPlugin {
 
             // LightAPI (manual)
             ///////////////////////////////////////////
+            log(getServer().getConsoleSender(), "< #3 LightAPI (manual mode : raw + recalc cycle): start");
             time_start = System.currentTimeMillis();
             for (int i = 0; i < cycle; i++) {
                 setLightLevel(loc, 0, 0, flag, SendMode.MANUAL);
@@ -200,6 +203,7 @@ public class BukkitPlugin extends JavaPlugin {
 
             // handler (instant)
             ///////////////////////////////////////////
+            log(getServer().getConsoleSender(), "< #4 Handler (instant mode : raw + recalc cycle): start");
             time_start = System.currentTimeMillis();
             for (int i = 0; i < cycle; i++) {
                 setLightLevel(loc, 1, 0, flag, SendMode.INSTANT);
@@ -211,6 +215,7 @@ public class BukkitPlugin extends JavaPlugin {
 
             // handler (delayed)
             ///////////////////////////////////////////
+            log(getServer().getConsoleSender(), "< #5 Handler (delayed mode : raw + recalc cycle): start");
             time_start = System.currentTimeMillis();
             for (int i = 0; i < cycle; i++) {
                 setLightLevel(loc, 1, 0, flag, SendMode.DELAYED);
@@ -222,6 +227,7 @@ public class BukkitPlugin extends JavaPlugin {
 
             // handler (manual)
             ///////////////////////////////////////////
+            log(getServer().getConsoleSender(), "< #6 Handler (manual mode : raw + recalc cycle): start");
             time_start = System.currentTimeMillis();
             for (int i = 0; i < cycle; i++) {
                 setLightLevel(loc, 1, 0, flag, SendMode.MANUAL);
