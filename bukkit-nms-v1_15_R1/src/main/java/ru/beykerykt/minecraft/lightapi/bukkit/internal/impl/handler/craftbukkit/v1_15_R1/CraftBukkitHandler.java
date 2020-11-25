@@ -277,8 +277,7 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
         final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
-        if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING
-                || (flags & LightFlags.COMBO_LIGHTING) == LightFlags.COMBO_LIGHTING) {
+        if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
             LightEngineLayerEventListener lightLayer = lightEngine.a(EnumSkyBlock.SKY);
             if (lightLayer == null || lightLayer == LightEngineLayerEventListener.Void.INSTANCE) {
                 return ResultCodes.SKYLIGHT_DATA_NOT_AVAILABLE;
@@ -303,33 +302,6 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
 
             // sky lighting
             if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
-                LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
-                if (finalLightLevel == 0) {
-                    les.a(position);
-                } else if (les.a(SectionPosition.a(position)) != null) {
-                    try {
-                        lightEngineLayer_a(les, position, finalLightLevel);
-                    } catch (NullPointerException ignore) {
-                        // To prevent problems with the absence of the NibbleArray, even
-                        // if les.a(SectionPosition.a(position)) returns non-null value (corrupted data)
-                    }
-                }
-            }
-
-            // combo
-            if ((flags & LightFlags.COMBO_LIGHTING) == LightFlags.COMBO_LIGHTING) {
-                LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
-                if (finalLightLevel == 0) {
-                    leb.a(position);
-                } else if (leb.a(SectionPosition.a(position)) != null) {
-                    try {
-                        leb.a(position, finalLightLevel);
-                    } catch (NullPointerException ignore) {
-                        // To prevent problems with the absence of the NibbleArray, even
-                        // if leb.a(SectionPosition.a(position)) returns non-null value (corrupted data)
-                    }
-                }
-
                 LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
                 if (finalLightLevel == 0) {
                     les.a(position);
@@ -381,8 +353,6 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
             lightlevel = worldServer.getBrightness(EnumSkyBlock.BLOCK, position);
         } else if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
             lightlevel = worldServer.getBrightness(EnumSkyBlock.SKY, position);
-        } else if ((flags & LightFlags.COMBO_LIGHTING) == LightFlags.COMBO_LIGHTING) {
-            lightlevel = worldServer.getLightLevel(position);
         }
         return lightlevel;
     }
@@ -434,7 +404,8 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
                 les.a(Integer.MAX_VALUE, true, true);
             }
 
-            // combo
+            // TODO: recalculate for both lighting
+            /*
             if ((flags & LightFlags.COMBO_LIGHTING) == LightFlags.COMBO_LIGHTING) {
                 LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
                 LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
@@ -449,6 +420,7 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
                     leb.a(integer7, true, true);
                 }
             }
+             */
         });
         return ResultCodes.SUCCESS;
     }

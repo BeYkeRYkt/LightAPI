@@ -39,15 +39,4 @@ public class LightFlags {
      * Light from sky
      */
     public static final int SKY_LIGHTING = 2;
-
-    /**
-     * <ul>
-     * <li>At setting light level: Applies new parameters for BLOCK_LIGHTING and
-     * SKY_LIGHTING.
-     * <li>At recalculating: Makes a BLOCK_LIGHTING allocation based on
-     * SKY_LIGHTING.
-     * <li>At getting light level: returns the overall lighting level.
-     * </ul>
-     */
-    public static final int COMBO_LIGHTING = 4; // 15
 }

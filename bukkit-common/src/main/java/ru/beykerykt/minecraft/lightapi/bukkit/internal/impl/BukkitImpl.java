@@ -44,6 +44,7 @@ import java.util.List;
 
 public class BukkitImpl implements IBukkitImpl, IBukkitExtension {
 
+    private static final int DEFAULT_FLAG = LightFlags.BLOCK_LIGHTING;
     private IBukkitHandlerInternal mHandler;
     private BukkitPlugin mPlugin;
     private IBukkitChunkObserver mChunkObserver;
@@ -125,7 +126,7 @@ public class BukkitImpl implements IBukkitImpl, IBukkitExtension {
         if (location == null) {
             return ResultCodes.WORLD_NOT_AVAILABLE;
         }
-        return getLightLevel(location, LightFlags.COMBO_LIGHTING);
+        return getLightLevel(location, DEFAULT_FLAG);
     }
 
     @Override
@@ -138,7 +139,7 @@ public class BukkitImpl implements IBukkitImpl, IBukkitExtension {
 
     @Override
     public int getLightLevel(World world, int blockX, int blockY, int blockZ) {
-        return getLightLevel(world, blockX, blockY, blockZ, LightFlags.COMBO_LIGHTING);
+        return getLightLevel(world, blockX, blockY, blockZ, DEFAULT_FLAG);
     }
 
     @Override
@@ -152,7 +153,7 @@ public class BukkitImpl implements IBukkitImpl, IBukkitExtension {
             return ResultCodes.WORLD_NOT_AVAILABLE;
         }
         return setLightLevel(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(),
-                lightLevel, LightFlags.COMBO_LIGHTING, mode, outputChunks);
+                lightLevel, DEFAULT_FLAG, mode, outputChunks);
     }
 
     @Override
@@ -168,7 +169,7 @@ public class BukkitImpl implements IBukkitImpl, IBukkitExtension {
     @Override
     public int setLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, SendMode mode,
                              List<ChunkData> outputChunks) {
-        return setLightLevel(world, blockX, blockY, blockZ, lightLevel, LightFlags.COMBO_LIGHTING, mode, outputChunks);
+        return setLightLevel(world, blockX, blockY, blockZ, lightLevel, DEFAULT_FLAG, mode, outputChunks);
     }
 
     @Override

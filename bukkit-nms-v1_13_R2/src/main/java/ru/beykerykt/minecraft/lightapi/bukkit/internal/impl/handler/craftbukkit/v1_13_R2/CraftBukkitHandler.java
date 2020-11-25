@@ -208,10 +208,6 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
             if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
                 worldServer.c(EnumSkyBlock.SKY, adjacentPosition);
             }
-            if ((flags & LightFlags.COMBO_LIGHTING) == LightFlags.COMBO_LIGHTING) {
-                worldServer.c(EnumSkyBlock.BLOCK, adjacentPosition);
-                //worldServer.c(EnumSkyBlock.SKY, adjacentPosition);
-            }
             return ResultCodes.SUCCESS;
         }
         BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
@@ -219,10 +215,6 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
             worldServer.a(EnumSkyBlock.BLOCK, position, finalLightLevel);
         }
         if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
-            worldServer.a(EnumSkyBlock.SKY, position, finalLightLevel);
-        }
-        if ((flags & LightFlags.COMBO_LIGHTING) == LightFlags.COMBO_LIGHTING) {
-            worldServer.a(EnumSkyBlock.BLOCK, position, finalLightLevel);
             worldServer.a(EnumSkyBlock.SKY, position, finalLightLevel);
         }
         return ResultCodes.SUCCESS;
@@ -262,8 +254,6 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
             lightlevel = worldServer.getBrightness(EnumSkyBlock.BLOCK, position);
         } else if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
             lightlevel = worldServer.getBrightness(EnumSkyBlock.SKY, position);
-        } else if ((flags & LightFlags.COMBO_LIGHTING) == LightFlags.COMBO_LIGHTING) {
-            lightlevel = worldServer.getLightLevel(position);
         }
         return lightlevel;
     }
@@ -303,11 +293,6 @@ public class CraftBukkitHandler extends BukkitHandlerInternal {
             worldServer.c(EnumSkyBlock.BLOCK, adjacentPosition);
         }
         if ((flags & LightFlags.SKY_LIGHTING) == LightFlags.SKY_LIGHTING) {
-            worldServer.c(EnumSkyBlock.SKY, adjacentPosition);
-        }
-        if ((flags & LightFlags.COMBO_LIGHTING) == LightFlags.COMBO_LIGHTING) {
-            // i don't known
-            worldServer.c(EnumSkyBlock.BLOCK, adjacentPosition);
             worldServer.c(EnumSkyBlock.SKY, adjacentPosition);
         }
         return ResultCodes.SUCCESS;

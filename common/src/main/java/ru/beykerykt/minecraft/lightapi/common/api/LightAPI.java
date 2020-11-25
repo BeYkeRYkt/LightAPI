@@ -37,7 +37,7 @@ import java.util.List;
  */
 public final class LightAPI {
 
-    private static final int DEFAULT_FLAG = LightFlags.COMBO_LIGHTING;
+    private static final int DEFAULT_FLAG = LightFlags.BLOCK_LIGHTING;
     private static volatile LightAPI singleton;
     private boolean isInit = false;
     private IPlatformImpl mPlatformImpl;
@@ -141,7 +141,7 @@ public final class LightAPI {
 
     /**
      * Gets the level of light from given coordinates with
-     * {@link ru.beykerykt.minecraft.lightapi.common.api.LightFlags#COMBO_LIGHTING}.
+     * {@link ru.beykerykt.minecraft.lightapi.common.api.LightFlags#BLOCK_LIGHTING}.
      */
     public int getLightLevel(String worldName, int blockX, int blockY, int blockZ) {
         return getLightLevel(worldName, blockX, blockY, blockZ, DEFAULT_FLAG);
@@ -155,7 +155,7 @@ public final class LightAPI {
     }
 
     /**
-     * Placement of a {@link ru.beykerykt.minecraft.lightapi.common.api.LightFlags#COMBO_LIGHTING} type of light with a
+     * Placement of a {@link ru.beykerykt.minecraft.lightapi.common.api.LightFlags#BLOCK_LIGHTING} type of light with a
      * given level of illumination in the named world in certain coordinates with the return code result.
      */
     public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, SendMode mode,

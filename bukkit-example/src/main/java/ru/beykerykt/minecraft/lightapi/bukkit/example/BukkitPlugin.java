@@ -160,7 +160,7 @@ public class BukkitPlugin extends JavaPlugin {
 
     private void runBenchmark(Location loc) {
         int oldBlockLight = 15;
-        int flag = LightFlags.COMBO_LIGHTING;
+        int flag = LightFlags.BLOCK_LIGHTING;
         int cycle = 99;
 
         // Be careful, asynchronous thread can be blocked
