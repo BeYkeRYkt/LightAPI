@@ -58,11 +58,11 @@ public class BukkitHandlerFactory implements IHandlerFactory {
         IHandlerInternal handler = null;
 
         // load specific nms pkg if available
-        String specificPkg = getPlugin().getConfig().getString("specific-adapter");
+        String specificPkg = getPlugin().getConfig().getString("specific-handler");
         if (specificPkg != null && !specificPkg.equalsIgnoreCase("none")) {
-            getPlatformImpl().log("Initial load specific adapter");
+            getPlatformImpl().log("Initial load specific handler");
             handler = (IBukkitHandlerInternal) Class.forName(specificPkg).getConstructor().newInstance();
-            getPlatformImpl().log("Custom adapter is loaded: " + handler.getClass().getName());
+            getPlatformImpl().log("Custom handler is loaded: " + handler.getClass().getName());
             return handler;
         }
 

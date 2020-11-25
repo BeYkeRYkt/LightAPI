@@ -137,10 +137,10 @@ public class BukkitPlugin extends JavaPlugin {
         FileConfiguration fc = getConfig();
         if (!file.exists()) {
             fc.set("version", mConfigVersion);
-            fc.set("specific-adapter", "none");
+            fc.set("specific-handler", "none");
             fc.set("specific-storage-provider", "none");
             fc.set("merge-chunk-sections", false);
-            fc.set("background-service-delay-ticks", 2);
+            fc.set("background-service-delay-ticks", 1);
             saveConfig();
         }
     }
