@@ -43,13 +43,8 @@ public class ChunkUtils {
                 if (data_c.getWorldName().equals(data.getWorldName()) &&
                         data_c.getChunkX() == data.getChunkX() &&
                         data_c.getChunkZ() == data.getChunkZ()) {
-                    if (!data_c.checkSectionMaskBlock(data.getSectionMaskBlock())) {
-                        data_c.addSectionMaskBlock(data.getSectionMaskBlock());
-                    }
-
-                    if (!data_c.checkSectionMaskSky(data.getSectionMaskSky())) {
-                        data_c.addSectionMaskSky(data.getSectionMaskSky());
-                    }
+                    data_c.addSectionMaskBlock(data.getSectionMaskBlock());
+                    data_c.addSectionMaskSky(data.getSectionMaskSky());
                     found = true;
                     break;
                 }

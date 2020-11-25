@@ -72,7 +72,35 @@ public class BukkitChunkObserver implements IBukkitChunkObserver {
 
     @Override
     public void notifyUpdateChunks(String worldName, int blockX, int blockY, int blockZ, int lightLevel) {
-        collectChunks(worldName, blockX, blockY, blockZ, lightLevel, sendingChunks);
+        List<ChunkData> input = getHandler().collectChunkSections(worldName, blockX, blockY, blockZ, lightLevel);
+        Iterator<ChunkData> it = input.iterator();
+        while (it.hasNext()) {
+            ChunkData data = it.next();
+
+            if (isMergeChunksEnabled()) {
+                Iterator<ChunkData> itc = sendingChunks.iterator();
+                boolean found = false;
+                while (itc.hasNext()) {
+                    ChunkData data_c = itc.next();
+                    if (data_c.getWorldName().equals(data.getWorldName()) &&
+                            data_c.getChunkX() == data.getChunkX() &&
+                            data_c.getChunkZ() == data.getChunkZ()) {
+                        data_c.addSectionMaskBlock(data.getSectionMaskBlock());
+                        data_c.addSectionMaskSky(data.getSectionMaskSky());
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    sendingChunks.add(data);
+                }
+            } else {
+                if (!sendingChunks.contains(data)) {
+                    sendingChunks.add(data);
+                }
+            }
+            it.remove();
+        }
     }
 
     @Override
@@ -87,21 +115,15 @@ public class BukkitChunkObserver implements IBukkitChunkObserver {
     @Override
     public void notifyUpdateChunk(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
         if (isMergeChunksEnabled()) {
-            // go found this little shit
-            Iterator<ChunkData> itc = sendingChunks.iterator();
+            Iterator<ChunkData> it = sendingChunks.iterator();
             boolean found = false;
-            while (itc.hasNext()) {
-                ChunkData data_c = itc.next();
+            while (it.hasNext()) {
+                ChunkData data_c = it.next();
                 if (data_c.getWorldName().equals(worldName) &&
                         data_c.getChunkX() == chunkX &&
                         data_c.getChunkZ() == chunkZ) {
-                    if (!data_c.checkSectionMaskSky(sectionMaskSky)) {
-                        data_c.addSectionMaskSky(sectionMaskSky);
-                    }
-
-                    if (!data_c.checkSectionMaskBlock(sectionMaskBlock)) {
-                        data_c.addSectionMaskBlock(sectionMaskBlock);
-                    }
+                    data_c.addSectionMaskSky(sectionMaskSky);
+                    data_c.addSectionMaskBlock(sectionMaskBlock);
                     found = true;
                     break;
                 }
@@ -116,45 +138,6 @@ public class BukkitChunkObserver implements IBukkitChunkObserver {
             if (!sendingChunks.contains(data)) {
                 sendingChunks.add(data);
             }
-        }
-    }
-
-    protected void collectChunks(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
-                                 List<ChunkData> output) {
-        List<ChunkData> input = getHandler().collectChunkSections(worldName, blockX, blockY, blockZ, lightLevel);
-        Iterator<ChunkData> it = input.iterator();
-        while (it.hasNext()) {
-            ChunkData data = it.next();
-
-            if (isMergeChunksEnabled()) {
-                // go found this shit
-                Iterator<ChunkData> itc = output.iterator();
-                boolean found = false;
-                while (itc.hasNext()) {
-                    ChunkData data_c = itc.next();
-                    if (data_c.getWorldName().equals(data.getWorldName()) &&
-                            data_c.getChunkX() == data.getChunkX() &&
-                            data_c.getChunkZ() == data.getChunkZ()) {
-                        if (!data_c.checkSectionMaskBlock(data.getSectionMaskBlock())) {
-                            data_c.addSectionMaskBlock(data.getSectionMaskBlock());
-                        }
-
-                        if (!data_c.checkSectionMaskSky(data.getSectionMaskSky())) {
-                            data_c.addSectionMaskSky(data.getSectionMaskSky());
-                        }
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    output.add(data);
-                }
-            } else {
-                if (!output.contains(data)) {
-                    output.add(data);
-                }
-            }
-            it.remove();
         }
     }
 }
