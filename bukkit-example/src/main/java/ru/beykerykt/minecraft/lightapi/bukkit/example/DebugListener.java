@@ -31,9 +31,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
-import ru.beykerykt.minecraft.lightapi.common.api.LightFlags;
-import ru.beykerykt.minecraft.lightapi.common.api.SendMode;
-import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
+import ru.beykerykt.minecraft.lightapi.common.api.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.strategy.EditStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.strategy.SendStrategy;
 
 public class DebugListener implements Listener {
 
@@ -50,7 +50,7 @@ public class DebugListener implements Listener {
     @EventHandler
     public void onPlayerClick(PlayerInteractEvent event) {
         int lightlevel = 15;
-        int flag = LightFlags.BLOCK_LIGHTING;
+        int flag = LightType.BLOCK_LIGHTING;
 
         if (event.getItem() == null)
             return;
@@ -65,13 +65,28 @@ public class DebugListener implements Listener {
         if (event.getBlock() == null) return;
 
         int lightlevel = 15;
-        int flags = LightFlags.BLOCK_LIGHTING;
-        flags = FlagUtils.addFlag(flags, LightFlags.SKY_LIGHTING);
-        SendMode mode = SendMode.DELAYED;
+        int flags = LightType.BLOCK_LIGHTING;
         Location location = event.getBlock().getLocation();
         if (event.getBlock().getType() == Material.BEDROCK) {
+            EditStrategy editStrategy = EditStrategy.IMMEDIATE;
+            SendStrategy sendStrategy = SendStrategy.IMMEDIATE;
             mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
-                    location.getBlockZ(), lightlevel, flags, mode, null);
+                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy,
+                    (requestFlag, resultCode) -> mPlugin.getServer().getLogger().info("requestFlag: " + requestFlag + " resultCode: " + resultCode));
+        } else if (event.getBlock().getType() == Material.REDSTONE_BLOCK) {
+            EditStrategy editStrategy = EditStrategy.DEFERRED;
+            SendStrategy sendStrategy = SendStrategy.DEFERRED;
+            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
+                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy, null);
+            int blockLight = mAPI.getLightLevel(location.getWorld().getName(), location.getBlockX(),
+                    location.getBlockY() + 2,
+                    location.getBlockZ(), flags);
+            mPlugin.getServer().getLogger().info("blockLight: " + blockLight);
+        } else if (event.getBlock().getType() == Material.OBSIDIAN) {
+            EditStrategy editStrategy = EditStrategy.FORCE_IMMEDIATE;
+            SendStrategy sendStrategy = SendStrategy.IMMEDIATE;
+            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
+                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy, null);
         }
     }
 
@@ -80,13 +95,28 @@ public class DebugListener implements Listener {
         if (event.getBlock() == null) return;
 
         int lightlevel = 0;
-        int flags = LightFlags.BLOCK_LIGHTING;
-        flags = FlagUtils.addFlag(flags, LightFlags.SKY_LIGHTING);
-        SendMode mode = SendMode.DELAYED;
+        int flags = LightType.BLOCK_LIGHTING;
         Location location = event.getBlock().getLocation();
         if (event.getBlock().getType() == Material.BEDROCK) {
+            EditStrategy editStrategy = EditStrategy.IMMEDIATE;
+            SendStrategy sendStrategy = SendStrategy.IMMEDIATE;
             mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
-                    location.getBlockZ(), lightlevel, flags, mode, null);
+                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy,
+                    (requestFlag, resultCode) -> mPlugin.getServer().getLogger().info("relight: " + mAPI.getRelightStrategy() + " requestFlag: " + requestFlag + " resultCode: " + resultCode));
+        } else if (event.getBlock().getType() == Material.REDSTONE_BLOCK) {
+            EditStrategy editStrategy = EditStrategy.DEFERRED;
+            SendStrategy sendStrategy = SendStrategy.DEFERRED;
+            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
+                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy, null);
+            int blockLight = mAPI.getLightLevel(location.getWorld().getName(), location.getBlockX(),
+                    location.getBlockY() + 2,
+                    location.getBlockZ(), flags);
+            mPlugin.getServer().getLogger().info("blockLight: " + blockLight);
+        } else if (event.getBlock().getType() == Material.OBSIDIAN) {
+            EditStrategy editStrategy = EditStrategy.FORCE_IMMEDIATE;
+            SendStrategy sendStrategy = SendStrategy.IMMEDIATE;
+            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
+                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy, null);
         }
     }
 

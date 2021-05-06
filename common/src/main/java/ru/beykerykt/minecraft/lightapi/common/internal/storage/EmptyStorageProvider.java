@@ -23,9 +23,8 @@
  */
 package ru.beykerykt.minecraft.lightapi.common.internal.storage;
 
-import ru.beykerykt.minecraft.lightapi.common.api.ResultCodes;
-import ru.beykerykt.minecraft.lightapi.common.internal.impl.IPlatformImpl;
-import ru.beykerykt.minecraft.lightapi.common.internal.impl.storage.IStorageProvider;
+import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
+import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,34 +32,38 @@ import java.util.Map;
 public class EmptyStorageProvider implements IStorageProvider {
 
     @Override
-    public void initialization(IPlatformImpl impl) {
+    public void initialization(ILightAPI impl) throws Exception {
     }
 
     @Override
-    public int saveLightSource(String world, int blockX, int blockY, int blockZ, int lightlevel) {
-        return ResultCodes.SUCCESS;
+    public void shutdown() {
     }
 
     @Override
-    public int saveLightSource(String world, long longPos, int lightlevel) {
-        return ResultCodes.SUCCESS;
+    public int saveLightLevel(String world, int blockX, int blockY, int blockZ, int lightLevel) {
+        return ResultCode.SUCCESS;
     }
 
     @Override
-    public int saveLightSources(String world, Map<Long, Integer> map) {
-        return ResultCodes.SUCCESS;
+    public int saveLightLevel(String world, long longPos, int lightLevel) {
+        return ResultCode.SUCCESS;
     }
 
     @Override
-    public void loadLightSource(String world, long longPos, Map<Long, Integer> map) {
+    public int saveLightLevels(String world, Map<Long, Integer> map) {
+        return ResultCode.SUCCESS;
     }
 
     @Override
-    public void loadLightSource(String world, int blockX, int blockY, int blockZ, Map<Long, Integer> map) {
+    public void loadLightLevel(String world, long longPos, Map<Long, Integer> map) {
     }
 
     @Override
-    public Map<Long, Integer> loadLightSources(String world) {
-        return new HashMap<Long, Integer>();
+    public void loadLightLevel(String world, int blockX, int blockY, int blockZ, Map<Long, Integer> map) {
+    }
+
+    @Override
+    public Map<Long, Integer> loadLightLevels(String world) {
+        return new HashMap<>();
     }
 }

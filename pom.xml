@@ -20,17 +20,21 @@
         <developerConnection>scm:git:ssh://github.com/BeYkeRYkt/LightAPI</developerConnection>
     </scm>
     <modules>
-        <!-- Commmon -->
+        <!-- Common -->
         <module>common</module>
         <!-- Bukkit -->
         <module>bukkit-common</module>
         <module>bukkit-example</module>
-        <module>bukkit-nms-v1_13_R2</module>
+        <!-- Temporarily disable -->
+        <!-- <module>bukkit-nms-v1_13_R2</module> -->
         <module>bukkit-nms-v1_14_R1</module>
         <module>bukkit-nms-v1_15_R1</module>
+        <module>bukkit-nms-v1_16_R1</module>
+        <module>bukkit-nms-v1_16_R2</module>
+        <module>bukkit-nms-v1_16_R3</module>
         <module>bukkit-nms-all</module>
         <module>bukkit-backward-support</module>
-        <!-- Sponge -->
+        <!-- Sponge (Temporarily disable) -->
         <!-- <module>sponge-common</module>
         <module>sponge-mcp-v1_12_R1</module>
         <module>sponge-mcp-all</module> -->

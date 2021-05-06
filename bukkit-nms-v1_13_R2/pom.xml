@@ -21,10 +21,10 @@
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
-        <!-- CraftBukkit -->
+        <!-- Spigot -->
         <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>CraftBukkit</artifactId>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot</artifactId>
             <version>1.13.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>

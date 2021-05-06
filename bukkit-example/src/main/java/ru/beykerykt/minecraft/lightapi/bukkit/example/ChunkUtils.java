@@ -23,7 +23,7 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.example;
 
-import ru.beykerykt.minecraft.lightapi.common.api.ChunkData;
+import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
 
 import java.util.ArrayList;
 import java.util.Iterator;

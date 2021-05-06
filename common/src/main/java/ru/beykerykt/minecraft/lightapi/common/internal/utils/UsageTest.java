@@ -24,17 +24,16 @@
 package ru.beykerykt.minecraft.lightapi.common.internal.utils;
 
 import ru.beykerykt.minecraft.lightapi.common.Build;
-import ru.beykerykt.minecraft.lightapi.common.api.*;
-import ru.beykerykt.minecraft.lightapi.common.api.impl.IHandler;
-
-import java.util.ArrayList;
-import java.util.List;
+import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
+import ru.beykerykt.minecraft.lightapi.common.api.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.strategy.EditStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.strategy.SendStrategy;
 
 public class UsageTest {
 
     private LightAPI mLightAPI;
 
-    private void init() {
+    private void initClient() {
         mLightAPI = LightAPI.get();
 
         // internal use
@@ -69,79 +68,15 @@ public class UsageTest {
         }
     }
 
-    /* Sync call method */
-    private void setLightLevel(String world, int blockX, int blockY, int blockZ) {
-        int flag = LightFlags.BLOCK_LIGHTING;
-        int lightLevel = 15;
-        SendMode mode = SendMode.MANUAL;
-        List<ChunkData> chunks = new ArrayList<>();
-        int code = mLightAPI.setLightLevel(world, blockX, blockY, blockZ, lightLevel, flag, mode, chunks);
-        if (code == ResultCodes.SUCCESS) {
-            switch (mode) {
-                case INSTANT:
-                    // Nothing. Chunks will be sent immediately after completion.
-                    break;
-                case DELAYED:
-                    // Nothing. Chunks will be sent after a certain number of ticks.
-                    break;
-                case MANUAL:
-                    // You need to manually send chunks.
-                    for (int i = 0; i < chunks.size(); i++) {
-                        ChunkData data = chunks.get(i);
-                        mLightAPI.getImplHandler().sendChunk(data);
-                    }
-                    break;
-            }
-        }
-    }
+    public void test(String world, int blockX, int blockY, int blockZ, int lightLevel) {
+        int blockLight = mLightAPI.getLightLevel(world, blockX, blockY, blockZ, lightLevel);
 
-    /* Async call method */
-    private void setLightLevelAsync(String world, int blockX, int blockY, int blockZ) {
-        int lightLevel = 15;
-        SendMode mode = SendMode.DELAYED;
-        List<ChunkData> chunks = null;
-        int code = mLightAPI.setLightLevel(world, blockX, blockY, blockZ, lightLevel, mode, chunks);
-        // Be careful, asynchronous thread can be blocked
-        if (code == ResultCodes.SUCCESS) {
-            switch (mode) {
-                case INSTANT:
-                    // Nothing. Chunks will be sent immediately after completion.
-                    break;
-                case DELAYED:
-                    // Nothing. Chunks will be sent after a certain number of ticks.
-                    break;
-                case MANUAL:
-                    // You need to manually send chunks.
-                    if (chunks != null) {
-                        for (int i = 0; i < chunks.size(); i++) {
-                            ChunkData data = chunks.get(i);
-                            mLightAPI.getImplHandler().sendChunk(data);
-                        }
-                    }
-                    break;
-            }
-        }
-    }
-
-    /**
-     * Old style code
-     **/
-    private void setLightLevelAdvanced(String world, int blockX, int blockY, int blockZ) {
-        int flag = LightFlags.BLOCK_LIGHTING;
-        int lightLevel = 15;
-
-        IHandler handler = LightAPI.get().getImplHandler();
-        // Be careful, asynchronous thread can be blocked
-        handler.setRawLightLevel(world, blockX, blockY, blockZ, lightLevel, flag);
-        if (handler.isRequireRecalculateLighting()) {
-            handler.recalculateLighting(world, blockX, blockY, blockZ, flag);
-        }
-        if (handler.isRequireManuallySendingChanges()) {
-            List<ChunkData> chunkList = handler.collectChunkSections(world, blockX, blockY, blockZ, lightLevel);
-            for (int i = 0; i < chunkList.size(); i++) {
-                ChunkData data = chunkList.get(i);
-                handler.sendChunk(data);
-            }
-        }
+        int lightType = LightType.BLOCK_LIGHTING;
+        EditStrategy editStrategy = EditStrategy.DEFERRED;
+        SendStrategy sendStrategy = SendStrategy.DEFERRED;
+        mLightAPI.setLightLevel(world, blockX, blockY, blockZ, lightLevel, lightType, editStrategy, sendStrategy,
+                (requestFlag, resultCode) -> {
+                    // test
+                });
     }
 }

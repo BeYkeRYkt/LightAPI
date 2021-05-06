@@ -23,8 +23,7 @@
  */
 package ru.beykerykt.minecraft.lightapi.common.internal.storage;
 
-import ru.beykerykt.minecraft.lightapi.common.api.ResultCodes;
-import ru.beykerykt.minecraft.lightapi.common.internal.impl.storage.IStorageProvider;
+import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
 
 import java.util.HashMap;
@@ -33,7 +32,7 @@ import java.util.Map;
 public class LightStorage {
 
     private String mWorldName = null;
-    private Map<Long, Integer> mLightLevels = new HashMap<Long, Integer>();
+    private Map<Long, Integer> mLightLevels = new HashMap();
     private IStorageProvider mStorageProvider = null;
 
     public LightStorage(String worldName, IStorageProvider provider) {
@@ -62,31 +61,35 @@ public class LightStorage {
     /**
      * N/A
      */
-    public void putLightSource(BlockPosition pos, int lightlevel) {
+    public void setLightLevel(BlockPosition pos, int lightLevel) {
         long longPos = pos.asLong();
-        if (!mLightLevels.containsKey(longPos)) {
-            mLightLevels.put(longPos, lightlevel);
+        setLightLevel(longPos, lightLevel);
+    }
+
+    /**
+     * N/A
+     */
+    public void setLightLevel(long longPos, int lightLevel) {
+        if (lightLevel > 0) {
+            if (!mLightLevels.containsKey(longPos)) {
+                mLightLevels.put(longPos, lightLevel);
+            }
+        } else {
+            if (mLightLevels.containsKey(longPos)) {
+                mLightLevels.remove(longPos);
+            }
         }
     }
 
     /**
      * N/A
      */
-    public void putLightSource(long longPos, int lightlevel) {
-        if (!mLightLevels.containsKey(longPos)) {
-            mLightLevels.put(longPos, lightlevel);
-        }
-    }
-
-    /**
-     * N/A
-     */
-    public boolean checkLightSource(BlockPosition pos) {
+    public boolean checkLightLevel(BlockPosition pos) {
         long longPos = pos.asLong();
-        return mLightLevels.containsKey(longPos);
+        return checkLightLevel(longPos);
     }
 
-    public boolean checkLightSource(long longPos) {
+    public boolean checkLightLevel(long longPos) {
         return mLightLevels.containsKey(longPos);
     }
 
@@ -94,19 +97,10 @@ public class LightStorage {
      * N/A
      */
     public int getLightLevel(long longPos) {
-        if (!checkLightSource(longPos)) {
+        if (!checkLightLevel(longPos)) {
             return -1;
         }
         return mLightLevels.get(longPos);
-    }
-
-    /**
-     * N/A
-     */
-    public void removeLightSource(long longPos) {
-        if (mLightLevels.containsKey(longPos)) {
-            mLightLevels.remove(longPos);
-        }
     }
 
     /*
@@ -116,33 +110,33 @@ public class LightStorage {
     /**
      * N/A
      */
-    public int restoreLightSources() {
+    public int restore() {
         if (mWorldName == null) {
-            return ResultCodes.FAILED;
+            return ResultCode.FAILED;
         }
         if (mStorageProvider == null) {
-            return ResultCodes.FAILED;
+            return ResultCode.FAILED;
         }
         mLightLevels.clear();
-        mLightLevels.putAll(mStorageProvider.loadLightSources(getWorldName()));
-        return ResultCodes.SUCCESS;
+        mLightLevels.putAll(mStorageProvider.loadLightLevels(getWorldName()));
+        return ResultCode.SUCCESS;
     }
 
     /**
      * N/A
      */
-    public int saveLightSources() {
+    public int save() {
         if (mWorldName == null) {
-            return ResultCodes.FAILED;
+            return ResultCode.FAILED;
         }
         if (mStorageProvider == null) {
-            return ResultCodes.FAILED;
+            return ResultCode.FAILED;
         }
 
-        int code = mStorageProvider.saveLightSources(getWorldName(), mLightLevels);
-        if (code != ResultCodes.SUCCESS) { // something is wrong ?
+        int code = mStorageProvider.saveLightLevels(getWorldName(), mLightLevels);
+        if (code != ResultCode.SUCCESS) { // something is wrong ?
             return code;
         }
-        return ResultCodes.SUCCESS;
+        return ResultCode.SUCCESS;
     }
 }

@@ -28,21 +28,21 @@ public class FlagUtils {
     /*
      * N/A
      */
-    public static int addFlag(int lightFlags, int flag) {
-        return lightFlags |= flag;
+    public static int addFlag(int flags, int targetFlag) {
+        return flags |= targetFlag;
     }
 
     /*
      * N/A
      */
-    public static int removeFlag(int lightFlags, int flag) {
-        return lightFlags &= ~flag;
+    public static int removeFlag(int flags, int targetFlag) {
+        return flags &= ~targetFlag;
     }
 
     /*
      * N/A
      */
-    public static boolean isFlagSet(int lightFlags, int flags) {
-        return (flags & lightFlags) == lightFlags;
+    public static boolean isFlagSet(int flags, int targetFlag) {
+        return (flags & targetFlag) == targetFlag;
     }
 }

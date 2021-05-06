@@ -27,11 +27,9 @@ package ru.beykerykt.minecraft.lightapi.impl.sponge;
 import ru.beykerykt.minecraft.lightapi.common.ImplementationPlatform;
 
 /**
- *
  * Interface implementation for MCP NMS (Net Minecraft Server)
  *
  * @author BeYkeRYkt
- *
  */
 public abstract class SpongeLightHandler implements ISpongeLightHandler {
 

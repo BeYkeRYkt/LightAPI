@@ -23,12 +23,12 @@
  */
 package ru.beykerykt.minecraft.lightapi.common.api;
 
-import ru.beykerykt.minecraft.lightapi.common.api.impl.IExtension;
-import ru.beykerykt.minecraft.lightapi.common.api.impl.IHandler;
-import ru.beykerykt.minecraft.lightapi.common.api.impl.PlatformType;
-import ru.beykerykt.minecraft.lightapi.common.internal.impl.IPlatformImpl;
-
-import java.util.List;
+import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
+import ru.beykerykt.minecraft.lightapi.common.api.service.ICallback;
+import ru.beykerykt.minecraft.lightapi.common.api.strategy.EditStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.strategy.RelightStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.strategy.SendStrategy;
+import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
 
 /**
  * Main class for all platforms. Contains basic methods for all implementations.
@@ -36,31 +36,31 @@ import java.util.List;
  * @author BeYkeRYkt
  */
 public final class LightAPI {
-
-    private static final int DEFAULT_FLAG = LightFlags.BLOCK_LIGHTING;
     private static volatile LightAPI singleton;
-    private boolean isInit = false;
-    private IPlatformImpl mPlatformImpl;
+    private final ILightAPI mInternal;
 
-    private LightAPI(IPlatformImpl platformImpl) {
+    private LightAPI(ILightAPI internal) {
         if (singleton != null) {
             throw new RuntimeException("Use get() method to get the single instance of this class.");
         }
-        mPlatformImpl = platformImpl;
+        mInternal = internal;
     }
 
     /**
      * Must be called in onLoad();
-     *
-     * @param impl
      */
-    public static void prepare(IPlatformImpl impl) {
-        if (singleton == null && impl != null || !get().isInit) {
+    public static void prepare(ILightAPI impl) {
+        if (singleton == null && impl != null || !get().isInitialized()) {
             impl.log("Preparing LightAPI...");
             synchronized (LightAPI.class) {
                 if (singleton == null) {
                     singleton = new LightAPI(impl);
-                    impl.log("Preparing done!");
+                    int initCode = get().getInternal().prepare();
+                    if (initCode == ResultCode.SUCCESS) {
+                        impl.log("Preparing done!");
+                    } else {
+                        //throw new IllegalStateException("Preparing failed! Code: " + initCode);
+                    }
                 }
             }
         }
@@ -70,11 +70,16 @@ public final class LightAPI {
      * Must be called in onEnable();
      */
     public static void initialization() throws Exception {
-        if (!get().isInit) {
+        if (!get().isInitialized()) {
             get().log("Initializing LightAPI...");
             synchronized (LightAPI.class) {
-                get().getPlatformImpl().initialization();
-                get().isInit = true;
+                int initCode = get().getInternal().initialization();
+                if (initCode == ResultCode.SUCCESS) {
+                    get().log("LightAPI initialized!");
+                } else {
+                    // Initialization failed
+                    throw new IllegalStateException("Initialization failed! Code: " + initCode);
+                }
             }
         }
     }
@@ -90,41 +95,34 @@ public final class LightAPI {
     }
 
     public boolean isInitialized() {
-        return get().isInit;
+        return getInternal().isInitialized();
     }
 
     /**
      * N/A
      */
-    private IPlatformImpl getPlatformImpl() {
-        if (get().mPlatformImpl == null) {
-            throw new IllegalStateException("IPlatformImpl not yet initialized! Use prepare() !");
+    private ILightAPI getInternal() {
+        if (get().mInternal == null) {
+            throw new IllegalStateException("ILightAPI not yet initialized! Use prepare() !");
         }
-        return get().mPlatformImpl;
+        return get().mInternal;
     }
 
     /**
      * N/A
      */
-    public IHandler getImplHandler() {
-        if (getPlatformImpl().getHandler() == null) {
-            throw new IllegalStateException("IPlatformHandler not yet initialized! Use prepare() !");
+    public IExtension getExtension() {
+        if (getInternal().getExtension() == null) {
+            throw new IllegalStateException("Extension not yet initialized!");
         }
-        return getPlatformImpl().getHandler();
-    }
-
-    /**
-     * N/A
-     */
-    public IExtension getImplExtension() {
-        return getPlatformImpl().getExtension();
+        return getInternal().getExtension();
     }
 
     /**
      * N/A
      */
     protected void log(String msg) {
-        getPlatformImpl().log(msg);
+        getInternal().log(msg);
     }
 
     /**
@@ -136,39 +134,37 @@ public final class LightAPI {
         if (singleton == null) {
             return PlatformType.UNKNOWN;
         }
-        return getPlatformImpl().getPlatformType();
+        return getInternal().getPlatformType();
     }
 
     /**
-     * Gets the level of light from given coordinates with
-     * {@link ru.beykerykt.minecraft.lightapi.common.api.LightFlags#BLOCK_LIGHTING}.
+     * N/A
      */
-    public int getLightLevel(String worldName, int blockX, int blockY, int blockZ) {
-        return getLightLevel(worldName, blockX, blockY, blockZ, DEFAULT_FLAG);
+    public RelightStrategy getRelightStrategy() {
+        return getInternal().getRelightStrategy();
     }
 
     /**
      * Gets the level of light from given coordinates with specific flags.
      */
     public int getLightLevel(String worldName, int blockX, int blockY, int blockZ, int flags) {
-        return getImplHandler().getRawLightLevel(worldName, blockX, blockY, blockZ, flags);
-    }
-
-    /**
-     * Placement of a {@link ru.beykerykt.minecraft.lightapi.common.api.LightFlags#BLOCK_LIGHTING} type of light with a
-     * given level of illumination in the named world in certain coordinates with the return code result.
-     */
-    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, SendMode mode,
-                             List<ChunkData> outputChunks) {
-        return setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, DEFAULT_FLAG, mode, outputChunks);
+        return getInternal().getLightLevel(worldName, blockX, blockY, blockZ, flags);
     }
 
     /**
      * Placement of a specific type of light with a given level of illumination in
      * the named world in certain coordinates with the return code result.
      */
-    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int flags,
-                             SendMode mode, List<ChunkData> outputChunks) {
-        return getImplHandler().setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, flags, mode, outputChunks);
+    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType,
+                             EditStrategy editStrategy, SendStrategy sendStrategy, ICallback callback) {
+        return getInternal().setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, lightType,
+                editStrategy, sendStrategy, callback);
+    }
+
+    /**
+     * Send specific commands for implementation
+     */
+    public int sendCmd(int cmdId, Object... args) {
+        return getInternal().sendCmd(cmdId, args);
     }
 }

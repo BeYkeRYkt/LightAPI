@@ -35,8 +35,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.impl.BukkitImpl;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.impl.IBukkitImpl;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitLightAPI;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
 
@@ -49,7 +48,7 @@ public class BukkitPlugin extends JavaPlugin {
 
     private static final int mConfigVersion = 1;
     private static BukkitPlugin plugin = null;
-    private static IBukkitImpl mImpl = null;
+    private static BukkitLightAPI mImpl = null;
 
     public static BukkitPlugin getInstance() {
         return plugin;
@@ -58,18 +57,18 @@ public class BukkitPlugin extends JavaPlugin {
     @Override
     public void onLoad() {
         plugin = this;
-        mImpl = new BukkitImpl(plugin);
+        mImpl = new BukkitLightAPI(plugin);
 
         // create config
         try {
             FileConfiguration fc = getConfig();
             File file = new File(getDataFolder(), "config.yml");
             if (file.exists()) {
-                if (fc.getInt("version") < mConfigVersion) {
+                if (fc.getInt(ConfigurationPath.GENERAL_VERSION) < mConfigVersion) {
                     if (!file.delete()) {
                         throw new IOException("Can not delete " + file.getPath());
                     }
-                    generateConfig(file);
+                    upgradeConfig(fc, fc.getInt("version"), mConfigVersion);
                 }
             } else {
                 generateConfig(file);
@@ -103,18 +102,19 @@ public class BukkitPlugin extends JavaPlugin {
 
     public List<String> getAuthors() {
         List<String> list = new ArrayList<>(getDescription().getAuthors());
+        /*
         for (int i = 0; i < getPlatformImpl().getHandler().getAuthors().size(); i++) {
             String name = getPlatformImpl().getHandler().getAuthors().get(i);
             if (!list.contains(name)) {
                 list.add(1, name);
             }
-        }
+        }*/
         return list;
     }
 
-    public IBukkitImpl getPlatformImpl() {
+    public BukkitLightAPI getInternal() {
         if (mImpl == null) {
-            throw new IllegalStateException("IBukkitImpl not yet initialized!");
+            throw new IllegalStateException("IBukkitLightAPI not yet initialized!");
         }
         return mImpl;
     }
@@ -136,13 +136,24 @@ public class BukkitPlugin extends JavaPlugin {
     private void generateConfig(File file) {
         FileConfiguration fc = getConfig();
         if (!file.exists()) {
-            fc.set("version", mConfigVersion);
-            fc.set("specific-handler", "none");
-            fc.set("specific-storage-provider", "none");
-            fc.set("merge-chunk-sections", false);
-            fc.set("background-service-delay-ticks", 1);
+            fc.set(ConfigurationPath.GENERAL_VERSION, mConfigVersion);
+            fc.set(ConfigurationPath.GENERAL_DEBUG, true);
+            fc.set(ConfigurationPath.GENERAL_RELIGHT_STRATEGY, "DEFERRED");
+            fc.set(ConfigurationPath.GENERAL_SPECIFIC_HANDLER, "none");
+            fc.set(ConfigurationPath.GENERAL_SPECIFIC_STORAGE_PROVIDER, "none");
+            fc.set(ConfigurationPath.BACKGROUND_SERVICE_TICK_DELAY, 1);
+            fc.set(ConfigurationPath.BACKGROUND_SERVICE_CORE_POOL_SIZE, 1);
+            fc.set(ConfigurationPath.CHUNK_OBSERVER_MERGE_CHUNK_SECTIONS, true);
+            fc.set(ConfigurationPath.LIGHT_OBSERVER_MAX_TIME_MS_IN_PER_TICK, 50);
+            fc.set(ConfigurationPath.LIGHT_OBSERVER_MAX_ITERATIONS_IN_PER_TICK, 256);
             saveConfig();
         }
+    }
+
+    private void upgradeConfig(FileConfiguration fc, int from, int to) {
+        // TODO: Implement upgrade config
+        File file = new File(getDataFolder(), "config.yml");
+        generateConfig(file);
     }
 
     @Override
