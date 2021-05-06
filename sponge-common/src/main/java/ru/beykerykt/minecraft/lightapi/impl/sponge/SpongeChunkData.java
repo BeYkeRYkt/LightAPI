@@ -35,7 +35,6 @@ import ru.beykerykt.minecraft.lightapi.common.IChunkData;
  * https://wiki.vg/Chunk_Format#Packet_structure
  *
  * @author BeYkeRYkt
- *
  */
 public class SpongeChunkData implements IChunkData {
 

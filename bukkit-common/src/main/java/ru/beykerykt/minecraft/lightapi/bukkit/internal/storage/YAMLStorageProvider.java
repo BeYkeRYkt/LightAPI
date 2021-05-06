@@ -28,9 +28,9 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
-import ru.beykerykt.minecraft.lightapi.common.api.ResultCodes;
-import ru.beykerykt.minecraft.lightapi.common.internal.impl.IPlatformImpl;
-import ru.beykerykt.minecraft.lightapi.common.internal.impl.storage.IStorageProvider;
+import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
+import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
 
 import java.io.File;
@@ -41,11 +41,13 @@ import java.util.Set;
 
 public class YAMLStorageProvider implements IStorageProvider {
 
+    private ILightAPI mImpl;
     private File customConfigFile;
     private FileConfiguration customConfig;
 
     @Override
-    public void initialization(IPlatformImpl impl) {
+    public void initialization(ILightAPI impl) {
+        mImpl = impl;
         customConfigFile = new File(BukkitPlugin.getInstance().getDataFolder(), "storage.yml");
         if (!customConfigFile.exists()) {
             customConfigFile.getParentFile().mkdirs();
@@ -61,52 +63,55 @@ public class YAMLStorageProvider implements IStorageProvider {
     }
 
     @Override
-    public int saveLightSource(String world, int blockX, int blockY, int blockZ, int lightlevel) {
-        return saveLightSource(world, BlockPosition.asLong(blockX, blockY, blockZ), lightlevel);
-    }
-
-    @Override
-    public int saveLightSource(String world, long longPos, int lightlevel) {
-        customConfig.set("worlds." + world + "." + longPos, lightlevel);
-        try {
-            customConfig.save(customConfigFile);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void shutdown() {
+        if (customConfig != null) {
+            try {
+                customConfig.save(customConfigFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            customConfig = null;
         }
-        return ResultCodes.SUCCESS;
+        customConfigFile = null;
     }
 
     @Override
-    public int saveLightSources(String world, Map<Long, Integer> map) {
+    public int saveLightLevel(String world, int blockX, int blockY, int blockZ, int lightLevel) {
+        return saveLightLevel(world, BlockPosition.asLong(blockX, blockY, blockZ), lightLevel);
+    }
+
+    @Override
+    public int saveLightLevel(String world, long longPos, int lightLevel) {
+        customConfig.set("worlds." + world + "." + longPos, lightLevel);
+        return ResultCode.SUCCESS;
+    }
+
+    @Override
+    public int saveLightLevels(String world, Map<Long, Integer> map) {
         for (Map.Entry<Long, Integer> entry : map.entrySet()) {
             long longPos = entry.getKey();
-            int lightlevel = entry.getValue();
-            customConfig.set("worlds." + world + "." + longPos, lightlevel);
+            int lightLevel = entry.getValue();
+            customConfig.set("worlds." + world + "." + longPos, lightLevel);
         }
-        try {
-            customConfig.save(customConfigFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return ResultCodes.SUCCESS;
+        return ResultCode.SUCCESS;
     }
 
     @Override
-    public void loadLightSource(String world, long longPos, Map<Long, Integer> map) {
-        int lightlevel = customConfig.getInt("worlds." + world + "." + longPos);
-        map.put(longPos, lightlevel);
+    public void loadLightLevel(String world, long longPos, Map<Long, Integer> map) {
+        int lightLevel = customConfig.getInt("worlds." + world + "." + longPos);
+        map.put(longPos, lightLevel);
     }
 
     @Override
-    public void loadLightSource(String world, int blockX, int blockY, int blockZ, Map<Long, Integer> map) {
+    public void loadLightLevel(String world, int blockX, int blockY, int blockZ, Map<Long, Integer> map) {
         long longPos = BlockPosition.asLong(blockX, blockY, blockZ);
-        int lightlevel = customConfig.getInt("worlds." + world + "." + longPos);
-        map.put(longPos, lightlevel);
+        int lightLevel = customConfig.getInt("worlds." + world + "." + longPos);
+        map.put(longPos, lightLevel);
     }
 
     @Override
-    public Map<Long, Integer> loadLightSources(String world) {
-        Map<Long, Integer> map = new HashMap<Long, Integer>();
+    public Map<Long, Integer> loadLightLevels(String world) {
+        Map<Long, Integer> map = new HashMap<>();
         ConfigurationSection section = customConfig.getConfigurationSection("worlds." + world);
         if (section == null) {
             return map;
@@ -114,9 +119,9 @@ public class YAMLStorageProvider implements IStorageProvider {
         Set<String> sPos = section.getKeys(false);
         for (String s : sPos) {
             long longPos = Long.parseLong(s);
-            int lightlevel = customConfig.getInt("worlds." + world + "." + s);
-            map.put(longPos, lightlevel);
-            System.out.println("longPos: " + longPos + " lightlevel: " + lightlevel);
+            int lightLevel = customConfig.getInt("worlds." + world + "." + s);
+            map.put(longPos, lightLevel);
+            mImpl.log("longPos: " + longPos + " lightLevel: " + lightLevel);
         }
         return map;
     }

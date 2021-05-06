@@ -24,7 +24,7 @@
 package ru.beykerykt.minecraft.lightapi.common;
 
 import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
-import ru.beykerykt.minecraft.lightapi.common.api.impl.PlatformType;
+import ru.beykerykt.minecraft.lightapi.common.api.PlatformType;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

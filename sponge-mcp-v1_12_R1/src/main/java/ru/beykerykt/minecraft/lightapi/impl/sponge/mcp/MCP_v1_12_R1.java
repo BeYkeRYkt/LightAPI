@@ -52,11 +52,9 @@ import ru.beykerykt.minecraft.lightapi.impl.sponge.SpongeChunkData;
 import ru.beykerykt.minecraft.lightapi.impl.sponge.SpongeLightHandler;
 
 /**
- *
  * Interface implementation for MCP NMS (Net Minecraft Server) version 1.12.2
  *
  * @author BeYkeRYkt
- *
  */
 public class MCP_v1_12_R1 extends SpongeLightHandler {
 

@@ -34,11 +34,9 @@ import ru.beykerykt.minecraft.lightapi.common.ILightHandler;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
 
 /**
- *
  * Extended common interface for Sponge
  *
  * @author BeYkeRYkt
- *
  */
 public interface ISpongeLightHandler extends ILightHandler {
 
@@ -53,7 +51,7 @@ public interface ISpongeLightHandler extends ILightHandler {
      * @param blockZ     - Block Z coordinate
      * @param lightlevel - light level. Default range - 0 - 15
      * @return true - if the light in the given coordinates has changed, false - if
-     *         not
+     * not
      */
     public boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
 
@@ -67,7 +65,7 @@ public interface ISpongeLightHandler extends ILightHandler {
      * @param blockY - Block Y coordinate
      * @param blockZ - Block Z coordinate
      * @return true - if the light in the given coordinates has changed, false - if
-     *         not
+     * not
      */
     public boolean deleteLight(World world, LightType type, int blockX, int blockY, int blockZ);
 

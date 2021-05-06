@@ -23,6 +23,7 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.example;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -31,23 +32,27 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
-import ru.beykerykt.minecraft.lightapi.bukkit.api.impl.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.bukkit.api.impl.IBukkitHandler;
-import ru.beykerykt.minecraft.lightapi.common.api.*;
+import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
+import ru.beykerykt.minecraft.lightapi.common.api.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
+import ru.beykerykt.minecraft.lightapi.common.api.strategy.EditStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.strategy.SendStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BukkitPlugin extends JavaPlugin {
     public LightAPI mLightAPI;
-    public IBukkitHandler mHandler;
+    public IHandler mHandler;
     public IBukkitExtension mExtension;
 
     @Override
     public void onEnable() {
         mLightAPI = LightAPI.get();
-        mHandler = (IBukkitHandler) LightAPI.get().getImplHandler();
-        mExtension = (IBukkitExtension) LightAPI.get().getImplExtension();
+        mExtension = (IBukkitExtension) LightAPI.get().getExtension();
+        mHandler = mExtension.getHandler();
 
         getServer().getPluginManager().registerEvents(new DebugListener(this), this);
     }
@@ -61,76 +66,33 @@ public class BukkitPlugin extends JavaPlugin {
         sender.sendMessage(ChatColor.AQUA + "<LightAPI>: " + ChatColor.WHITE + message);
     }
 
-    private void setLightLevel(Location location, int var, int lightLevel, int flag, SendMode mode) {
+    private void setLightLevel(Location location, int var, int lightLevel, int lightType, EditStrategy editStrategy,
+                               SendStrategy sendStrategy) {
         List<ChunkData> chunks = new ArrayList<>();
         switch (var) {
             case 0: // lightapi
             {
                 int code = mLightAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(),
-                        location.getBlockY(), location.getBlockZ(), lightLevel, flag, mode, chunks);
-                if (code == ResultCodes.SUCCESS) {
-                    switch (mode) {
-                        case INSTANT:
-                            // Nothing. Chunks will be sent immediately after completion.
-                            break;
-                        case DELAYED:
-                            // Nothing. Chunks will be sent after a certain number of ticks.
-                            break;
-                        case MANUAL:
-                            // You need to manually send chunks.
-                            for (int i = 0; i < chunks.size(); i++) {
-                                ChunkData data = chunks.get(i);
-                                mLightAPI.getImplHandler().sendChunk(data);
-                            }
-                            break;
-                    }
-                }
+                        location.getBlockY(), location.getBlockZ(), lightLevel, lightType, editStrategy,
+                        sendStrategy, null);
                 break;
             }
             case 1: // handler
             {
                 // Keep the light level information, as after removing the light source, chunks may not be updated
                 // correctly.
-                int blockLightLevel = mHandler.getRawLightLevel(location.getWorld().getName(), location.getBlockX(),
-                        location.getBlockY(), location.getBlockZ(), flag);
-                mHandler.setRawLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY(),
-                        location.getBlockZ(), lightLevel, flag);
-                if (mHandler.isRequireRecalculateLighting()) {
-                    mHandler.recalculateLighting(location.getWorld().getName(), location.getBlockX(),
-                            location.getBlockY(), location.getBlockZ(), flag);
-                }
-                if (mHandler.isRequireManuallySendingChanges()) {
-                    List<ChunkData> chunkList = mHandler.collectChunkSections(location.getWorld().getName(),
-                            location.getBlockX(), location.getBlockY(), location.getBlockZ(), lightLevel == 0 ?
-                                    blockLightLevel : lightLevel);
-                    for (int i = 0; i < chunkList.size(); i++) {
-                        ChunkData data = chunkList.get(i);
-                        mHandler.sendChunk(data);
-                    }
-                }
-                break;
-            }
-            case 2: // extension
-            {
-                // TODO: make extensions
-                IBukkitExtension extension = (IBukkitExtension) mLightAPI.getImplExtension();
-                int code = extension.setLightLevel(location, lightLevel, flag, mode, chunks);
-                if (code == ResultCodes.SUCCESS) {
-                    switch (mode) {
-                        case INSTANT:
-                            // Nothing. Chunks will be sent immediately after completion.
-                            break;
-                        case DELAYED:
-                            // Nothing. Chunks will be sent after a certain number of ticks.
-                            break;
-                        case MANUAL:
-                            // You need to manually send chunks.
-                            for (int i = 0; i < chunks.size(); i++) {
-                                ChunkData data = chunks.get(i);
-                                mLightAPI.getImplHandler().sendChunk(data);
-                            }
-                            break;
-                    }
+                int blockLightLevel = mHandler.getRawLightLevel(location.getWorld(), location.getBlockX(),
+                        location.getBlockY(), location.getBlockZ(), lightType);
+                mHandler.setRawLightLevel(location.getWorld(), location.getBlockX(), location.getBlockY(),
+                        location.getBlockZ(), lightLevel, lightType);
+                mHandler.recalculateLighting(location.getWorld(), location.getBlockX(),
+                        location.getBlockY(), location.getBlockZ(), lightType);
+                List<ChunkData> chunkList = mHandler.collectChunkSections(location.getWorld(),
+                        location.getBlockX(), location.getBlockY(), location.getBlockZ(), lightLevel == 0 ?
+                                blockLightLevel : lightLevel, lightType);
+                for (int i = 0; i < chunkList.size(); i++) {
+                    ChunkData data = chunkList.get(i);
+                    mHandler.sendChunk(data);
                 }
                 break;
             }
@@ -140,125 +102,52 @@ public class BukkitPlugin extends JavaPlugin {
     private void setLightLevelManual(Location location, int lightLevel, int flag, List<ChunkData> outputChunks) {
         // Keep the light level information, as after removing the light source, chunks may not be updated
         // correctly.
-        int blockLightLevel = mHandler.getRawLightLevel(location.getWorld().getName(), location.getBlockX(),
+        int blockLightLevel = mHandler.getRawLightLevel(location.getWorld(), location.getBlockX(),
                 location.getBlockY(), location.getBlockZ(), flag);
-        mHandler.setRawLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY(),
+        mHandler.setRawLightLevel(location.getWorld(), location.getBlockX(), location.getBlockY(),
                 location.getBlockZ(), lightLevel, flag);
-        if (mHandler.isRequireRecalculateLighting()) {
-            mHandler.recalculateLighting(location.getWorld().getName(), location.getBlockX(),
-                    location.getBlockY(), location.getBlockZ(), flag);
-        }
-        if (mHandler.isRequireManuallySendingChanges()) {
-            List<ChunkData> chunkList = mHandler.collectChunkSections(location.getWorld().getName(),
-                    location.getBlockX(), location.getBlockY(), location.getBlockZ(), lightLevel == 0 ?
-                            blockLightLevel : lightLevel);
-            //outputChunks.addAll(ChunkUtils.mergeChunks(chunkList));
-            outputChunks.addAll(chunkList);
-            chunkList.clear();
-        }
+        mHandler.recalculateLighting(location.getWorld(), location.getBlockX(),
+                location.getBlockY(), location.getBlockZ(), flag);
+        List<ChunkData> chunkList = mHandler.collectChunkSections(location.getWorld(),
+                location.getBlockX(), location.getBlockY(), location.getBlockZ(), lightLevel == 0 ?
+                        blockLightLevel : lightLevel, LightType.BLOCK_LIGHTING);
+        //outputChunks.addAll(ChunkUtils.mergeChunks(chunkList));
+        outputChunks.addAll(chunkList);
+        chunkList.clear();
     }
 
-    private void runBenchmark(Location loc) {
+    private void runBenchmark(Location loc, boolean async, String strategy, int cycleCount) {
         int oldBlockLight = 15;
-        int flag = LightFlags.BLOCK_LIGHTING;
-        int cycle = 99;
+        int flag = LightType.BLOCK_LIGHTING | LightType.SKY_LIGHTING;
+
+        Runnable run = () -> {
+            long startTime = System.currentTimeMillis();
+            if (strategy.equals("IMMEDIATE")) {
+                for (int i = 0; i < cycleCount; i++) {
+                    setLightLevel(loc, 0, oldBlockLight, flag, EditStrategy.IMMEDIATE, SendStrategy.IMMEDIATE);
+                    setLightLevel(loc, 0, 0, flag, EditStrategy.IMMEDIATE, SendStrategy.IMMEDIATE);
+                }
+            } else if (strategy.equals("DEFERRED")) {
+                for (int i = 0; i < cycleCount; i++) {
+                    setLightLevel(loc, 0, oldBlockLight, flag, EditStrategy.DEFERRED, SendStrategy.DEFERRED);
+                    setLightLevel(loc, 0, 0, flag, EditStrategy.DEFERRED, SendStrategy.DEFERRED);
+                }
+            } else if (strategy.equals("FORCE")) {
+                for (int i = 0; i < cycleCount; i++) {
+                    setLightLevel(loc, 0, oldBlockLight, flag, EditStrategy.FORCE_IMMEDIATE, SendStrategy.IMMEDIATE);
+                    setLightLevel(loc, 0, 0, flag, EditStrategy.FORCE_IMMEDIATE, SendStrategy.IMMEDIATE);
+                }
+            }
+            long endTime = System.currentTimeMillis();
+            Bukkit.broadcastMessage("Time: " + (endTime - startTime) + " ms");
+        };
 
         // Be careful, asynchronous thread can be blocked
-        getServer().getScheduler().runTaskAsynchronously(this, () -> {
-            // LightAPI (instant)
-            ///////////////////////////////////////////
-            log(getServer().getConsoleSender(), "< #1 LightAPI (instant mode : raw + recalc cycle): start");
-            long time_start = System.currentTimeMillis();
-            for (int i = 0; i < cycle; i++) {
-                setLightLevel(loc, 0, 0, flag, SendMode.INSTANT);
-                setLightLevel(loc, 0, oldBlockLight, flag, SendMode.INSTANT);
-            }
-            setLightLevel(loc, 0, 0, flag, SendMode.INSTANT);
-            long time_end = System.currentTimeMillis() - time_start;
-            log(getServer().getConsoleSender(), "< #1 LightAPI (instant mode : raw + recalc cycle): " + time_end);
-
-            // LightAPI (delayed)
-            ///////////////////////////////////////////
-            log(getServer().getConsoleSender(), "< #2 LightAPI (delayed mode : raw + recalc cycle): start");
-            time_start = System.currentTimeMillis();
-            for (int i = 0; i < cycle; i++) {
-                setLightLevel(loc, 0, 0, flag, SendMode.DELAYED);
-                setLightLevel(loc, 0, oldBlockLight, flag, SendMode.DELAYED);
-            }
-            setLightLevel(loc, 0, 0, flag, SendMode.DELAYED);
-            time_end = System.currentTimeMillis() - time_start;
-            log(getServer().getConsoleSender(), "< #2 LightAPI (delayed mode : raw + recalc cycle): " + time_end);
-
-            // LightAPI (manual)
-            ///////////////////////////////////////////
-            log(getServer().getConsoleSender(), "< #3 LightAPI (manual mode : raw + recalc cycle): start");
-            time_start = System.currentTimeMillis();
-            for (int i = 0; i < cycle; i++) {
-                setLightLevel(loc, 0, 0, flag, SendMode.MANUAL);
-                setLightLevel(loc, 0, oldBlockLight, flag, SendMode.MANUAL);
-            }
-            setLightLevel(loc, 0, 0, flag, SendMode.MANUAL);
-            time_end = System.currentTimeMillis() - time_start;
-            log(getServer().getConsoleSender(), "< #3 LightAPI (manual mode : raw + recalc cycle): " + time_end);
-
-            // handler (instant)
-            ///////////////////////////////////////////
-            log(getServer().getConsoleSender(), "< #4 Handler (instant mode : raw + recalc cycle): start");
-            time_start = System.currentTimeMillis();
-            for (int i = 0; i < cycle; i++) {
-                setLightLevel(loc, 1, 0, flag, SendMode.INSTANT);
-                setLightLevel(loc, 1, oldBlockLight, flag, SendMode.INSTANT);
-            }
-            setLightLevel(loc, 1, 0, flag, SendMode.INSTANT);
-            time_end = System.currentTimeMillis() - time_start;
-            log(getServer().getConsoleSender(), "< #4 Handler (instant mode : raw + recalc cycle): " + time_end);
-
-            // handler (delayed)
-            ///////////////////////////////////////////
-            log(getServer().getConsoleSender(), "< #5 Handler (delayed mode : raw + recalc cycle): start");
-            time_start = System.currentTimeMillis();
-            for (int i = 0; i < cycle; i++) {
-                setLightLevel(loc, 1, 0, flag, SendMode.DELAYED);
-                setLightLevel(loc, 1, oldBlockLight, flag, SendMode.DELAYED);
-            }
-            setLightLevel(loc, 1, 0, flag, SendMode.DELAYED);
-            time_end = System.currentTimeMillis() - time_start;
-            log(getServer().getConsoleSender(), "< #5 Handler (delayed mode : raw + recalc cycle): " + time_end);
-
-            // handler (manual)
-            ///////////////////////////////////////////
-            log(getServer().getConsoleSender(), "< #6 Handler (manual mode : raw + recalc cycle): start");
-            time_start = System.currentTimeMillis();
-            for (int i = 0; i < cycle; i++) {
-                setLightLevel(loc, 1, 0, flag, SendMode.MANUAL);
-                setLightLevel(loc, 1, oldBlockLight, flag, SendMode.MANUAL);
-            }
-            setLightLevel(loc, 1, 0, flag, SendMode.MANUAL);
-            time_end = System.currentTimeMillis() - time_start;
-            log(getServer().getConsoleSender(), "< #6 Handler (manual mode : raw + recalc cycle): " + time_end);
-
-            // Advanced handler (manual)
-            ///////////////////////////////////////////
-            time_start = System.currentTimeMillis();
-            List<ChunkData> chunks = new ArrayList<>();
-            for (int i = 0; i < cycle; i++) {
-                setLightLevelManual(loc, 0, flag, chunks);
-                setLightLevelManual(loc, oldBlockLight, flag, chunks);
-            }
-            setLightLevelManual(loc, 0, flag, chunks);
-
-            List<ChunkData> mergedChunks = ChunkUtils.mergeChunks(chunks);
-            for (int i = 0; i < mergedChunks.size(); i++) {
-                ChunkData data = mergedChunks.get(i);
-                mLightAPI.getImplHandler().sendChunk(data);
-            }
-
-            time_end = System.currentTimeMillis() - time_start;
-            log(getServer().getConsoleSender(), "< #7 chunksSize: " + chunks.size());
-            log(getServer().getConsoleSender(), "< #7 mergedChunksSize: " + mergedChunks.size());
-            log(getServer().getConsoleSender(),
-                    "< #7 Advanced Handler (manual mode : raw + recalc cycle): " + time_end);
-        });
+        if (async) {
+            getServer().getScheduler().runTaskAsynchronously(this, run);
+        } else {
+            getServer().getScheduler().runTask(this, run);
+        }
     }
 
     @Override
@@ -266,29 +155,35 @@ public class BukkitPlugin extends JavaPlugin {
         if (command.getName().equalsIgnoreCase("lighttest")) {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
-                if (args.length == 1) {
+                if (args.length == 4) {
                     String cmd = args[0];
                     if (cmd.equals("bench")) {
-                        log(player, "Start benchmark");
-                        runBenchmark(player.getLocation());
+                        boolean async = args[1].equals("async");
+                        String strategy = args[2];
+                        int cycle = Integer.parseInt(args[3]);
+                        log(player, "Start benchmark: " + strategy + " (" + cycle + ")");
+                        runBenchmark(player.getLocation(), async, strategy.toUpperCase(), cycle);
                     }
-                } else if (args.length == 3) {
+                } else if (args.length == 5) {
                     String cmd = args[0];
                     if (cmd.equals("create")) {
                         log(player, "Create light");
                         int val = Integer.parseInt(args[1]);
                         int lightLevel = 15;
-                        SendMode mode = SendMode.valueOf(args[2].toUpperCase());
-                        setLightLevel(player.getLocation(), val, lightLevel, LightFlags.BLOCK_LIGHTING, mode);
+                        EditStrategy edit = EditStrategy.valueOf(args[2].toUpperCase());
+                        setLightLevel(player.getLocation(), val, lightLevel, LightType.BLOCK_LIGHTING, edit,
+                                SendStrategy.IMMEDIATE);
                     } else if (cmd.equals("delete")) {
                         log(player, "Delete light");
                         int val = Integer.parseInt(args[1]);
-                        SendMode mode = SendMode.valueOf(args[2].toUpperCase());
-                        setLightLevel(player.getLocation(), val, 0, LightFlags.BLOCK_LIGHTING, mode);
+                        EditStrategy edit = EditStrategy.valueOf(args[2].toUpperCase());
+                        setLightLevel(player.getLocation(), val, 0, LightType.BLOCK_LIGHTING, edit,
+                                SendStrategy.IMMEDIATE);
                     }
                 } else {
-                    log(player, ChatColor.RED + "lighttest (bench | create | delete) (0 | 1 | 2) (INSTANT | DELAYED| " +
-                            "MANUAL) ");
+                    log(player, ChatColor.RED + "lighttest (bench | create | delete) : (0 | 1 | 2) (FORCE_IMMEDIATE |" +
+                            " IMMEDIATE| " +
+                            "DEFERRED) : (0 | 1 | 2) (MANUAL | IMMEDIATE| DEFERRED)");
                 }
             } else if (sender instanceof ConsoleCommandSender) {
                 // nothing...

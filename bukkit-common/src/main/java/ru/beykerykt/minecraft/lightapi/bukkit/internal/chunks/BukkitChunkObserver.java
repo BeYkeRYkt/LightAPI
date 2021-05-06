@@ -23,24 +23,89 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.impl.handler.IBukkitHandlerInternal;
-import ru.beykerykt.minecraft.lightapi.common.api.ChunkData;
+import org.bukkit.World;
+import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitLightAPI;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
+import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
-public class BukkitChunkObserver implements IBukkitChunkObserver {
-    private IBukkitHandlerInternal mHandler;
-    private List<ChunkData> sendingChunks = new CopyOnWriteArrayList<>();
+public class BukkitChunkObserver implements IChunkObserver {
+    private IBukkitLightAPI mInternal;
+    private IHandler mHandler;
+    private BackgroundService mBackgroundService;
+    private List<ChunkData> queueChunks = new ArrayList<>();
     private boolean isMergeEnabled;
 
-    public BukkitChunkObserver(IBukkitHandlerInternal handler) {
+    private Runnable runnable = () -> onTick();
+
+    public BukkitChunkObserver(IBukkitLightAPI impl, IHandler handler, BackgroundService service) {
+        this.mInternal = impl;
         this.mHandler = handler;
+        this.mBackgroundService = service;
     }
 
-    private IBukkitHandlerInternal getHandler() {
+    private IBukkitLightAPI getInternal() {
+        return mInternal;
+    }
+
+    private IHandler getHandler() {
         return this.mHandler;
+    }
+
+    private ChunkData getQueueChunkData(World world, int chunkX, int chunkZ) {
+        Iterator<ChunkData> it = queueChunks.iterator();
+        ChunkData data = null;
+        while (it.hasNext()) {
+            ChunkData data_c = it.next();
+            if (data_c.getWorldName().equals(world.getName()) &&
+                    data_c.getChunkX() == chunkX &&
+                    data_c.getChunkZ() == chunkZ) {
+                data = data_c;
+                break;
+            }
+        }
+        return data;
+    }
+
+    @Override
+    public void start() {
+        mBackgroundService.addToRepeat(runnable);
+        boolean mergeEnable =
+                getInternal().getPlugin().getConfig().getBoolean(ConfigurationPath.CHUNK_OBSERVER_MERGE_CHUNK_SECTIONS);
+        setMergeChunksEnabled(mergeEnable);
+    }
+
+    @Override
+    public void shutdown() {
+        mBackgroundService.removeRepeat(runnable);
+        queueChunks.clear();
+        queueChunks = null;
+        mInternal = null;
+        mHandler = null;
+    }
+
+    private void handleChunksLocked() {
+        Iterator<ChunkData> it = queueChunks.iterator();
+        while (it.hasNext()) {
+            ChunkData data = it.next();
+            if (data.getSectionMaskBlock() != 0 || data.getSectionMaskSky() != 0) {
+                getHandler().sendChunk(data);
+            }
+            it.remove();
+        }
+    }
+
+    @Override
+    public void onTick() {
+        synchronized (queueChunks) {
+            handleChunksLocked();
+        }
     }
 
     @Override
@@ -53,35 +118,21 @@ public class BukkitChunkObserver implements IBukkitChunkObserver {
         this.isMergeEnabled = enabled;
     }
 
-    @Override
-    public void shutdown() {
-        sendingChunks.clear();
-    }
-
-    @Override
-    public void onTick() {
-        // go send chunks
-        Iterator<ChunkData> it = sendingChunks.iterator();
-        while (it.hasNext()) {
-            ChunkData data = it.next();
-            getHandler().sendChunk(data);
-            sendingChunks.remove(data);
+    private int notifyUpdateChunksLocked(World world, int blockX, int blockY, int blockZ, int lightLevel,
+                                         int lightType) {
+        if (world == null) {
+            return ResultCode.WORLD_NOT_AVAILABLE;
         }
-
-    }
-
-    @Override
-    public void notifyUpdateChunks(String worldName, int blockX, int blockY, int blockZ, int lightLevel) {
-        List<ChunkData> input = getHandler().collectChunkSections(worldName, blockX, blockY, blockZ, lightLevel);
-        Iterator<ChunkData> it = input.iterator();
-        while (it.hasNext()) {
-            ChunkData data = it.next();
+        List<ChunkData> input = getHandler().collectChunkSections(world, blockX, blockY, blockZ, lightLevel, lightType);
+        Iterator<ChunkData> iit = input.iterator();
+        while (iit.hasNext()) {
+            ChunkData data = iit.next();
 
             if (isMergeChunksEnabled()) {
-                Iterator<ChunkData> itc = sendingChunks.iterator();
+                Iterator<ChunkData> it = queueChunks.iterator();
                 boolean found = false;
-                while (itc.hasNext()) {
-                    ChunkData data_c = itc.next();
+                while (it.hasNext()) {
+                    ChunkData data_c = it.next();
                     if (data_c.getWorldName().equals(data.getWorldName()) &&
                             data_c.getChunkX() == data.getChunkX() &&
                             data_c.getChunkZ() == data.getChunkZ()) {
@@ -92,34 +143,39 @@ public class BukkitChunkObserver implements IBukkitChunkObserver {
                     }
                 }
                 if (!found) {
-                    sendingChunks.add(data);
+                    queueChunks.add(data);
                 }
             } else {
-                if (!sendingChunks.contains(data)) {
-                    sendingChunks.add(data);
+                if (!queueChunks.contains(data)) {
+                    queueChunks.add(data);
                 }
             }
-            it.remove();
+            iit.remove();
+        }
+        return ResultCode.SUCCESS;
+    }
+
+    @Override
+    public int notifyUpdateChunks(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightType) {
+        if (getHandler().isMainThread()) {
+            return notifyUpdateChunksLocked(world, blockX, blockY, blockZ, lightLevel, lightType);
+        } else {
+            synchronized (queueChunks) {
+                return notifyUpdateChunksLocked(world, blockX, blockY, blockZ, lightLevel, lightType);
+            }
         }
     }
 
-    @Override
-    public void notifyUpdateChunk(String worldName, int blockX, int blockY, int blockZ) {
-        int chunkX = blockX >> 4;
-        int chunkZ = blockZ >> 4;
-        int sectionY = getHandler().getSectionFromY(blockY);
-        int sectionMask = getHandler().asSectionMask(sectionY);
-        notifyUpdateChunk(worldName, chunkX, chunkZ, sectionMask, sectionMask);
-    }
-
-    @Override
-    public void notifyUpdateChunk(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
+    private int notifyUpdateChunkLocked(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
+        if (world == null) {
+            return ResultCode.WORLD_NOT_AVAILABLE;
+        }
         if (isMergeChunksEnabled()) {
-            Iterator<ChunkData> it = sendingChunks.iterator();
+            Iterator<ChunkData> it = queueChunks.iterator();
             boolean found = false;
             while (it.hasNext()) {
                 ChunkData data_c = it.next();
-                if (data_c.getWorldName().equals(worldName) &&
+                if (data_c.getWorldName().equals(world.getName()) &&
                         data_c.getChunkX() == chunkX &&
                         data_c.getChunkZ() == chunkZ) {
                     data_c.addSectionMaskSky(sectionMaskSky);
@@ -130,14 +186,58 @@ public class BukkitChunkObserver implements IBukkitChunkObserver {
             }
             if (!found) {
                 // Not found? Create a new one
-                ChunkData data = new ChunkData(worldName, chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
-                sendingChunks.add(data);
+                ChunkData data = new ChunkData(world.getName(), chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
+                queueChunks.add(data);
             }
         } else {
-            ChunkData data = new ChunkData(worldName, chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
-            if (!sendingChunks.contains(data)) {
-                sendingChunks.add(data);
+            ChunkData data = new ChunkData(world.getName(), chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
+            if (!queueChunks.contains(data)) {
+                queueChunks.add(data);
             }
         }
+        return ResultCode.SUCCESS;
+    }
+
+    @Override
+    public int notifyUpdateChunk(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
+        if (getHandler().isMainThread()) {
+            return notifyUpdateChunkLocked(world, chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
+        } else {
+            synchronized (queueChunks) {
+                return notifyUpdateChunkLocked(world, chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
+            }
+        }
+    }
+
+    @Override
+    public void sendUpdateChunks(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightType) {
+        if (world == null) {
+            return;
+        }
+        List<ChunkData> input = getHandler().collectChunkSections(world, blockX, blockY, blockZ, lightLevel, lightType);
+        Iterator<ChunkData> it = input.iterator();
+        while (it.hasNext()) {
+            ChunkData data = it.next();
+            data.setSectionMaskSky(0);
+            getHandler().sendChunk(data);
+
+            ChunkData queueData = getQueueChunkData(world, data.getChunkX(), data.getChunkZ());
+            if (queueData != null) {
+                queueData.removeSectionMaskBlock(data.getSectionMaskBlock());
+                queueData.removeSectionMaskSky(data.getSectionMaskSky());
+            }
+
+            it.remove();
+        }
+    }
+
+    private long getIndexFromChunkCoords(int chunkX, int chunkZ) {
+        long l = chunkX;
+        l = (l << 32) | (chunkZ & 0xFFFFFFFFL);
+
+        // restore:
+        //long x = ((l >> 32) & 0xFFFFFFFF);
+        //long z = (l & 0xFFFFFFFFL);
+        return l;
     }
 }
