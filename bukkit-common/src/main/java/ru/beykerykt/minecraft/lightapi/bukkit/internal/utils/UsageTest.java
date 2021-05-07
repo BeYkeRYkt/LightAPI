@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.LightType;
@@ -86,7 +86,7 @@ public class UsageTest {
                     flags, editStrategy, sendStrategy, null);
         } else if (msg.equals("createhandler")) {
             IBukkitExtension extension = (IBukkitExtension) mLightAPI.getExtension();
-            IHandler handler = extension.getHandler();
+            IBukkitHandler handler = extension.getHandler();
             handler.setRawLightLevel(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 15,
                     flags);
             handler.recalculateLighting(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(),

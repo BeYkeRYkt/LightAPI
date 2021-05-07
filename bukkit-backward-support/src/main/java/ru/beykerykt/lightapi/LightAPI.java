@@ -38,7 +38,7 @@ import ru.beykerykt.lightapi.events.DeleteLightEvent;
 import ru.beykerykt.lightapi.events.SetLightEvent;
 import ru.beykerykt.lightapi.events.UpdateChunkEvent;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.api.LightType;
 import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
@@ -117,7 +117,7 @@ public class LightAPI extends JavaPlugin {
         if (!event.isCancelled()) {
             IBukkitExtension ext =
                     (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-            IHandler handler = ext.getHandler();
+            IBukkitHandler handler = ext.getHandler();
             ChunkData newData = new ChunkData(event.getChunkInfo().getWorld().getName(),
                     event.getChunkInfo().getChunkX(), event.getChunkInfo().getChunkZ());
             handler.sendChunk(newData);
@@ -140,7 +140,7 @@ public class LightAPI extends JavaPlugin {
         }
         IBukkitExtension ext =
                 (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-        IHandler handler = ext.getHandler();
+        IBukkitHandler handler = ext.getHandler();
         for (ChunkData newData : handler.collectChunkSections(world, x, y, z, 15,
                 LightType.BLOCK_LIGHTING | LightType.SKY_LIGHTING)) {
             handler.sendChunk(newData);
@@ -162,7 +162,7 @@ public class LightAPI extends JavaPlugin {
         }
         IBukkitExtension ext =
                 (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-        IHandler handler = ext.getHandler();
+        IBukkitHandler handler = ext.getHandler();
         handler.sendChunk(world, x >> 4, z >> 4);
         return true;
     }
@@ -217,7 +217,7 @@ public class LightAPI extends JavaPlugin {
 
             IBukkitExtension ext =
                     (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-            IHandler handler = ext.getHandler();
+            IBukkitHandler handler = ext.getHandler();
 
             int oldlightlevel = handler.getRawLightLevel(event.getWorld(), event.getX(), event.getY(),
                     event.getZ(),
@@ -271,7 +271,7 @@ public class LightAPI extends JavaPlugin {
 
             IBukkitExtension ext =
                     (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-            IHandler handler = ext.getHandler();
+            IBukkitHandler handler = ext.getHandler();
 
             int oldlightlevel = handler.getRawLightLevel(event.getWorld(), event.getX(), event.getY(),
                     event.getZ(),
@@ -305,7 +305,7 @@ public class LightAPI extends JavaPlugin {
         List<ChunkInfo> list = new CopyOnWriteArrayList<ChunkInfo>();
         IBukkitExtension ext =
                 (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-        IHandler handler = ext.getHandler();
+        IBukkitHandler handler = ext.getHandler();
         int lightTypeNew = LightType.BLOCK_LIGHTING;
         if (lightType == ru.beykerykt.lightapi.LightType.SKY) {
             lightTypeNew = LightType.SKY_LIGHTING;
@@ -334,7 +334,7 @@ public class LightAPI extends JavaPlugin {
         if (!event.isCancelled()) {
             IBukkitExtension ext =
                     (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-            IHandler handler = ext.getHandler();
+            IBukkitHandler handler = ext.getHandler();
             ChunkData newData = new ChunkData(event.getChunkInfo().getWorld().getName(),
                     event.getChunkInfo().getChunkX(), event.getChunkInfo().getChunkZ());
             handler.sendChunk(newData);

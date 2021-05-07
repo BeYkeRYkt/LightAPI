@@ -23,7 +23,7 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.api.extension;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
 
 public interface IBukkitExtension extends IExtension {
@@ -31,5 +31,5 @@ public interface IBukkitExtension extends IExtension {
     /**
      * N/A
      */
-    IHandler getHandler();
+    IBukkitHandler getHandler();
 }

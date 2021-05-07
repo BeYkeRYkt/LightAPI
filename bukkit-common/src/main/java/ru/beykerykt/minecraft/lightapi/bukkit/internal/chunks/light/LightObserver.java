@@ -25,7 +25,7 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.light;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitLightAPI;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BackgroundService;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.Request;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.RequestFlag;
@@ -41,7 +41,7 @@ public class LightObserver implements ILightObserver {
     private int requestCount = 0;
 
     private IBukkitLightAPI mInternal;
-    private IHandler mHandler;
+    private IBukkitHandler mHandler;
     private BackgroundService mBackgroundService;
     private Queue<Request> lightQueue =
             new PriorityBlockingQueue<>(10, (o1, o2) -> o2.getPriority() - o1.getPriority());
@@ -49,7 +49,7 @@ public class LightObserver implements ILightObserver {
             (o1, o2) -> o2.getPriority() - o1.getPriority());
     private Runnable runnable = () -> onTick();
 
-    public LightObserver(IBukkitLightAPI impl, IHandler handler, BackgroundService service) {
+    public LightObserver(IBukkitLightAPI impl, IBukkitHandler handler, BackgroundService service) {
         this.mInternal = impl;
         this.mHandler = handler;
         this.mBackgroundService = service;
@@ -88,7 +88,7 @@ public class LightObserver implements ILightObserver {
         return mInternal;
     }
 
-    private IHandler getHandler() {
+    private IBukkitHandler getHandler() {
         return this.mHandler;
     }
 

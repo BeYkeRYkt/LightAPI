@@ -27,6 +27,7 @@ import org.apache.commons.lang.NotImplementedException;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
+import ru.beykerykt.minecraft.lightapi.common.internal.handler.IHandler;
 
 import java.lang.reflect.InvocationTargetException;
 

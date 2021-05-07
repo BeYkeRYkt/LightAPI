@@ -30,10 +30,10 @@ import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitLightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.LightType;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
+import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
 import ru.beykerykt.minecraft.lightapi.common.internal.LightEngineVersion;
 
 import java.lang.reflect.Field;
@@ -163,7 +163,7 @@ public class NMSHandler extends ru.beykerykt.minecraft.lightapi.bukkit.internal.
     }
 
     @Override
-    public void initialization(IBukkitLightAPI impl) throws Exception {
+    public void initialization(ILightAPI impl) throws Exception {
         super.initialization(impl);
         try {
             serverThreadQueue = ChunkProviderServer.class.getDeclaredField("serverThreadQueue");
@@ -190,7 +190,7 @@ public class NMSHandler extends ru.beykerykt.minecraft.lightapi.bukkit.internal.
     }
 
     @Override
-    public void shutdown(IBukkitLightAPI impl) {
+    public void shutdown(ILightAPI impl) {
     }
 
     @Override

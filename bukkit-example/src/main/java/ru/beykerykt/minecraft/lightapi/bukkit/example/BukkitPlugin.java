@@ -33,7 +33,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.LightType;
 import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
@@ -45,7 +45,7 @@ import java.util.List;
 
 public class BukkitPlugin extends JavaPlugin {
     public LightAPI mLightAPI;
-    public IHandler mHandler;
+    public IBukkitHandler mHandler;
     public IBukkitExtension mExtension;
 
     @Override
