@@ -33,7 +33,7 @@ import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.IChunkObserver;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.light.ILightObserver;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.light.LightObserver;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.HandlerFactory;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BackgroundService;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.Request;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.RequestFlag;
@@ -48,7 +48,7 @@ public class BukkitLightAPI implements IBukkitLightAPI, IBukkitExtension {
 
     private boolean DEBUG = false;
 
-    private IHandler mHandler;
+    private IBukkitHandler mHandler;
     private BukkitPlugin mPlugin;
     private IChunkObserver mChunkObserver;
     private ILightObserver mLightObserver;
@@ -83,7 +83,7 @@ public class BukkitLightAPI implements IBukkitLightAPI, IBukkitExtension {
         // load adapter
         HandlerFactory factory = new HandlerFactory(mPlugin, this);
         try {
-            mHandler = factory.createHandler();
+            mHandler = (IBukkitHandler) factory.createHandler();
         } catch (Exception ex) {
             ex.printStackTrace();
             return ResultCode.FAILED;
@@ -144,7 +144,7 @@ public class BukkitLightAPI implements IBukkitLightAPI, IBukkitExtension {
     }
 
     @Override
-    public IHandler getHandler() {
+    public IBukkitHandler getHandler() {
         if (mHandler == null) {
             throw new IllegalStateException("IHandler not yet initialized!");
         }

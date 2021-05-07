@@ -21,14 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler;
+package ru.beykerykt.minecraft.lightapi.common.internal.handler;
 
-import org.bukkit.World;
-import org.bukkit.event.world.WorldLoadEvent;
-import org.bukkit.event.world.WorldUnloadEvent;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitLightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.PlatformType;
 import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
+import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
 import ru.beykerykt.minecraft.lightapi.common.internal.LightEngineVersion;
 
 import java.util.List;
@@ -38,22 +35,12 @@ public interface IHandler {
     /**
      * N/A
      */
-    void initialization(IBukkitLightAPI impl) throws Exception;
+    void initialization(ILightAPI impl) throws Exception;
 
     /**
      * N/A
      */
-    void shutdown(IBukkitLightAPI impl);
-
-    /**
-     * N/A
-     */
-    void onWorldLoad(WorldLoadEvent event);
-
-    /**
-     * N/A
-     */
-    void onWorldUnload(WorldUnloadEvent event);
+    void shutdown(ILightAPI impl);
 
     /**
      * Platform that is being used
@@ -88,18 +75,18 @@ public interface IHandler {
      * Sets "directly" the level of light in given coordinates without additional
      * processing.
      */
-    int setRawLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightType);
+    int setRawLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType);
 
     /**
      * Gets "directly" the level of light from given coordinates without additional
      * processing.
      */
-    int getRawLightLevel(World world, int blockX, int blockY, int blockZ, int lightType);
+    int getRawLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightType);
 
     /**
      * Performs re-illumination of the light in the given coordinates.
      */
-    int recalculateLighting(World world, int blockX, int blockY, int blockZ, int lightType);
+    int recalculateLighting(String worldName, int blockX, int blockY, int blockZ, int lightType);
 
     /**
      * Collects modified сhunks with sections around a given coordinate in the
@@ -107,7 +94,7 @@ public interface IHandler {
      *
      * @return List changed chunk sections around the given coordinate.
      */
-    List<ChunkData> collectChunkSections(World world, int blockX, int blockY, int blockZ,
+    List<ChunkData> collectChunkSections(String worldName, int blockX, int blockY, int blockZ,
                                          int lightLevel, int lightType);
 
     /**
@@ -118,19 +105,19 @@ public interface IHandler {
     /**
      * Instant sending a full chunk to players in the world. Sends a single packet.
      */
-    int sendChunk(World world, int chunkX, int chunkZ);
+    int sendChunk(String worldName, int chunkX, int chunkZ);
 
     /**
      * Instant sending a chunk with specific section to players in the world. Sends
      * a single packet.
      */
-    int sendChunk(World world, int chunkX, int chunkZ, int chunkSectionY);
+    int sendChunk(String worldName, int chunkX, int chunkZ, int chunkSectionY);
 
     /**
      * Instant sending a chunk with with known sections mask to players in the
      * world. Sends a single packet.
      */
-    int sendChunk(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock);
+    int sendChunk(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock);
 
     /**
      * Can be used for specific commands

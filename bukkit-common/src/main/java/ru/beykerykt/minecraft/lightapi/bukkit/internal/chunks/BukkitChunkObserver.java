@@ -26,7 +26,7 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks;
 import org.bukkit.World;
 import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitLightAPI;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BackgroundService;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
@@ -37,14 +37,14 @@ import java.util.List;
 
 public class BukkitChunkObserver implements IChunkObserver {
     private IBukkitLightAPI mInternal;
-    private IHandler mHandler;
+    private IBukkitHandler mHandler;
     private BackgroundService mBackgroundService;
     private List<ChunkData> queueChunks = new ArrayList<>();
     private boolean isMergeEnabled;
 
     private Runnable runnable = () -> onTick();
 
-    public BukkitChunkObserver(IBukkitLightAPI impl, IHandler handler, BackgroundService service) {
+    public BukkitChunkObserver(IBukkitLightAPI impl, IBukkitHandler handler, BackgroundService service) {
         this.mInternal = impl;
         this.mHandler = handler;
         this.mBackgroundService = service;
@@ -54,7 +54,7 @@ public class BukkitChunkObserver implements IChunkObserver {
         return mInternal;
     }
 
-    private IHandler getHandler() {
+    private IBukkitHandler getHandler() {
         return this.mHandler;
     }
 
