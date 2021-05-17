@@ -27,9 +27,10 @@ import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitLightAPI;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BackgroundService;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.Request;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.ILightObserver;
+import ru.beykerykt.minecraft.lightapi.common.internal.service.Request;
+import ru.beykerykt.minecraft.lightapi.common.internal.service.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 import java.util.Queue;
@@ -97,7 +98,8 @@ public class LightObserver implements ILightObserver {
 
         if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.EDIT)) {
             request.removeRequestFlag(RequestFlag.EDIT);
-            int resultCode = getHandler().setRawLightLevel(request.getWorld(), request.getBlockX(), request.getBlockY()
+            int resultCode = getHandler().setRawLightLevel(request.getWorldName(), request.getBlockX(),
+                    request.getBlockY()
                     , request.getBlockZ(), request.getLightLevel(), request.getLightType());
             if (request.getCallback() != null) {
                 request.getCallback().onResult(RequestFlag.EDIT, resultCode);
@@ -106,7 +108,7 @@ public class LightObserver implements ILightObserver {
 
         if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.RECALCULATE)) {
             request.removeRequestFlag(RequestFlag.RECALCULATE);
-            int resultCode = getHandler().recalculateLighting(request.getWorld(), request.getBlockX(),
+            int resultCode = getHandler().recalculateLighting(request.getWorldName(), request.getBlockX(),
                     request.getBlockY(), request.getBlockZ(),
                     request.getLightType());
             if (request.getCallback() != null) {
@@ -115,7 +117,7 @@ public class LightObserver implements ILightObserver {
 
             if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.COMBINED_SEND)) {
                 request.removeRequestFlag(RequestFlag.COMBINED_SEND);
-                resultCode = getInternal().getChunkObserver().notifyUpdateChunks(request.getWorld(),
+                resultCode = getInternal().getChunkObserver().notifyUpdateChunks(request.getWorldName(),
                         request.getBlockX(), request.getBlockY(),
                         request.getBlockZ(), request.getOldLightLevel() > request.getLightLevel() ?
                                 request.getOldLightLevel() :
@@ -127,7 +129,7 @@ public class LightObserver implements ILightObserver {
                 request.removeRequestFlag(RequestFlag.SEND);
                 if (resultCode == ResultCode.SUCCESS || FlagUtils.isFlagSet(request.getRequestFlags(),
                         RequestFlag.MOVED_TO_FORWARD)) {
-                    getInternal().getChunkObserver().sendUpdateChunks(request.getWorld(), request.getBlockX(),
+                    getInternal().getChunkObserver().sendUpdateChunks(request.getWorldName(), request.getBlockX(),
                             request.getBlockY(),
                             request.getBlockZ(), request.getOldLightLevel() > request.getLightLevel() ?
                                     request.getOldLightLevel() :

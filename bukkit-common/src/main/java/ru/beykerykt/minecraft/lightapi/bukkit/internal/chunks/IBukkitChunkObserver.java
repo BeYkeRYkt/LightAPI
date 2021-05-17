@@ -21,43 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.service;
+package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks;
 
-public class RequestFlag {
+import org.bukkit.World;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.IChunkObserver;
 
-    /**
-     * N/A
-     */
-    public static final int EDIT = 1;
+public interface IBukkitChunkObserver extends IChunkObserver {
 
     /**
      * N/A
      */
-    public static final int RECALCULATE = 2;
+    int notifyUpdateChunks(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightType);
 
     /**
      * N/A
      */
-    public static final int DEFERRED_RECALCULATE = 4;
+    int notifyUpdateChunk(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock);
 
     /**
      * N/A
      */
-    public static final int SEND = 8;
-
-    /**
-     * N/A
-     */
-    public static final int COMBINED_SEND = 16;
-
-    /**
-     * N/A
-     */
-    public static final int MOVED_TO_FORWARD = 32;
-
-    /**
-     * N/A
-     */
-    @Deprecated
-    public static final int MOVED_TO_DEFERRED = 64;
+    void sendUpdateChunks(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightType);
 }

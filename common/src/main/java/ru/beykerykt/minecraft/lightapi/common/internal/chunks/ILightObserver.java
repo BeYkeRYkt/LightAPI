@@ -21,28 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal;
+package ru.beykerykt.minecraft.lightapi.common.internal.chunks;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
-import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
-import ru.beykerykt.minecraft.lightapi.common.internal.chunks.IChunkObserver;
-import ru.beykerykt.minecraft.lightapi.common.internal.chunks.ILightObserver;
-import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.internal.service.Request;
 
-public interface IBukkitLightAPI extends ILightAPI {
+public interface ILightObserver {
 
-    ILightObserver getLightObserver();
+    /*
+     * N/A
+     */
+    void start();
 
-    IChunkObserver getChunkObserver();
+    /*
+     * N/A
+     */
+    void shutdown();
 
-    IBackgroundService getBackgroundService();
+    /*
+     * N/A
+     */
+    void executeSync(Request request);
 
-    IBukkitExtension getExtension();
+    /*
+     * N/A
+     */
+    void onTick();
 
-    void debug(String msg);
+    /*
+     * N/A
+     */
+    int notifyChangeLightLevel(Request request);
 
-    BukkitPlugin getPlugin();
-
-    boolean isMainThread();
+    /*
+     * N/A
+     */
+    int notifyRecalculate(Request request);
 }

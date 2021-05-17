@@ -21,28 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal;
+package ru.beykerykt.minecraft.lightapi.common.internal.service;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
-import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
-import ru.beykerykt.minecraft.lightapi.common.internal.chunks.IChunkObserver;
-import ru.beykerykt.minecraft.lightapi.common.internal.chunks.ILightObserver;
-import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
+public interface IBackgroundService {
 
-public interface IBukkitLightAPI extends ILightAPI {
+    /**
+     * N/A
+     */
+    void start();
 
-    ILightObserver getLightObserver();
+    /**
+     * N/A
+     */
+    void shutdown();
 
-    IChunkObserver getChunkObserver();
+    /**
+     * N/A
+     */
+    boolean canExecuteSync();
 
-    IBackgroundService getBackgroundService();
+    /**
+     * N/A
+     */
+    void executeSync(Runnable runnable);
 
-    IBukkitExtension getExtension();
+    /**
+     * N/A
+     */
+    void addToQueue(Runnable runnable);
 
-    void debug(String msg);
+    /**
+     * N/A
+     */
+    void addToRepeat(Runnable runnable);
 
-    BukkitPlugin getPlugin();
-
-    boolean isMainThread();
+    /**
+     * N/A
+     */
+    void removeRepeat(Runnable runnable);
 }

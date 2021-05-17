@@ -21,39 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.light;
+package ru.beykerykt.minecraft.lightapi.common.internal.service;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.Request;
+public class RequestFlag {
 
-public interface ILightObserver {
-
-    /*
+    /**
      * N/A
      */
-    void start();
+    public static final int EDIT = 1;
 
-    /*
+    /**
      * N/A
      */
-    void shutdown();
+    public static final int RECALCULATE = 2;
 
-    /*
+    /**
      * N/A
      */
-    void executeSync(Request request);
+    public static final int DEFERRED_RECALCULATE = 4;
 
-    /*
+    /**
      * N/A
      */
-    void onTick();
+    public static final int SEND = 8;
 
-    /*
+    /**
      * N/A
      */
-    int notifyChangeLightLevel(Request request);
+    public static final int COMBINED_SEND = 16;
 
-    /*
+    /**
      * N/A
      */
-    int notifyRecalculate(Request request);
+    public static final int MOVED_TO_FORWARD = 32;
+
+    /**
+     * N/A
+     */
+    @Deprecated
+    public static final int MOVED_TO_DEFERRED = 64;
 }
