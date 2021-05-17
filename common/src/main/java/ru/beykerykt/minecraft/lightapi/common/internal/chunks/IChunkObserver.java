@@ -21,9 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks;
-
-import org.bukkit.World;
+package ru.beykerykt.minecraft.lightapi.common.internal.chunks;
 
 public interface IChunkObserver {
 
@@ -55,15 +53,15 @@ public interface IChunkObserver {
     /*
      * N/A
      */
-    int notifyUpdateChunks(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightType);
+    int notifyUpdateChunks(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType);
 
     /*
      * N/A
      */
-    int notifyUpdateChunk(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock);
+    int notifyUpdateChunk(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock);
 
     /*
      * N/A
      */
-    void sendUpdateChunks(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightType);
+    void sendUpdateChunks(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType);
 }

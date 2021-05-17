@@ -21,28 +21,73 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal;
+package ru.beykerykt.minecraft.lightapi.common.internal.platform;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
-import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
+import ru.beykerykt.minecraft.lightapi.common.api.PlatformType;
+import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
+import ru.beykerykt.minecraft.lightapi.common.api.strategy.RelightStrategy;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.IChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.ILightObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
-public interface IBukkitLightAPI extends ILightAPI {
+public interface IPluginImpl {
 
+    /**
+     * N/A
+     */
+    int prepare();
+
+    /**
+     * N/A
+     */
+    int initialization();
+
+    /**
+     * N/A
+     */
+    void shutdown();
+
+    /**
+     * N/A
+     */
+    boolean isInitialized();
+
+    /**
+     * Log message in console
+     *
+     * @param msg - message
+     */
+    void log(String msg);
+
+    /**
+     * N/A
+     */
+    IExtension getExtension();
+
+    /**
+     * N/A
+     */
     ILightObserver getLightObserver();
 
+    /**
+     * N/A
+     */
     IChunkObserver getChunkObserver();
 
+    /**
+     * N/A
+     */
     IBackgroundService getBackgroundService();
 
-    IBukkitExtension getExtension();
+    /**
+     * N/A
+     */
+    RelightStrategy getRelightStrategy();
 
-    void debug(String msg);
-
-    BukkitPlugin getPlugin();
-
-    boolean isMainThread();
+    /**
+     * Platform that is being used
+     *
+     * @return One of the proposed options from {@link PlatformType}
+     */
+    PlatformType getPlatformType();
 }

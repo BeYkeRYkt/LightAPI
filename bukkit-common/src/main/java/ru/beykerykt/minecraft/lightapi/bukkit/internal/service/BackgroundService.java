@@ -26,13 +26,14 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal.service;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitLightAPI;
+import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.*;
 
-public class BackgroundService implements Runnable {
+public class BackgroundService implements IBackgroundService, Runnable {
     private long maxAliveTimePerTick = 50;
     private long maxTimePerTick = 50;
     private int taskId = -1;
@@ -53,40 +54,7 @@ public class BackgroundService implements Runnable {
         return mInternal;
     }
 
-    public boolean canExecuteSync() {
-        return !isServerThrottled;
-    }
-
-    public void addToQueue(Runnable runnable) {
-        if (runnable != null) {
-            QUEUE.add(runnable);
-        }
-    }
-
-    public void addToRepeat(Runnable runnable) {
-        if (runnable != null) {
-            REPEAT_QUEUE.add(runnable);
-        }
-    }
-
-    public void removeRepeat(Runnable runnable) {
-        if (runnable != null) {
-            REPEAT_QUEUE.remove(runnable);
-        }
-    }
-
-    public void executeSync(Runnable runnable) {
-        runnable.run();
-    }
-
-    public ScheduledExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    private ScheduledFuture<?> scheduleWithFixedDelay(Runnable runnable, int initialDelay, int delay, TimeUnit unit) {
-        return getExecutorService().scheduleWithFixedDelay(runnable, initialDelay, delay, unit);
-    }
-
+    @Override
     public void start() {
         // executor service
         ThreadFactory namedThreadFactory =
@@ -108,6 +76,7 @@ public class BackgroundService implements Runnable {
                 }, 0, 1).getTaskId();
     }
 
+    @Override
     public void shutdown() {
         if (taskId != -1) {
             getInternal().getPlugin().getServer().getScheduler().cancelTask(taskId);
@@ -118,6 +87,45 @@ public class BackgroundService implements Runnable {
         this.executorService.shutdown();
         this.QUEUE.clear();
         this.REPEAT_QUEUE.clear();
+    }
+
+    @Override
+    public boolean canExecuteSync() {
+        return !isServerThrottled;
+    }
+
+    @Override
+    public void executeSync(Runnable runnable) {
+        runnable.run();
+    }
+
+    @Override
+    public void addToQueue(Runnable runnable) {
+        if (runnable != null) {
+            QUEUE.add(runnable);
+        }
+    }
+
+    @Override
+    public void addToRepeat(Runnable runnable) {
+        if (runnable != null) {
+            REPEAT_QUEUE.add(runnable);
+        }
+    }
+
+    @Override
+    public void removeRepeat(Runnable runnable) {
+        if (runnable != null) {
+            REPEAT_QUEUE.remove(runnable);
+        }
+    }
+
+    public ScheduledExecutorService getExecutorService() {
+        return executorService;
+    }
+
+    private ScheduledFuture<?> scheduleWithFixedDelay(Runnable runnable, int initialDelay, int delay, TimeUnit unit) {
+        return getExecutorService().scheduleWithFixedDelay(runnable, initialDelay, delay, unit);
     }
 
     private void handleQueueLocked() {

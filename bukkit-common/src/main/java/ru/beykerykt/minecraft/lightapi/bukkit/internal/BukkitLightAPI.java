@@ -29,20 +29,21 @@ import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.BukkitChunkObserver;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.IChunkObserver;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.light.ILightObserver;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.light.LightObserver;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.HandlerFactory;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BackgroundService;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.Request;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.PlatformType;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.service.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.api.strategy.EditStrategy;
 import ru.beykerykt.minecraft.lightapi.common.api.strategy.RelightStrategy;
 import ru.beykerykt.minecraft.lightapi.common.api.strategy.SendStrategy;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.IChunkObserver;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.ILightObserver;
+import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.internal.service.Request;
+import ru.beykerykt.minecraft.lightapi.common.internal.service.RequestFlag;
 
 public class BukkitLightAPI implements IBukkitLightAPI, IBukkitExtension {
 
@@ -156,11 +157,13 @@ public class BukkitLightAPI implements IBukkitLightAPI, IBukkitExtension {
         return mLightObserver;
     }
 
+    @Override
     public IChunkObserver getChunkObserver() {
         return mChunkObserver;
     }
 
-    public BackgroundService getBackgroundService() {
+    @Override
+    public IBackgroundService getBackgroundService() {
         return mBackgroundService;
     }
 
@@ -196,7 +199,8 @@ public class BukkitLightAPI implements IBukkitLightAPI, IBukkitExtension {
         int priority = Request.DEFAULT_PRIORITY;
         int oldLightLevel = getHandler().getRawLightLevel(world, blockX, blockY, blockZ, lightType);
 
-        Request request = new Request(priority, requestFlags, world, blockX, blockY, blockZ, oldLightLevel, lightLevel,
+        Request request = new Request(priority, requestFlags, world.getName(), blockX, blockY, blockZ, oldLightLevel,
+                lightLevel,
                 lightType, callback);
         switch (editStrategy) {
             case FORCE_IMMEDIATE: {

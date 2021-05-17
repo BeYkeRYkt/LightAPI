@@ -23,6 +23,7 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks;
 
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitLightAPI;
@@ -35,7 +36,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class BukkitChunkObserver implements IChunkObserver {
+public class BukkitChunkObserver implements IBukkitChunkObserver {
     private IBukkitLightAPI mInternal;
     private IBukkitHandler mHandler;
     private BackgroundService mBackgroundService;
@@ -166,6 +167,17 @@ public class BukkitChunkObserver implements IChunkObserver {
         }
     }
 
+    @Override
+    public int notifyUpdateChunks(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
+                                  int lightType) {
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) {
+            return ResultCode.WORLD_NOT_AVAILABLE;
+        }
+        return notifyUpdateChunks(world, blockX, blockY, blockZ, lightLevel, lightType);
+    }
+
+
     private int notifyUpdateChunkLocked(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
         if (world == null) {
             return ResultCode.WORLD_NOT_AVAILABLE;
@@ -210,6 +222,15 @@ public class BukkitChunkObserver implements IChunkObserver {
     }
 
     @Override
+    public int notifyUpdateChunk(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) {
+            return ResultCode.WORLD_NOT_AVAILABLE;
+        }
+        return notifyUpdateChunk(world, chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
+    }
+
+    @Override
     public void sendUpdateChunks(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightType) {
         if (world == null) {
             return;
@@ -229,6 +250,15 @@ public class BukkitChunkObserver implements IChunkObserver {
 
             it.remove();
         }
+    }
+
+    @Override
+    public void sendUpdateChunks(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType) {
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) {
+            return;
+        }
+        sendUpdateChunks(world, blockX, blockY, blockZ, lightLevel, lightType);
     }
 
     private long getIndexFromChunkCoords(int chunkX, int chunkZ) {

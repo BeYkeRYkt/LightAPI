@@ -21,9 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.service;
+package ru.beykerykt.minecraft.lightapi.common.internal.service;
 
-import org.bukkit.World;
 import ru.beykerykt.minecraft.lightapi.common.api.service.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
@@ -33,7 +32,7 @@ public class Request implements Comparable<Request> {
     public static final int DEFAULT_PRIORITY = 5;
     public static final int LOW_PRIORITY = 0;
 
-    private final World mWorld;
+    private final String mWorldName;
     private final int mBlockX;
     private final int mBlockY;
     private final int mBlockZ;
@@ -44,11 +43,12 @@ public class Request implements Comparable<Request> {
     private int mPriority;
     private ICallback mCallback;
 
-    public Request(int priority, int requestFlags, World world, int blockX, int blockY, int blockZ, int oldLightLevel
+    public Request(int priority, int requestFlags, String worldName, int blockX, int blockY, int blockZ,
+                   int oldLightLevel
             , int lightLevel, int lightTypeFlags, ICallback callback) {
         this.mPriority = priority;
         this.mRequestFlags = requestFlags;
-        this.mWorld = world;
+        this.mWorldName = worldName;
         this.mBlockX = blockX;
         this.mBlockY = blockY;
         this.mBlockZ = blockZ;
@@ -82,8 +82,8 @@ public class Request implements Comparable<Request> {
         this.mRequestFlags = FlagUtils.removeFlag(mRequestFlags, targetFlag);
     }
 
-    public World getWorld() {
-        return mWorld;
+    public String getWorldName() {
+        return mWorldName;
     }
 
     public int getBlockX() {

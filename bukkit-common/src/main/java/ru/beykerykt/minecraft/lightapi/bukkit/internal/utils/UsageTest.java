@@ -6,7 +6,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.LightType;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
@@ -15,6 +14,7 @@ import ru.beykerykt.minecraft.lightapi.common.api.service.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.api.strategy.EditStrategy;
 import ru.beykerykt.minecraft.lightapi.common.api.strategy.SendStrategy;
 import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
+import ru.beykerykt.minecraft.lightapi.common.internal.service.RequestFlag;
 
 public class UsageTest {
 
