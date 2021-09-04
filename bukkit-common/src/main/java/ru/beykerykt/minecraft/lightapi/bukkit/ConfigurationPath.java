@@ -45,6 +45,7 @@ public class ConfigurationPath {
      * Chunk observer
      */
     public static final String CHUNK_OBSERVER_TITLE = "chunk-observer";
+    @Deprecated
     public static final String CHUNK_OBSERVER_MERGE_CHUNK_SECTIONS = CHUNK_OBSERVER_TITLE + ".merge-chunk-sections";
 
     /*

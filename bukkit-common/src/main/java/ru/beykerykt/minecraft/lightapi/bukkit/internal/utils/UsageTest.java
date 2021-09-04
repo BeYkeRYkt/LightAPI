@@ -5,24 +5,28 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
-import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
-import ru.beykerykt.minecraft.lightapi.common.api.LightType;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
-import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
-import ru.beykerykt.minecraft.lightapi.common.api.service.ICallback;
-import ru.beykerykt.minecraft.lightapi.common.api.strategy.EditStrategy;
-import ru.beykerykt.minecraft.lightapi.common.api.strategy.SendStrategy;
-import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
-import ru.beykerykt.minecraft.lightapi.common.internal.service.RequestFlag;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.EditStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.SendStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
+import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.RequestFlag;
 
 public class UsageTest {
 
     private LightAPI mLightAPI;
 
     private void onLoad() {
-        ILightAPI impl = null;
-        LightAPI.prepare(impl);
+        IPlatformImpl impl = null;
+        try {
+            LightAPI.prepare(impl);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void onEnable() {
@@ -65,7 +69,7 @@ public class UsageTest {
                                     System.out.println("request (" + requestFlag + "): result code " + resultCode);
                                 }
                                 break;
-                            case RequestFlag.SEND:
+                            case RequestFlag.SEPARATE_SEND:
                                 System.out.println("request (" + requestFlag + "): result code " + resultCode);
                                 break;
                         }
@@ -86,12 +90,12 @@ public class UsageTest {
                     flags, editStrategy, sendStrategy, null);
         } else if (msg.equals("createhandler")) {
             IBukkitExtension extension = (IBukkitExtension) mLightAPI.getExtension();
-            IBukkitHandler handler = extension.getHandler();
+            IHandler handler = extension.getHandler();
             handler.setRawLightLevel(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 15,
                     flags);
             handler.recalculateLighting(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(),
                     15);
-            for (ChunkData chunkData : handler.collectChunkSections(loc.getWorld(), loc.getBlockX(),
+            for (IChunkData chunkData : handler.collectChunkSections(loc.getWorld(), loc.getBlockX(),
                     loc.getBlockY(), loc.getBlockZ(), 15, LightType.BLOCK_LIGHTING)) {
                 handler.sendChunk(chunkData);
             }

@@ -24,10 +24,11 @@
 package ru.beykerykt.minecraft.lightapi.common.internal.utils;
 
 import ru.beykerykt.minecraft.lightapi.common.Build;
-import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
-import ru.beykerykt.minecraft.lightapi.common.api.LightType;
-import ru.beykerykt.minecraft.lightapi.common.api.strategy.EditStrategy;
-import ru.beykerykt.minecraft.lightapi.common.api.strategy.SendStrategy;
+import ru.beykerykt.minecraft.lightapi.common.LightAPI;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.EditStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.SendStrategy;
+import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 
 public class UsageTest {
 
@@ -51,23 +52,31 @@ public class UsageTest {
                 // sponge implementation
                 break;
         }
+    }
 
-        switch (Build.CURRENT_VERSION) {
-            case Build.VERSION_CODES.ONE:
-                // version one
-                break;
-            case Build.VERSION_CODES.TWO:
-                // version two
-                break;
-            case Build.VERSION_CODES.THREE:
-                // version three
-                break;
-            case Build.VERSION_CODES.FOUR:
-                // version four
-                break;
+    public void onLoad() {
+        IPlatformImpl mPluginImpl = null;
+        try {
+            LightAPI.prepare(mPluginImpl);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
+    public void onEnable() {
+        try {
+            LightAPI.initialization();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onDisable() {
+        IPlatformImpl mPluginImpl = null;
+        LightAPI.shutdown(mPluginImpl);
+    }
+
+    // for clients
     public void test(String world, int blockX, int blockY, int blockZ, int lightLevel) {
         int blockLight = mLightAPI.getLightLevel(world, blockX, blockY, blockZ, lightLevel);
 

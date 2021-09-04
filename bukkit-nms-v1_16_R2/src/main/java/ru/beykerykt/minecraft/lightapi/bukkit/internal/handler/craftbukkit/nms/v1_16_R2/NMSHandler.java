@@ -30,11 +30,13 @@ import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
-import ru.beykerykt.minecraft.lightapi.common.api.LightType;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.BaseNMSHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
-import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
-import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
-import ru.beykerykt.minecraft.lightapi.common.internal.LightEngineVersion;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IntChunkData;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +45,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-public class NMSHandler extends ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.NMSHandler {
+public class NMSHandler extends BaseNMSHandler {
 
     private Field lightEngine_ThreadedMailbox;
     private Field lightEngineLayer_c;
@@ -75,10 +77,6 @@ public class NMSHandler extends ru.beykerykt.minecraft.lightapi.bukkit.internal.
         return (((x ^ ((-dx >> 4) & 15)) + 1) & (-(dx & 1)));
     }
 
-    public boolean isValidSectionY(int sectionY) {
-        return sectionY >= -1 && sectionY <= 16;
-    }
-
     private void executeSync(LightEngineThreaded lightEngine, Runnable task) {
         try {
             ThreadedMailbox<Runnable> threadedMailbox = (ThreadedMailbox<Runnable>) lightEngine_ThreadedMailbox
@@ -106,9 +104,13 @@ public class NMSHandler extends ru.beykerykt.minecraft.lightapi.bukkit.internal.
         }
     }
 
+    private IChunkData createChunkData(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
+        return new IntChunkData(worldName, chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
+    }
+
     @Override
-    public void initialization(ILightAPI impl) throws Exception {
-        super.initialization(impl);
+    public void onInitialization(IPlatformImpl impl) throws Exception {
+        super.onInitialization(impl);
         try {
             lightEngine_ThreadedMailbox = LightEngineThreaded.class.getDeclaredField("b");
             lightEngine_ThreadedMailbox.setAccessible(true);
@@ -127,7 +129,7 @@ public class NMSHandler extends ru.beykerykt.minecraft.lightapi.bukkit.internal.
     }
 
     @Override
-    public void shutdown(ILightAPI impl) {
+    public void onShutdown(IPlatformImpl impl) {
 
     }
 
@@ -154,11 +156,6 @@ public class NMSHandler extends ru.beykerykt.minecraft.lightapi.bukkit.internal.
     @Override
     public int asSectionMask(int sectionY) {
         return 1 << sectionY + 1;
-    }
-
-    @Override
-    public int getSectionFromY(int blockY) {
-        return (blockY >> 4);
     }
 
     @Override
@@ -288,9 +285,14 @@ public class NMSHandler extends ru.beykerykt.minecraft.lightapi.bukkit.internal.
     }
 
     @Override
-    public List<ChunkData> collectChunkSections(World world, int blockX, int blockY, int blockZ, int lightLevel,
-                                                int lightType) {
-        List<ChunkData> list = Lists.newArrayList();
+    public IChunkData createChunkData(String worldName, int chunkX, int chunkZ) {
+        return createChunkData(worldName, chunkX, chunkZ, 0, 0);
+    }
+
+    @Override
+    public List<IChunkData> collectChunkSections(World world, int blockX, int blockY, int blockZ, int lightLevel,
+                                                 int lightType) {
+        List<IChunkData> list = Lists.newArrayList();
         int finalLightLevel = lightLevel;
 
         if (world == null) {
@@ -317,7 +319,7 @@ public class NMSHandler extends ru.beykerykt.minecraft.lightapi.bukkit.internal.
                         for (int dY = -1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
-                                if (isValidSectionY(sectionY)) {
+                                if (isValidChunkSection(sectionY)) {
                                     isFilled = true;
                                     // block lighting
                                     if ((lightType & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
@@ -334,7 +336,7 @@ public class NMSHandler extends ru.beykerykt.minecraft.lightapi.bukkit.internal.
 
                         // don't add null section mask
                         if (isFilled) {
-                            ChunkData chunkData = new ChunkData(world.getName(), chunkX + dX, chunkZ + dZ,
+                            IChunkData chunkData = createChunkData(world.getName(), chunkX + dX, chunkZ + dZ,
                                     sectionMaskSky, sectionMaskBlock);
                             if (!list.contains(chunkData)) {
                                 list.add(chunkData);
@@ -348,10 +350,19 @@ public class NMSHandler extends ru.beykerykt.minecraft.lightapi.bukkit.internal.
     }
 
     @Override
-    public int sendChunk(ChunkData data) {
+    public boolean isValidChunkSection(int sectionY) {
+        return sectionY >= -1 && sectionY <= 16;
+    }
+
+    @Override
+    public int sendChunk(IChunkData data) {
         World world = Bukkit.getWorld(data.getWorldName());
-        return sendChunk(world, data.getChunkX(), data.getChunkZ(), data.getSectionMaskSky(),
-                data.getSectionMaskBlock());
+        if (data instanceof IntChunkData) {
+            IntChunkData icd = (IntChunkData) data;
+            return sendChunk(world, icd.getChunkX(), icd.getChunkZ(), icd.getSkyLightUpdateBits(),
+                    icd.getBlockLightUpdateBits());
+        }
+        return ResultCode.NOT_IMPLEMENTED;
     }
 
     @Override

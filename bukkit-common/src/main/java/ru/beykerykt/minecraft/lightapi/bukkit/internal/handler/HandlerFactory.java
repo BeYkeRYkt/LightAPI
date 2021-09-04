@@ -26,8 +26,7 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler;
 import org.apache.commons.lang.NotImplementedException;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
-import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
-import ru.beykerykt.minecraft.lightapi.common.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -36,11 +35,14 @@ public class HandlerFactory {
     private static final String CRAFTBUKKIT_PKG = "org.bukkit.craftbukkit";
     private static final String NMS_PKG = "net.minecraft.server";
 
+    // starlight engine
+    private static final String STARLIGHT_PKG = "com.starlight.test";
+
     private static final String DEFAULT_PATH = "ru.beykerykt.minecraft.lightapi.bukkit.internal.handler";
     private final BukkitPlugin mPlugin;
-    private final ILightAPI mImpl;
+    private final IPlatformImpl mImpl;
 
-    public HandlerFactory(BukkitPlugin plugin, ILightAPI impl) {
+    public HandlerFactory(BukkitPlugin plugin, IPlatformImpl impl) {
         this.mPlugin = plugin;
         this.mImpl = impl;
     }
@@ -49,7 +51,7 @@ public class HandlerFactory {
         return mPlugin;
     }
 
-    protected ILightAPI getPlatformImpl() {
+    protected IPlatformImpl getPlatformImpl() {
         return mImpl;
     }
 
@@ -76,18 +78,18 @@ public class HandlerFactory {
             String[] line = serverImplPackage.replace(".", ",").split(",");
             String version = line[3];
             getPlatformImpl().log("Your server is using version " + version);
-            Class<?> minecraftServerNMS = Class.forName(NMS_PKG + "." + version + ".MinecraftServer");
-            if (minecraftServerNMS != null) {
-                extPath += "nms.";
-                // start using nms handler
-                getPlatformImpl().log("Loading NMS handler " + version);
-                handler = (IHandler) Class
-                        .forName(DEFAULT_PATH + "." + extPath + version + "." + "NMSHandler")
-                        .getConstructor().newInstance();
-                getPlatformImpl().log("Handler is loaded: " + version);
-            } else {
-                throw new NotImplementedException(getPlugin().getServer().getName() + " is currently not supported.");
-            }
+            //Class<?> minecraftServerNMS = Class.forName(NMS_PKG + "." + version + ".MinecraftServer");
+            //if (minecraftServerNMS != null) {
+            extPath += "nms.";
+            // start using nms handler
+            getPlatformImpl().log("Loading NMS handler " + version);
+            handler = (IHandler) Class
+                    .forName(DEFAULT_PATH + "." + extPath + version + "." + "NMSHandler")
+                    .getConstructor().newInstance();
+            getPlatformImpl().log("Handler is loaded: " + version);
+            //} else {
+            //    throw new NotImplementedException(getPlugin().getServer().getName() + " is currently not supported.");
+            //}
         } else { // something else
             throw new NotImplementedException(getPlugin().getServer().getName() + " is currently not supported.");
         }

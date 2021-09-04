@@ -23,7 +23,7 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.example;
 
-import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,20 +31,20 @@ import java.util.List;
 
 public class ChunkUtils {
 
-    public static List<ChunkData> mergeChunks(List<ChunkData> input) {
-        List<ChunkData> output = new ArrayList<ChunkData>();
-        Iterator<ChunkData> it = input.iterator();
+    public static List<IChunkData> mergeChunks(List<IChunkData> input) {
+        List<IChunkData> output = new ArrayList<IChunkData>();
+        Iterator<IChunkData> it = input.iterator();
         while (it.hasNext()) {
-            ChunkData data = it.next();
-            Iterator<ChunkData> itc = output.iterator();
+            IChunkData data = it.next();
+            Iterator<IChunkData> itc = output.iterator();
             boolean found = false;
             while (itc.hasNext()) {
-                ChunkData data_c = itc.next();
+                IChunkData data_c = itc.next();
                 if (data_c.getWorldName().equals(data.getWorldName()) &&
                         data_c.getChunkX() == data.getChunkX() &&
                         data_c.getChunkZ() == data.getChunkZ()) {
-                    data_c.addSectionMaskBlock(data.getSectionMaskBlock());
-                    data_c.addSectionMaskSky(data.getSectionMaskSky());
+                    //data_c.addSectionMaskBlock(data.getSectionMaskBlock());
+                    //data_c.addSectionMaskSky(data.getSectionMaskSky());
                     found = true;
                     break;
                 }

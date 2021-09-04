@@ -79,6 +79,14 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
+        <!-- Bukkit NMS v1_17_R1 LightAPI -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>lightapi-bukkit-nms-v1_17_R1</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
         <!-- Backward support -->
         <dependency>
             <groupId>${project.groupId}</groupId>

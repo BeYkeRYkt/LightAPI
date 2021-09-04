@@ -24,7 +24,7 @@
 package ru.beykerykt.minecraft.lightapi.common.internal.storage;
 
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
-import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
+import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +32,7 @@ import java.util.Map;
 public class EmptyStorageProvider implements IStorageProvider {
 
     @Override
-    public void initialization(ILightAPI impl) throws Exception {
+    public void initialization(IPlatformImpl impl) throws Exception {
     }
 
     @Override

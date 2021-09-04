@@ -35,9 +35,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitLightAPI;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.Build;
-import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
+import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +49,7 @@ public class BukkitPlugin extends JavaPlugin {
 
     private static final int mConfigVersion = 1;
     private static BukkitPlugin plugin = null;
-    private static BukkitLightAPI mImpl = null;
+    private static BukkitPlatformImpl mImpl = null;
 
     public static BukkitPlugin getInstance() {
         return plugin;
@@ -57,7 +58,7 @@ public class BukkitPlugin extends JavaPlugin {
     @Override
     public void onLoad() {
         plugin = this;
-        mImpl = new BukkitLightAPI(plugin);
+        mImpl = new BukkitPlatformImpl(plugin);
 
         // create config
         try {
@@ -78,7 +79,11 @@ public class BukkitPlugin extends JavaPlugin {
         }
 
         // set server implementation
-        LightAPI.prepare(mImpl);
+        try {
+            LightAPI.prepare(mImpl);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -95,8 +100,7 @@ public class BukkitPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        mImpl.shutdown();
-        mImpl = null;
+        LightAPI.shutdown(mImpl);
         HandlerList.unregisterAll(this);
     }
 
@@ -112,7 +116,7 @@ public class BukkitPlugin extends JavaPlugin {
         return list;
     }
 
-    public BukkitLightAPI getInternal() {
+    public IBukkitPlatformImpl getInternal() {
         if (mImpl == null) {
             throw new IllegalStateException("IBukkitLightAPI not yet initialized!");
         }
@@ -120,7 +124,7 @@ public class BukkitPlugin extends JavaPlugin {
     }
 
     public boolean isBackwardAvailable() {
-        boolean flag = Build.CURRENT_VERSION <= Build.VERSION_CODES.FOUR;
+        boolean flag = Build.CURRENT_VERSION <= 1;
         try {
             Class.forName("ru.beykerykt.lightapi.LightAPI");
             return flag & true;
@@ -143,7 +147,7 @@ public class BukkitPlugin extends JavaPlugin {
             fc.set(ConfigurationPath.GENERAL_SPECIFIC_STORAGE_PROVIDER, "none");
             fc.set(ConfigurationPath.BACKGROUND_SERVICE_TICK_DELAY, 1);
             fc.set(ConfigurationPath.BACKGROUND_SERVICE_CORE_POOL_SIZE, 1);
-            fc.set(ConfigurationPath.CHUNK_OBSERVER_MERGE_CHUNK_SECTIONS, true);
+            //fc.set(ConfigurationPath.CHUNK_OBSERVER_MERGE_CHUNK_SECTIONS, true);
             fc.set(ConfigurationPath.LIGHT_OBSERVER_MAX_TIME_MS_IN_PER_TICK, 50);
             fc.set(ConfigurationPath.LIGHT_OBSERVER_MAX_ITERATIONS_IN_PER_TICK, 256);
             saveConfig();
@@ -174,6 +178,11 @@ public class BukkitPlugin extends JavaPlugin {
                     player.spigot().sendMessage(version);
 
                     player.sendMessage(ChatColor.AQUA + " Impl: " + ChatColor.WHITE + Build.CURRENT_IMPLEMENTATION);
+
+                    player.sendMessage(
+                            ChatColor.AQUA + " LightEngine version: " + ChatColor.WHITE + getInternal().getLightEngine().getLightEngineVersion());
+                    player.sendMessage(
+                            ChatColor.AQUA + " LightEngine type: " + ChatColor.WHITE + getInternal().getLightEngine().getLightEngineType());
 
                     player.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
                     player.sendMessage(

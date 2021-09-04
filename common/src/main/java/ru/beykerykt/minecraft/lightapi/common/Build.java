@@ -23,11 +23,7 @@
  */
 package ru.beykerykt.minecraft.lightapi.common;
 
-import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
-import ru.beykerykt.minecraft.lightapi.common.api.PlatformType;
-
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 
 /**
  * Information about the current LightAPI build
@@ -35,59 +31,22 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Build {
 
     /**
-     * Internal version. May change during any changes in the API. The string should
-     * change from release to release.
+     * Public version for users. May change during any changes in the API. The string should
+     * change when common 'api' package is changed.
      */
-    public static final int CURRENT_VERSION = VERSION_CODES.THREE;
-    private static final List<String> map;
+    public static final int API_VERSION = 1;
+
+    /**
+     * Internal version. May change during any changes in the API. The string should
+     * change when common 'internal' package is changed.
+     */
+    public static final int INTERNAL_VERSION = 1;
+
+    @Deprecated
+    public static final int CURRENT_VERSION = API_VERSION;
+
     /**
      * Platform that is being used.
      */
     public static PlatformType CURRENT_IMPLEMENTATION = LightAPI.get().getPlatformType();
-
-    static {
-        map = new CopyOnWriteArrayList<String>();
-        map.add(VERSION_CODES.UNKNOWN, "Unknown");
-        map.add(VERSION_CODES.ONE, "One");
-        map.add(VERSION_CODES.TWO, "Two");
-        map.add(VERSION_CODES.THREE, "Three");
-        map.add(VERSION_CODES.FOUR, "Four");
-    }
-
-    public static String getNameForInt(int id) {
-        final String name = map.get(id);
-        if (name == null) {
-            return map.get(0);
-        }
-        return name;
-    }
-
-    public static class VERSION_CODES {
-        /**
-         * UNKNOWN
-         */
-        public static final int UNKNOWN = 0;
-
-        /**
-         * 20 March 2019: First version recoded API for LightAPI
-         */
-        public static final int ONE = 1;
-
-        /**
-         * NO_DATA: Disable LightAPI-Backward. Introduce ImplementationPlatform. Rewrite
-         * API for lighting changes in MC 1.14.
-         */
-        public static final int TWO = 2;
-
-        /**
-         * NO_DATA: Global rewrite API for local unknown project changes. Preparatory
-         * phase.
-         */
-        public static final int THREE = 3;
-
-        /**
-         * TBA: First public rewrited API version.
-         */
-        public static final int FOUR = 4;
-    }
 }

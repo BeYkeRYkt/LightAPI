@@ -28,12 +28,12 @@ public interface IBackgroundService {
     /**
      * N/A
      */
-    void start();
+    void onStart();
 
     /**
      * N/A
      */
-    void shutdown();
+    void onShutdown();
 
     /**
      * N/A
@@ -43,7 +43,17 @@ public interface IBackgroundService {
     /**
      * N/A
      */
+    boolean isMainThread();
+
+    /**
+     * N/A
+     */
     void executeSync(Runnable runnable);
+
+    /**
+     * N/A
+     */
+    void executeAsync(Runnable runnable);
 
     /**
      * N/A
@@ -53,10 +63,10 @@ public interface IBackgroundService {
     /**
      * N/A
      */
-    void addToRepeat(Runnable runnable);
+    void addToRepeat(ITickable tickable);
 
     /**
      * N/A
      */
-    void removeRepeat(Runnable runnable);
+    void removeRepeat(ITickable tickable);
 }
