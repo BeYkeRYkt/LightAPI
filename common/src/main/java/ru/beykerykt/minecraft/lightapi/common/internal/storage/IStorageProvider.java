@@ -23,7 +23,7 @@
  */
 package ru.beykerykt.minecraft.lightapi.common.internal.storage;
 
-import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
+import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 
 import java.util.Map;
 
@@ -32,7 +32,7 @@ public interface IStorageProvider {
     /**
      * N/A
      */
-    void initialization(ILightAPI impl) throws Exception;
+    void initialization(IPlatformImpl impl) throws Exception;
 
     /**
      * N/A

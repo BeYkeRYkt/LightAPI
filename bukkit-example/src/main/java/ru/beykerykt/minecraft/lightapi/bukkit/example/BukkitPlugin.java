@@ -33,19 +33,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
-import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
-import ru.beykerykt.minecraft.lightapi.common.api.LightType;
-import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
-import ru.beykerykt.minecraft.lightapi.common.api.strategy.EditStrategy;
-import ru.beykerykt.minecraft.lightapi.common.api.strategy.SendStrategy;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.common.LightAPI;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.EditStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.SendStrategy;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BukkitPlugin extends JavaPlugin {
     public LightAPI mLightAPI;
-    public IBukkitHandler mHandler;
+    public IHandler mHandler;
     public IBukkitExtension mExtension;
 
     @Override
@@ -68,7 +68,7 @@ public class BukkitPlugin extends JavaPlugin {
 
     private void setLightLevel(Location location, int var, int lightLevel, int lightType, EditStrategy editStrategy,
                                SendStrategy sendStrategy) {
-        List<ChunkData> chunks = new ArrayList<>();
+        List<IChunkData> chunks = new ArrayList<>();
         switch (var) {
             case 0: // lightapi
             {
@@ -87,11 +87,11 @@ public class BukkitPlugin extends JavaPlugin {
                         location.getBlockZ(), lightLevel, lightType);
                 mHandler.recalculateLighting(location.getWorld(), location.getBlockX(),
                         location.getBlockY(), location.getBlockZ(), lightType);
-                List<ChunkData> chunkList = mHandler.collectChunkSections(location.getWorld(),
+                List<IChunkData> chunkList = mHandler.collectChunkSections(location.getWorld(),
                         location.getBlockX(), location.getBlockY(), location.getBlockZ(), lightLevel == 0 ?
                                 blockLightLevel : lightLevel, lightType);
                 for (int i = 0; i < chunkList.size(); i++) {
-                    ChunkData data = chunkList.get(i);
+                    IChunkData data = chunkList.get(i);
                     mHandler.sendChunk(data);
                 }
                 break;
@@ -99,7 +99,7 @@ public class BukkitPlugin extends JavaPlugin {
         }
     }
 
-    private void setLightLevelManual(Location location, int lightLevel, int flag, List<ChunkData> outputChunks) {
+    private void setLightLevelManual(Location location, int lightLevel, int flag, List<IChunkData> outputChunks) {
         // Keep the light level information, as after removing the light source, chunks may not be updated
         // correctly.
         int blockLightLevel = mHandler.getRawLightLevel(location.getWorld(), location.getBlockX(),
@@ -108,7 +108,7 @@ public class BukkitPlugin extends JavaPlugin {
                 location.getBlockZ(), lightLevel, flag);
         mHandler.recalculateLighting(location.getWorld(), location.getBlockX(),
                 location.getBlockY(), location.getBlockZ(), flag);
-        List<ChunkData> chunkList = mHandler.collectChunkSections(location.getWorld(),
+        List<IChunkData> chunkList = mHandler.collectChunkSections(location.getWorld(),
                 location.getBlockX(), location.getBlockY(), location.getBlockZ(), lightLevel == 0 ?
                         blockLightLevel : lightLevel, LightType.BLOCK_LIGHTING);
         //outputChunks.addAll(ChunkUtils.mergeChunks(chunkList));

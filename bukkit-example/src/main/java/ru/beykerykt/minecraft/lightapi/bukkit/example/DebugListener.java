@@ -30,10 +30,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import ru.beykerykt.minecraft.lightapi.common.api.LightAPI;
-import ru.beykerykt.minecraft.lightapi.common.api.LightType;
-import ru.beykerykt.minecraft.lightapi.common.api.strategy.EditStrategy;
-import ru.beykerykt.minecraft.lightapi.common.api.strategy.SendStrategy;
+import ru.beykerykt.minecraft.lightapi.common.LightAPI;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.EditStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.SendStrategy;
 
 public class DebugListener implements Listener {
 
@@ -76,12 +76,12 @@ public class DebugListener implements Listener {
         } else if (event.getBlock().getType() == Material.REDSTONE_BLOCK) {
             EditStrategy editStrategy = EditStrategy.DEFERRED;
             SendStrategy sendStrategy = SendStrategy.DEFERRED;
-            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
+            int result = mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
                     location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy, null);
             int blockLight = mAPI.getLightLevel(location.getWorld().getName(), location.getBlockX(),
                     location.getBlockY() + 2,
                     location.getBlockZ(), flags);
-            mPlugin.getServer().getLogger().info("blockLight: " + blockLight);
+            mPlugin.getServer().getLogger().info("blockLight: " + blockLight + " result: " + result);
         } else if (event.getBlock().getType() == Material.OBSIDIAN) {
             EditStrategy editStrategy = EditStrategy.FORCE_IMMEDIATE;
             SendStrategy sendStrategy = SendStrategy.IMMEDIATE;

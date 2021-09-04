@@ -25,21 +25,21 @@ package ru.beykerykt.minecraft.lightapi.common.internal.utils;
 
 public class FlagUtils {
 
-    /*
+    /**
      * N/A
      */
     public static int addFlag(int flags, int targetFlag) {
         return flags |= targetFlag;
     }
 
-    /*
+    /**
      * N/A
      */
     public static int removeFlag(int flags, int targetFlag) {
         return flags &= ~targetFlag;
     }
 
-    /*
+    /**
      * N/A
      */
     public static boolean isFlagSet(int flags, int targetFlag) {

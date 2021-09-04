@@ -29,7 +29,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
-import ru.beykerykt.minecraft.lightapi.common.internal.ILightAPI;
+import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
 
@@ -41,12 +41,12 @@ import java.util.Set;
 
 public class YAMLStorageProvider implements IStorageProvider {
 
-    private ILightAPI mImpl;
+    private IPlatformImpl mImpl;
     private File customConfigFile;
     private FileConfiguration customConfig;
 
     @Override
-    public void initialization(ILightAPI impl) {
+    public void initialization(IPlatformImpl impl) {
         mImpl = impl;
         customConfigFile = new File(BukkitPlugin.getInstance().getDataFolder(), "storage.yml");
         if (!customConfigFile.exists()) {

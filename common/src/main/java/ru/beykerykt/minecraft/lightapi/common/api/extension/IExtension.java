@@ -23,5 +23,8 @@
  */
 package ru.beykerykt.minecraft.lightapi.common.api.extension;
 
+/**
+ * Extends class to expand platform-specific functions
+ */
 public interface IExtension {
 }

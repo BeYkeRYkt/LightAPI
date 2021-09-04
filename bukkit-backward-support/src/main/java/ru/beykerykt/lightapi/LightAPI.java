@@ -38,10 +38,10 @@ import ru.beykerykt.lightapi.events.DeleteLightEvent;
 import ru.beykerykt.lightapi.events.SetLightEvent;
 import ru.beykerykt.lightapi.events.UpdateChunkEvent;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IBukkitHandler;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.Build;
-import ru.beykerykt.minecraft.lightapi.common.api.LightType;
-import ru.beykerykt.minecraft.lightapi.common.api.chunks.ChunkData;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +53,7 @@ public class LightAPI extends JavaPlugin {
     /**
      * for debugging
      */
-    private final static int LASTEST_SUPPORTED_API = Build.VERSION_CODES.FOUR;
+    private final static int LATEST_SUPPORTED_API = 2;
     @Deprecated
     private static BlockFace[] SIDES = {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
             BlockFace.WEST};
@@ -108,7 +108,7 @@ public class LightAPI extends JavaPlugin {
 
     @Deprecated
     public static boolean updateChunk(ChunkInfo info) {
-        if (Build.CURRENT_VERSION > LASTEST_SUPPORTED_API) {
+        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
@@ -116,10 +116,12 @@ public class LightAPI extends JavaPlugin {
         Bukkit.getPluginManager().callEvent(event);
         if (!event.isCancelled()) {
             IBukkitExtension ext =
-                    (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-            IBukkitHandler handler = ext.getHandler();
-            ChunkData newData = new ChunkData(event.getChunkInfo().getWorld().getName(),
+                    (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
+            IHandler handler = ext.getHandler();
+            // TODO: Say to handler
+            IChunkData newData = handler.createChunkData(event.getChunkInfo().getWorld().getName(),
                     event.getChunkInfo().getChunkX(), event.getChunkInfo().getChunkZ());
+            newData.setFullSections();
             handler.sendChunk(newData);
             return true;
         }
@@ -134,14 +136,14 @@ public class LightAPI extends JavaPlugin {
 
     @Deprecated
     public static boolean updateChunks(World world, int x, int y, int z, Collection<? extends Player> players) {
-        if (Build.CURRENT_VERSION > LASTEST_SUPPORTED_API) {
+        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
         IBukkitExtension ext =
-                (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-        IBukkitHandler handler = ext.getHandler();
-        for (ChunkData newData : handler.collectChunkSections(world, x, y, z, 15,
+                (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
+        IHandler handler = ext.getHandler();
+        for (IChunkData newData : handler.collectChunkSections(world, x, y, z, 15,
                 LightType.BLOCK_LIGHTING | LightType.SKY_LIGHTING)) {
             handler.sendChunk(newData);
         }
@@ -156,13 +158,13 @@ public class LightAPI extends JavaPlugin {
 
     @Deprecated
     public static boolean updateChunk(World world, int x, int y, int z, Collection<? extends Player> players) {
-        if (Build.CURRENT_VERSION > LASTEST_SUPPORTED_API) {
+        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
         IBukkitExtension ext =
-                (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-        IBukkitHandler handler = ext.getHandler();
+                (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
+        IHandler handler = ext.getHandler();
         handler.sendChunk(world, x >> 4, z >> 4);
         return true;
     }
@@ -196,7 +198,7 @@ public class LightAPI extends JavaPlugin {
     public static boolean createLight(World world, int x, final int y, final int z,
                                       ru.beykerykt.lightapi.LightType lightType,
                                       final int lightlevel, boolean async) {
-        if (Build.CURRENT_VERSION > LASTEST_SUPPORTED_API) {
+        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
@@ -210,14 +212,14 @@ public class LightAPI extends JavaPlugin {
         Bukkit.getPluginManager().callEvent(event);
         if (!event.isCancelled()) {
 			/*
-			if (ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getImplHandler().isAsyncLighting()) {
+			if (ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getImplHandler().isAsyncLighting()) {
 				// not supported
 				return false;
 			} */
 
             IBukkitExtension ext =
-                    (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-            IBukkitHandler handler = ext.getHandler();
+                    (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
+            IHandler handler = ext.getHandler();
 
             int oldlightlevel = handler.getRawLightLevel(event.getWorld(), event.getX(), event.getY(),
                     event.getZ(),
@@ -248,7 +250,7 @@ public class LightAPI extends JavaPlugin {
     public static boolean deleteLight(final World world, final int x, final int y, final int z,
                                       ru.beykerykt.lightapi.LightType lightType,
                                       boolean async) {
-        if (Build.CURRENT_VERSION > LASTEST_SUPPORTED_API) {
+        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
@@ -263,15 +265,15 @@ public class LightAPI extends JavaPlugin {
 
         if (!event.isCancelled()) {
 			/*
-			if (ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getAdapterImpl().isAsyncLighting()) {
+			if (ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getAdapterImpl().isAsyncLighting()) {
 				// not supported
 				return false;
 			}
 			*/
 
             IBukkitExtension ext =
-                    (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-            IBukkitHandler handler = ext.getHandler();
+                    (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
+            IHandler handler = ext.getHandler();
 
             int oldlightlevel = handler.getRawLightLevel(event.getWorld(), event.getX(), event.getY(),
                     event.getZ(),
@@ -298,19 +300,19 @@ public class LightAPI extends JavaPlugin {
 
     public static List<ChunkInfo> collectChunks(World world, int x, int y, int z,
                                                 ru.beykerykt.lightapi.LightType lightType, int lightLevel) {
-        if (Build.CURRENT_VERSION > LASTEST_SUPPORTED_API) {
+        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return null;
         }
         List<ChunkInfo> list = new CopyOnWriteArrayList<ChunkInfo>();
         IBukkitExtension ext =
-                (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-        IBukkitHandler handler = ext.getHandler();
+                (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
+        IHandler handler = ext.getHandler();
         int lightTypeNew = LightType.BLOCK_LIGHTING;
         if (lightType == ru.beykerykt.lightapi.LightType.SKY) {
             lightTypeNew = LightType.SKY_LIGHTING;
         }
-        for (ChunkData newData : handler.collectChunkSections(world, x, y, z, lightLevel, lightTypeNew)) {
+        for (IChunkData newData : handler.collectChunkSections(world, x, y, z, lightLevel, lightTypeNew)) {
             ChunkInfo info = new ChunkInfo(world, newData.getChunkX(), newData.getChunkZ(), world.getPlayers());
             if (!list.contains(info)) {
                 list.add(info);
@@ -325,7 +327,7 @@ public class LightAPI extends JavaPlugin {
 
     public static boolean updateChunk(ChunkInfo info, ru.beykerykt.lightapi.LightType lightType, Collection<?
             extends Player> players) {
-        if (Build.CURRENT_VERSION > LASTEST_SUPPORTED_API) {
+        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
@@ -333,10 +335,12 @@ public class LightAPI extends JavaPlugin {
         Bukkit.getPluginManager().callEvent(event);
         if (!event.isCancelled()) {
             IBukkitExtension ext =
-                    (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.api.LightAPI.get().getExtension();
-            IBukkitHandler handler = ext.getHandler();
-            ChunkData newData = new ChunkData(event.getChunkInfo().getWorld().getName(),
+                    (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
+            IHandler handler = ext.getHandler();
+            // TODO: Say to handler
+            IChunkData newData = handler.createChunkData(event.getChunkInfo().getWorld().getName(),
                     event.getChunkInfo().getChunkX(), event.getChunkInfo().getChunkZ());
+            newData.setFullSections();
             handler.sendChunk(newData);
             return true;
         }

@@ -23,24 +23,28 @@
  */
 package ru.beykerykt.minecraft.lightapi.common.api;
 
+/**
+ * Result codes
+ */
 public class ResultCode {
+
     /**
      * N/A
      */
     public static final int MOVED_TO_DEFERRED = 1;
 
     /**
-     * N/A
+     * The task has been successfully completed
      */
     public static final int SUCCESS = 0;
 
     /**
-     * N/A
+     * The task has been failed
      */
     public static final int FAILED = -1;
 
     /**
-     * N/A
+     * Current world is not available
      */
     public static final int WORLD_NOT_AVAILABLE = -2;
 
@@ -50,22 +54,22 @@ public class ResultCode {
     public static final int MANUAL_MODE_CHUNK_LIST_IS_NULL = -3;
 
     /**
-     * N/A
+     * (1.14+) No lighting changes in current world
      */
     public static final int RECALCULATE_NO_CHANGES = -4;
 
     /**
-     * N/A
+     * (1.14+) SkyLight data is not available in current world
      */
     public static final int SKYLIGHT_DATA_NOT_AVAILABLE = -5;
 
     /**
-     * N/A
+     * (1.14+) BlockLight data is not available in current world
      */
     public static final int BLOCKLIGHT_DATA_NOT_AVAILABLE = -6;
 
     /**
-     * N/A
+     * Current function is not implemented
      */
     public static final int NOT_IMPLEMENTED = -7;
 }
