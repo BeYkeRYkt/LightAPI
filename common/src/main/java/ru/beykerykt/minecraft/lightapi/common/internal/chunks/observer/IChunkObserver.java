@@ -52,21 +52,4 @@ public interface IChunkObserver {
      * N/A
      */
     int sendChunk(IChunkData data);
-
-    /**
-     * Instant sending a full chunk to players in the world. Sends a single packet.
-     */
-    int sendChunk(String worldName, int chunkX, int chunkZ);
-
-    /**
-     * Instant sending a chunk with specific section to players in the world. Sends
-     * a single packet.
-     */
-    int sendChunk(String worldName, int chunkX, int chunkZ, int chunkSectionY);
-
-    /**
-     * Instant sending a chunk with with known sections mask to players in the
-     * world. Sends a single packet.
-     */
-    int sendChunk(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock);
 }

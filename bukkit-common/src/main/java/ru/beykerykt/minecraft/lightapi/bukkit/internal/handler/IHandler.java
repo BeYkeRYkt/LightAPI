@@ -132,23 +132,6 @@ public interface IHandler {
     int sendChunk(IChunkData data);
 
     /**
-     * Instant sending a full chunk to players in the world. Sends a single packet.
-     */
-    int sendChunk(World world, int chunkX, int chunkZ);
-
-    /**
-     * Instant sending a chunk with specific section to players in the world. Sends
-     * a single packet.
-     */
-    int sendChunk(World world, int chunkX, int chunkZ, int chunkSectionY);
-
-    /**
-     * Instant sending a chunk with with known sections mask to players in the
-     * world. Sends a single packet.
-     */
-    int sendChunk(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock);
-
-    /**
      * Can be used for specific commands
      */
     int sendCmd(int cmdId, Object... args);
