@@ -289,59 +289,7 @@ public class NMSHandler extends BaseNMSHandler {
         return ResultCode.NOT_IMPLEMENTED;
     }
 
-    @Override
-    public int sendChunk(World world, int chunkX, int chunkZ) {
-        if (world == null) {
-            return ResultCode.WORLD_NOT_AVAILABLE;
-        }
-        for (int i = 0; i < world.getPlayers().size(); i++) {
-            Player player = world.getPlayers().get(i);
-            Chunk chunk = ((CraftWorld) world).getHandle().getChunkAt(chunkX, chunkZ);
-            EntityPlayer human = ((CraftPlayer) player).getHandle();
-            Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
-            int playerViewDistance = parseViewDistance(human);
-
-            if (distanceTo(pChunk, chunk) <= playerViewDistance) {
-                // Last argument is bit-mask what chunk sections to update. Only lower 16 bits
-                // are used.
-                // There are 16 sections in chunk. Each section height=16. So, y-coordinate
-                // varies from 0 to 255.
-                // Use 0x1ffff instead 0xffff because of little bug in PacketPlayOutMapChunk
-                // constructor.
-                PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, 0x1ffff);
-                human.playerConnection.sendPacket(packet);
-            }
-        }
-        return ResultCode.SUCCESS;
-    }
-
-    @Override
-    public int sendChunk(World world, int chunkX, int chunkZ, int chunkSectionY) {
-        if (world == null) {
-            return ResultCode.WORLD_NOT_AVAILABLE;
-        }
-        for (int i = 0; i < world.getPlayers().size(); i++) {
-            Player player = world.getPlayers().get(i);
-            Chunk chunk = ((CraftWorld) world).getHandle().getChunkAt(chunkX, chunkZ);
-            EntityPlayer human = ((CraftPlayer) player).getHandle();
-            Chunk pChunk = human.world.getChunkAtWorldCoords(human.getChunkCoordinates());
-            int playerViewDistance = parseViewDistance(human);
-
-            if (distanceTo(pChunk, chunk) <= playerViewDistance) {
-                // Last argument is bit-mask what chunk sections to update. Only lower 16 bits
-                // are used.
-                // There are 16 sections in chunk. Each section height=16. So, y-coordinate
-                // varies from 0 to 255.
-                int mask = getThreeSectionsMask(chunkSectionY);
-                PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(chunk, mask);
-                human.playerConnection.sendPacket(packet);
-            }
-        }
-        return ResultCode.SUCCESS;
-    }
-
-    @Override
-    public int sendChunk(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
+    protected int sendChunk(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
         if (world == null) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }

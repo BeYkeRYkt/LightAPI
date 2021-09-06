@@ -77,33 +77,9 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
 
     @Override
     public int sendChunk(IChunkData data) {
+        if (!getPlatformImpl().isWorldAvailable(data.getWorldName())) {
+            return ResultCode.WORLD_NOT_AVAILABLE;
+        }
         return getHandler().sendChunk(data);
-    }
-
-    @Override
-    public int sendChunk(String worldName, int chunkX, int chunkZ) {
-        if (!getPlatformImpl().isWorldAvailable(worldName)) {
-            return ResultCode.WORLD_NOT_AVAILABLE;
-        }
-        World world = Bukkit.getWorld(worldName);
-        return getHandler().sendChunk(world, chunkX, chunkZ);
-    }
-
-    @Override
-    public int sendChunk(String worldName, int chunkX, int chunkZ, int chunkSectionY) {
-        if (!getPlatformImpl().isWorldAvailable(worldName)) {
-            return ResultCode.WORLD_NOT_AVAILABLE;
-        }
-        World world = Bukkit.getWorld(worldName);
-        return getHandler().sendChunk(world, chunkX, chunkZ, chunkSectionY);
-    }
-
-    @Override
-    public int sendChunk(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
-        if (!getPlatformImpl().isWorldAvailable(worldName)) {
-            return ResultCode.WORLD_NOT_AVAILABLE;
-        }
-        World world = Bukkit.getWorld(worldName);
-        return getHandler().sendChunk(world, chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
     }
 }

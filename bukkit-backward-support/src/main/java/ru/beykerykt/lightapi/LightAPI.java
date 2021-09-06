@@ -165,7 +165,9 @@ public class LightAPI extends JavaPlugin {
         IBukkitExtension ext =
                 (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
         IHandler handler = ext.getHandler();
-        handler.sendChunk(world, x >> 4, z >> 4);
+        IChunkData data = ext.getHandler().createChunkData(world.getName(), x >> 4, z >> 4);
+        data.setFullSections();
+        handler.sendChunk(data);
         return true;
     }
 

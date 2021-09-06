@@ -366,53 +366,7 @@ public class NMSHandler extends BaseNMSHandler {
         return ResultCode.NOT_IMPLEMENTED;
     }
 
-    @Override
-    public int sendChunk(World world, int chunkX, int chunkZ) {
-        if (world == null) {
-            return ResultCode.WORLD_NOT_AVAILABLE;
-        }
-        WorldServer worldServer = ((CraftWorld) world).getHandle();
-        Chunk chunk = worldServer.getChunkAt(chunkX, chunkZ);
-        ChunkCoordIntPair chunkCoordIntPair = chunk.getPos();
-        Stream<EntityPlayer> stream = worldServer.getChunkProvider().playerChunkMap.a(chunkCoordIntPair, false);
-        PacketPlayOutLightUpdate packet = new PacketPlayOutLightUpdate(chunkCoordIntPair, chunk.e(), true);
-        stream.forEach(e -> e.playerConnection.sendPacket(packet));
-        return ResultCode.SUCCESS;
-    }
-
-    @Override
-    public int sendChunk(World world, int chunkX, int chunkZ, int chunkSectionY) {
-        if (world == null) {
-            return ResultCode.WORLD_NOT_AVAILABLE;
-        }
-        WorldServer worldServer = ((CraftWorld) world).getHandle();
-        Chunk chunk = worldServer.getChunkAt(chunkX, chunkZ);
-        ChunkCoordIntPair chunkCoordIntPair = chunk.getPos();
-        Stream<EntityPlayer> stream = worldServer.getChunkProvider().playerChunkMap.a(chunkCoordIntPair, false);
-        // https://wiki.vg/index.php?title=Pre-release_protocol&oldid=14804#Update_Light
-        // https://github.com/flori-schwa/VarLight/blob/b9349499f9c9fb995c320f95eae9698dd85aad5c/v1_14_R1/src
-        // /me/florian/varlight/nms/v1_14_R1/NmsAdapter_1_14_R1.java#L451
-        //
-        // Two last argument is bit-mask what chunk sections to update. Mask containing
-        // 18 bits, with the lowest bit corresponding to chunk section -1 (in the void,
-        // y=-16 to y=-1) and the highest bit for chunk section 16 (above the world,
-        // y=256 to y=271).
-        //
-        // There are 16 sections in chunk. Each section height=16. So, y-coordinate
-        // varies from 0 to 255.
-        // We know that max light=15 (15 blocks). So, it is enough to update only 3
-        // sections: (y\16)-1, y\16, (y\16)+1
-        int blockMask = asSectionMask(chunkSectionY);
-        int skyMask = blockMask;
-
-        PacketPlayOutLightUpdate packet = new PacketPlayOutLightUpdate(chunk.getPos(), chunk.e(), skyMask,
-                blockMask, true);
-        stream.forEach(e -> e.playerConnection.sendPacket(packet));
-        return ResultCode.SUCCESS;
-    }
-
-    @Override
-    public int sendChunk(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
+    protected int sendChunk(World world, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
         if (world == null) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
