@@ -364,5 +364,17 @@ public class LightAPI extends JavaPlugin {
     @Deprecated
     public void setMaxIterationsPerTick(int max_iterations_per_tick) {
     }
+
+    @Deprecated
+    public static boolean isSupported(World world, ru.beykerykt.lightapi.LightType type) {
+        IBukkitExtension ext =
+                (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
+        IHandler handler = ext.getHandler();
+        int flag = LightType.BLOCK_LIGHTING;
+        if (type == ru.beykerykt.lightapi.LightType.SKY) {
+            flag = LightType.SKY_LIGHTING;
+        }
+        return handler.isLightingSupported(world, flag);
+    }
     // Qvesh's fork - end
 }

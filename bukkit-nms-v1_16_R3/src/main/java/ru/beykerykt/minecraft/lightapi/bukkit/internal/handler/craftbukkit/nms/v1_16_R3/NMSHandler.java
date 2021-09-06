@@ -66,17 +66,6 @@ public class NMSHandler extends BaseNMSHandler {
                 e.getMessage()), e);
     }
 
-    private boolean isLightingSupported(World world, int flags) {
-        WorldServer worldServer = ((CraftWorld) world).getHandle();
-        LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
-        if ((flags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
-            return lightEngine.a(EnumSkyBlock.SKY) instanceof LightEngineSky;
-        } else if ((flags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
-            return lightEngine.a(EnumSkyBlock.BLOCK) instanceof LightEngineBlock;
-        }
-        return false;
-    }
-
     private int getDeltaLight(int x, int dx) {
         return (((x ^ ((-dx >> 4) & 15)) + 1) & (-(dx & 1)));
     }
@@ -203,6 +192,18 @@ public class NMSHandler extends BaseNMSHandler {
     @Override
     public void onWorldUnload(WorldUnloadEvent event) {
 
+    }
+
+    @Override
+    public boolean isLightingSupported(World world, int lightFlags) {
+        WorldServer worldServer = ((CraftWorld) world).getHandle();
+        LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
+        if ((lightFlags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+            return lightEngine.a(EnumSkyBlock.SKY) instanceof LightEngineSky;
+        } else if ((lightFlags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
+            return lightEngine.a(EnumSkyBlock.BLOCK) instanceof LightEngineBlock;
+        }
+        return false;
     }
 
     @Override
