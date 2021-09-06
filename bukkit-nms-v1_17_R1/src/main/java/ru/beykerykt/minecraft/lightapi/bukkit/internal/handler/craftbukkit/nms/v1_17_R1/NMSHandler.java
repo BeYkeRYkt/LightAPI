@@ -77,25 +77,6 @@ public class NMSHandler extends BaseNMSHandler {
                 e.getMessage()), e);
     }
 
-    private boolean isLightingSupported(World world, int flags) {
-        WorldServer worldServer = ((CraftWorld) world).getHandle();
-        LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
-        if ((flags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
-            if (getLightEngineType() == LightEngineType.VANILLA) {
-                return lightEngine.a(EnumSkyBlock.a) instanceof LightEngineSky;
-            } else if (getLightEngineType() == LightEngineType.STARLIGHT) {
-                return true;
-            }
-        } else if ((flags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
-            if (getLightEngineType() == LightEngineType.VANILLA) {
-                return lightEngine.a(EnumSkyBlock.b) instanceof LightEngineBlock;
-            } else if (getLightEngineType() == LightEngineType.STARLIGHT) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private int getDeltaLight(int x, int dx) {
         return (((x ^ ((-dx >> 4) & 15)) + 1) & (-(dx & 1)));
     }
@@ -209,6 +190,26 @@ public class NMSHandler extends BaseNMSHandler {
     @Override
     public void onWorldUnload(WorldUnloadEvent event) {
 
+    }
+
+    @Override
+    public boolean isLightingSupported(World world, int lightFlags) {
+        WorldServer worldServer = ((CraftWorld) world).getHandle();
+        LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
+        if ((lightFlags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+            if (getLightEngineType() == LightEngineType.VANILLA) {
+                return lightEngine.a(EnumSkyBlock.a) instanceof LightEngineSky;
+            } else if (getLightEngineType() == LightEngineType.STARLIGHT) {
+                return true;
+            }
+        } else if ((lightFlags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
+            if (getLightEngineType() == LightEngineType.VANILLA) {
+                return lightEngine.a(EnumSkyBlock.b) instanceof LightEngineBlock;
+            } else if (getLightEngineType() == LightEngineType.STARLIGHT) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

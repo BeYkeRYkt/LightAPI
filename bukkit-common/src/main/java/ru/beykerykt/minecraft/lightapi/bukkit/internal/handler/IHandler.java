@@ -86,6 +86,11 @@ public interface IHandler {
     void onWorldUnload(WorldUnloadEvent event);
 
     /**
+     * N/A
+     */
+    boolean isLightingSupported(World world, int lightFlags);
+
+    /**
      * Sets "directly" the level of light in given coordinates without additional
      * processing.
      */

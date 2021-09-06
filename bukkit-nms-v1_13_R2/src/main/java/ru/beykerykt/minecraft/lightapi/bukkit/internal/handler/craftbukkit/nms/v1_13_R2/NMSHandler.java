@@ -95,16 +95,6 @@ public class NMSHandler extends BaseNMSHandler {
                 | (isValidChunkSection(y + 1) ? asSectionMask(y + 1) : 0);
     }
 
-    private boolean isLightingSupported(World world, int flags) {
-        if ((flags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
-            WorldServer worldServer = ((CraftWorld) world).getHandle();
-            return worldServer.worldProvider.g();
-        } else if ((flags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
-            return true;
-        }
-        return false;
-    }
-
     private IChunkData createChunkData(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
         return new LegacyIntChunkData(worldName, chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
     }
@@ -134,6 +124,17 @@ public class NMSHandler extends BaseNMSHandler {
 
     @Override
     public void onWorldUnload(WorldUnloadEvent event) {
+    }
+
+    @Override
+    public boolean isLightingSupported(World world, int lightFlags) {
+        if ((lightFlags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+            WorldServer worldServer = ((CraftWorld) world).getHandle();
+            return worldServer.worldProvider.g();
+        } else if ((lightFlags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
+            return true;
+        }
+        return false;
     }
 
     @Override
