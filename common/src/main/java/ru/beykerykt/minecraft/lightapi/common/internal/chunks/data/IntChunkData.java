@@ -68,4 +68,15 @@ public class IntChunkData extends ChunkData {
         this.skyLightUpdateBits = FULL_MASK;
         this.blockLightUpdateBits = FULL_MASK;
     }
+
+    @Override
+    public String toString() {
+        return "IntChunkData{" +
+                "worldName=" + getWorldName() +
+                ", chunkX=" + getChunkX() +
+                ", chunkZ=" + getChunkZ() +
+                ", skyLightUpdateBits=" + skyLightUpdateBits +
+                ", blockLightUpdateBits=" + blockLightUpdateBits +
+                '}';
+    }
 }

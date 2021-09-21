@@ -103,4 +103,15 @@ public class BitChunkData extends ChunkData {
             markSectionForUpdate(LightType.SKY_LIGHTING | LightType.BLOCK_LIGHTING, i);
         }
     }
+
+    @Override
+    public String toString() {
+        return "BitChunkData{" +
+                "worldName=" + getWorldName() +
+                ", chunkX=" + getChunkX() +
+                ", chunkZ=" + getChunkZ() +
+                ", skyLightUpdateBits=" + skyLightUpdateBits +
+                ", blockLightUpdateBits=" + blockLightUpdateBits +
+                '}';
+    }
 }
