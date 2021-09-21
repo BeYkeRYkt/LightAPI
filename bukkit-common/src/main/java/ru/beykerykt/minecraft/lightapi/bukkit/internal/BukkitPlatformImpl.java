@@ -165,11 +165,6 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     }
 
     @Override
-    public void onImplementationChanged() {
-        // do something
-    }
-
-    @Override
     public UUID getUUID() {
         return mUUID;
     }

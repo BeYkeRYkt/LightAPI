@@ -119,9 +119,4 @@ public interface IPlatformImpl {
      * Can be used for specific commands
      */
     int sendCmd(int cmdId, Object... args);
-
-    /**
-     * Called when the current implementation is changed
-     */
-    void onImplementationChanged();
 }
