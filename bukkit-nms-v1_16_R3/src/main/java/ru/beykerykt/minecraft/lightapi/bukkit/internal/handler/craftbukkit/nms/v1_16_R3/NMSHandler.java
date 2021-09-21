@@ -174,7 +174,7 @@ public class NMSHandler extends BaseNMSHandler {
             lightEngineGraph_a = LightEngineGraph.class.getDeclaredMethod("a", long.class, long.class, int.class,
                     boolean.class);
             lightEngineGraph_a.setAccessible(true);
-            impl.log("Handler initialization is done");
+            impl.info("Handler initialization is done");
         } catch (Exception e) {
             throw toRuntimeException(e);
         }

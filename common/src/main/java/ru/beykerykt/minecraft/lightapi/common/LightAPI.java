@@ -65,13 +65,13 @@ public final class LightAPI {
      */
     public static void prepare(IPlatformImpl impl) throws Exception {
         if (singleton == null && impl != null || !get().isInitialized()) {
-            impl.log("Preparing LightAPI...");
+            impl.info("Preparing LightAPI...");
             synchronized (LightAPI.class) {
                 if (singleton == null) {
                     int initCode = impl.prepare();
                     if (initCode == ResultCode.SUCCESS) {
                         singleton = new LightAPI(impl);
-                        impl.log("Preparing done!");
+                        impl.info("Preparing done!");
                     } else {
                         throw new IllegalStateException("Preparing failed! Code: " + initCode);
                     }
@@ -223,7 +223,7 @@ public final class LightAPI {
      * N/A
      */
     protected void log(String msg) {
-        getPluginImpl().log(msg);
+        getPluginImpl().info(msg);
     }
 
     /**
@@ -267,7 +267,7 @@ public final class LightAPI {
      */
     public int sendCmd(int cmdId, Object... args) {
         if (cmdId <= InternalCode.RESERVED_LENGTH) {
-            getPluginImpl().log(cmdId + " is reserved for internal use.");
+            getPluginImpl().error(cmdId + " is reserved for internal use.");
             return ResultCode.FAILED;
         }
         return getPluginImpl().sendCmd(cmdId, args);

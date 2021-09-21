@@ -60,6 +60,13 @@ public interface IPlatformImpl {
     void log(String msg);
 
     /**
+     * Info message in console
+     *
+     * @param msg - message
+     */
+    void info(String msg);
+
+    /**
      * Debug message in console
      *
      * @param msg - message

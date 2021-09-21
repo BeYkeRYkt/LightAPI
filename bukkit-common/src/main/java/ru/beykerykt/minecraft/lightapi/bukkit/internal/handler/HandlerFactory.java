@@ -63,9 +63,9 @@ public class HandlerFactory {
         // load specific handler if available
         String specificPkg = getPlugin().getConfig().getString(ConfigurationPath.GENERAL_SPECIFIC_HANDLER);
         if (specificPkg != null && !specificPkg.equalsIgnoreCase("none")) {
-            getPlatformImpl().log("Initial load specific handler");
+            getPlatformImpl().info("Initial load specific handler");
             handler = (IHandler) Class.forName(specificPkg).getConstructor().newInstance();
-            getPlatformImpl().log("Custom handler is loaded: " + handler.getClass().getName());
+            getPlatformImpl().info("Custom handler is loaded: " + handler.getClass().getName());
             return handler;
         }
 
@@ -77,16 +77,16 @@ public class HandlerFactory {
             extPath += "craftbukkit.";
             String[] line = serverImplPackage.replace(".", ",").split(",");
             String version = line[3];
-            getPlatformImpl().log("Your server is using version " + version);
+            getPlatformImpl().info("Your server is using version " + version);
             //Class<?> minecraftServerNMS = Class.forName(NMS_PKG + "." + version + ".MinecraftServer");
             //if (minecraftServerNMS != null) {
             extPath += "nms.";
             // start using nms handler
-            getPlatformImpl().log("Loading NMS handler " + version);
+            getPlatformImpl().info("Loading NMS handler " + version);
             handler = (IHandler) Class
                     .forName(DEFAULT_PATH + "." + extPath + version + "." + "NMSHandler")
                     .getConstructor().newInstance();
-            getPlatformImpl().log("Handler is loaded: " + version);
+            getPlatformImpl().info("Handler is loaded: " + version);
             //} else {
             //    throw new NotImplementedException(getPlugin().getServer().getName() + " is currently not supported.");
             //}

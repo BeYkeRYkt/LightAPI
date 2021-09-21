@@ -98,6 +98,24 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     }
 
     @Override
+    public void info(String msg) {
+        log("[INFO] " + msg);
+    }
+
+    @Override
+    public void debug(String msg) {
+        if (DEBUG) {
+            info(ChatColor.YELLOW + "[DEBUG] " + msg);
+        }
+    }
+
+    @Override
+    public void error(String msg) {
+        info(ChatColor.RED + "[ERROR] " + msg);
+    }
+
+
+    @Override
     public PlatformType getPlatformType() {
         return getHandler().getPlatformType();
     }
@@ -167,18 +185,6 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     @Override
     public UUID getUUID() {
         return mUUID;
-    }
-
-    @Override
-    public void debug(String msg) {
-        if (DEBUG) {
-            log("[DEBUG] " + msg);
-        }
-    }
-
-    @Override
-    public void error(String msg) {
-        log("[ERROR] " + msg);
     }
 
     @Override

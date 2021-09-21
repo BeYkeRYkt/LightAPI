@@ -121,7 +121,7 @@ public class YAMLStorageProvider implements IStorageProvider {
             long longPos = Long.parseLong(s);
             int lightLevel = customConfig.getInt("worlds." + world + "." + s);
             map.put(longPos, lightLevel);
-            mImpl.log("longPos: " + longPos + " lightLevel: " + lightLevel);
+            mImpl.debug("longPos: " + longPos + " lightLevel: " + lightLevel);
         }
         return map;
     }
