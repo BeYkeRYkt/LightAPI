@@ -21,13 +21,6 @@
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
-        <!-- Spigot -->
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
-            <version>1.17.1-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
         <!-- Paper -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
