@@ -23,6 +23,10 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_17_R1;
 
+import ca.spottedleaf.starlight.light.BlockStarLightEngine;
+import ca.spottedleaf.starlight.light.SkyStarLightEngine;
+import ca.spottedleaf.starlight.light.StarLightEngine;
+import ca.spottedleaf.starlight.light.StarLightInterface;
 import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.SectionPosition;
@@ -34,7 +38,9 @@ import net.minecraft.server.level.WorldServer;
 import net.minecraft.util.thread.ThreadedMailbox;
 import net.minecraft.world.level.ChunkCoordIntPair;
 import net.minecraft.world.level.EnumSkyBlock;
+import net.minecraft.world.level.block.state.BlockBase;
 import net.minecraft.world.level.chunk.Chunk;
+import net.minecraft.world.level.chunk.ILightAccess;
 import net.minecraft.world.level.lighting.*;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -53,8 +59,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.BitSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -66,6 +71,40 @@ public class NMSHandler extends BaseNMSHandler {
     private Field lightEngineLayer_d;
     private Method lightEngineStorage_d;
     private Method lightEngineGraph_a;
+
+    // beykerykt -- starlight engine
+    private Map<ChunkCoordIntPair, List<LightPos>> blockQueueMap = new HashMap<>();
+    private Map<ChunkCoordIntPair, List<LightPos>> skyQueueMap = new HashMap<>();
+
+    // StarLightInterface
+    private Field starInterface;
+    private Field starInterface_coordinateOffset;
+    private Method starInterface_getBlockLightEngine;
+    private Method starInterface_getSkyLightEngine;
+
+    // StarLightEngine
+    private Method starEngine_setLightLevel;
+    private Method starEngine_appendToIncreaseQueue;
+    private Method starEngine_appendToDecreaseQueue;
+    private Method starEngine_performLightIncrease;
+    private Method starEngine_performLightDecrease;
+    private Method starEngine_updateVisible;
+    private Method starEngine_setupCaches;
+    private Method starEngine_destroyCaches;
+
+    private final int ALL_DIRECTIONS_BITSET = (1 << 6) - 1;
+    private final long FLAG_HAS_SIDED_TRANSPARENT_BLOCKS = Long.MIN_VALUE;
+
+    private static final class LightPos {
+        public BlockPosition blockPos;
+        public int lightLevel;
+
+        public LightPos(BlockPosition blockPos, int lightLevel) {
+            this.blockPos = blockPos;
+            this.lightLevel = lightLevel;
+        }
+    }
+    // beykerykt -- starlight engine
 
     private static RuntimeException toRuntimeException(Throwable e) {
         if (e instanceof RuntimeException) {
@@ -153,6 +192,67 @@ public class NMSHandler extends BaseNMSHandler {
         return new BitChunkData(worldName, chunkX, chunkZ, top, bottom);
     }
 
+    // beykerykt -- starlight engine
+    private void scheduleChunkLight(StarLightInterface starLightInterface, ChunkCoordIntPair chunkCoordIntPair, Runnable runnable) {
+        getPlatformImpl().debug("scheduleChunkLight");
+        starLightInterface.scheduleChunkLight(chunkCoordIntPair, runnable);
+    }
+
+    private void addTaskToQueue(WorldServer worldServer, StarLightInterface starLightInterface, StarLightEngine sle, ChunkCoordIntPair chunkCoordIntPair, List<LightPos> lightPoints) {
+        getPlatformImpl().debug("addTaskToQueue");
+        // beykerykt -- add task to starlight engine queue
+        int type = (sle instanceof BlockStarLightEngine) ? LightType.BLOCK_LIGHTING : LightType.SKY_LIGHTING;
+        scheduleChunkLight(starLightInterface, chunkCoordIntPair, () -> {
+            try {
+                int chunkX = chunkCoordIntPair.b;
+                int chunkZ = chunkCoordIntPair.c;
+
+                // blocksChangedInChunk -- start
+                // setup cache
+                starEngine_setupCaches.invoke(sle, worldServer.getChunkProvider(), chunkX * 16 + 7, 128, chunkZ * 16 + 7, true, true);
+                try {
+                    // propagateBlockChanges -- start
+                    Iterator<LightPos> it = lightPoints.iterator();
+                    while (it.hasNext()) {
+                        try {
+                            LightPos lightPos = it.next();
+                            BlockPosition blockPos = lightPos.blockPos;
+                            int lightLevel = lightPos.lightLevel;
+                            int currentLightLevel = getRawLightLevel(worldServer.getWorld(), blockPos.getX(), blockPos.getY(), blockPos.getZ(), type);
+                            if (lightLevel <= currentLightLevel) {
+                                // do nothing
+                                continue;
+                            }
+                            int encodeOffset = starInterface_coordinateOffset.getInt(sle);
+                            BlockBase.BlockData blockData = worldServer.getType(blockPos);
+                            starEngine_setLightLevel.invoke(sle, blockPos.getX(), blockPos.getY(), blockPos.getZ(), lightLevel);
+                            getPlatformImpl().debug("blockX :" + blockPos.getX() + " blockY: " + blockPos.getY() + " blockZ: " + blockPos.getZ()
+                                    + " lightLevel: " + lightLevel + " encodeOffset: " + encodeOffset);
+                            if (lightLevel != 0) {
+                                starEngine_appendToIncreaseQueue.invoke(sle, ((blockPos.getX() + (blockPos.getZ() << 6) + (blockPos.getY() << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
+                                        | (lightLevel & 0xFL) << (6 + 6 + 16)
+                                        | (((long) ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
+                                        | (blockData.isConditionallyFullOpaque() ? FLAG_HAS_SIDED_TRANSPARENT_BLOCKS : 0));
+                            }
+                        } finally {
+                            it.remove();
+                        }
+                    }
+                    starEngine_performLightIncrease.invoke(sle, worldServer.getChunkProvider());
+                    // propagateBlockChanges -- end
+                    starEngine_updateVisible.invoke(sle, worldServer.getChunkProvider());
+                } finally {
+                    starEngine_destroyCaches.invoke(sle);
+                }
+                // blocksChangedInChunk -- end
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+        // beykerykt -- add task to starlight engine queue
+    }
+    // beykerykt -- starlight engine
+
     @Override
     public void onInitialization(IPlatformImpl impl) throws Exception {
         super.onInitialization(impl);
@@ -173,6 +273,35 @@ public class NMSHandler extends BaseNMSHandler {
                     "a", long.class, long.class, int.class, boolean.class);
             lightEngineGraph_a.setAccessible(true);
             impl.info("Handler initialization is done");
+
+            // beykerykt -- starlight engine
+            if (getLightEngineType() == LightEngineType.STARLIGHT) {
+                starEngine_setLightLevel = StarLightEngine.class.getDeclaredMethod("setLightLevel", int.class, int.class, int.class, int.class);
+                starEngine_setLightLevel.setAccessible(true);
+                starEngine_appendToIncreaseQueue = StarLightEngine.class.getDeclaredMethod("appendToIncreaseQueue", long.class);
+                starEngine_appendToIncreaseQueue.setAccessible(true);
+                starEngine_appendToDecreaseQueue = StarLightEngine.class.getDeclaredMethod("appendToDecreaseQueue", long.class);
+                starEngine_appendToDecreaseQueue.setAccessible(true);
+                starEngine_performLightIncrease = StarLightEngine.class.getDeclaredMethod("performLightIncrease", ILightAccess.class);
+                starEngine_performLightIncrease.setAccessible(true);
+                starEngine_performLightDecrease = StarLightEngine.class.getDeclaredMethod("performLightDecrease", ILightAccess.class);
+                starEngine_performLightDecrease.setAccessible(true);
+                starEngine_updateVisible = StarLightEngine.class.getDeclaredMethod("updateVisible", ILightAccess.class);
+                starEngine_updateVisible.setAccessible(true);
+                starEngine_setupCaches = StarLightEngine.class.getDeclaredMethod("setupCaches", ILightAccess.class, int.class, int.class, int.class, boolean.class, boolean.class);
+                starEngine_setupCaches.setAccessible(true);
+                starEngine_destroyCaches = StarLightEngine.class.getDeclaredMethod("destroyCaches");
+                starEngine_destroyCaches.setAccessible(true);
+                starInterface = LightEngineThreaded.class.getDeclaredField("theLightEngine");
+                starInterface.setAccessible(true);
+                starInterface_getBlockLightEngine = StarLightInterface.class.getDeclaredMethod("getBlockLightEngine");
+                starInterface_getBlockLightEngine.setAccessible(true);
+                starInterface_getSkyLightEngine = StarLightInterface.class.getDeclaredMethod("getSkyLightEngine");
+                starInterface_getSkyLightEngine.setAccessible(true);
+                starInterface_coordinateOffset = StarLightEngine.class.getDeclaredField("coordinateOffset");
+                starInterface_coordinateOffset.setAccessible(true);
+            }
+            // beykerykt -- starlight engine
         } catch (Exception e) {
             throw toRuntimeException(e);
         }
@@ -254,11 +383,26 @@ public class NMSHandler extends BaseNMSHandler {
                         // STARLIGHT
                         LightEngineLayerEventListener lele = lightEngine.a(EnumSkyBlock.b);
                         if (finalLightLevel == 0) {
-                            lele.a(position);
+                            try {
+                                StarLightInterface starLightInterface = (StarLightInterface) starInterface.get(lightEngine);
+                                starLightInterface.blockChange(position);
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
                         } else if (lele.a(SectionPosition.a(position)) != null) {
                             try {
                                 getPlatformImpl().debug("setRawLightLevel");
-                                lele.a(position, finalLightLevel);
+                                // beykerykt -- add to queue
+                                ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(blockX >> 4, blockZ >> 4);
+                                if (blockQueueMap.containsKey(chunkCoordIntPair)) {
+                                    List<LightPos> lightPoints = blockQueueMap.get(chunkCoordIntPair);
+                                    lightPoints.add(new LightPos(position, finalLightLevel));
+                                } else {
+                                    List<LightPos> lightPoints = new ArrayList<>();
+                                    lightPoints.add(new LightPos(position, finalLightLevel));
+                                    blockQueueMap.put(chunkCoordIntPair, lightPoints);
+                                }
+                                // beykerykt -- add to queue
                             } catch (NullPointerException ignore) {
                                 // To prevent problems with the absence of the NibbleArray, even
                                 // if leb.a(SectionPosition.a(position)) returns non-null value (corrupted data)
@@ -287,11 +431,25 @@ public class NMSHandler extends BaseNMSHandler {
                         // STARLIGHT
                         LightEngineLayerEventListener lele = lightEngine.a(EnumSkyBlock.a);
                         if (finalLightLevel == 0) {
-                            lele.a(position);
+                            try {
+                                StarLightInterface starLightInterface = (StarLightInterface) starInterface.get(lightEngine);
+                                starLightInterface.blockChange(position);
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
                         } else if (lele.a(SectionPosition.a(position)) != null) {
                             try {
-                                //lightEngineLayer_a(lele, position, finalLightLevel);
-                                lele.a(position, finalLightLevel);
+                                // beykerykt -- add to queue
+                                ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(blockX >> 4, blockZ >> 4);
+                                if (skyQueueMap.containsKey(chunkCoordIntPair)) {
+                                    List<LightPos> lightPoints = skyQueueMap.get(chunkCoordIntPair);
+                                    lightPoints.add(new LightPos(position, finalLightLevel));
+                                } else {
+                                    List<LightPos> lightPoints = new ArrayList<>();
+                                    lightPoints.add(new LightPos(position, finalLightLevel));
+                                    skyQueueMap.put(chunkCoordIntPair, lightPoints);
+                                }
+                                // beykerykt -- add to queue
                             } catch (NullPointerException ignore) {
                                 // To prevent problems with the absence of the NibbleArray, even
                                 // if les.a(SectionPosition.a(position)) returns non-null value (corrupted data)
@@ -325,6 +483,35 @@ public class NMSHandler extends BaseNMSHandler {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
 
+        // beykerykt -- add task to starlight engine queue
+        try {
+            StarLightInterface starLightInterface = (StarLightInterface) starInterface.get(lightEngine);
+            Iterator blockIt = blockQueueMap.entrySet().iterator();
+            while (blockIt.hasNext()) {
+                BlockStarLightEngine bsle = (BlockStarLightEngine) starInterface_getBlockLightEngine.invoke(starLightInterface);
+                Map.Entry<ChunkCoordIntPair, List<LightPos>> pair = (Map.Entry<ChunkCoordIntPair, List<LightPos>>) blockIt.next();
+                ChunkCoordIntPair chunkCoordIntPair = pair.getKey();
+                List<LightPos> lightPoints = pair.getValue();
+                addTaskToQueue(worldServer, starLightInterface, bsle, chunkCoordIntPair, lightPoints);
+                blockIt.remove();
+            }
+
+            Iterator skyIt = skyQueueMap.entrySet().iterator();
+            while (skyIt.hasNext()) {
+                SkyStarLightEngine ssle = (SkyStarLightEngine) starInterface_getSkyLightEngine.invoke(starLightInterface);
+                Map.Entry<ChunkCoordIntPair, List<LightPos>> pair = (Map.Entry<ChunkCoordIntPair, List<LightPos>>) skyIt.next();
+                ChunkCoordIntPair chunkCoordIntPair = pair.getKey();
+                List<LightPos> lightPoints = pair.getValue();
+                addTaskToQueue(worldServer, starLightInterface, ssle, chunkCoordIntPair, lightPoints);
+                skyIt.remove();
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        // beykerykt -- add task to starlight engine queue
+
         // Do not recalculate if no changes!
         if (!lightEngine.z_()) {
             getPlatformImpl().debug("RECALCULATE_NO_CHANGES");
@@ -337,19 +524,14 @@ public class NMSHandler extends BaseNMSHandler {
                 if (isLightingSupported(world, LightType.SKY_LIGHTING) && isLightingSupported(world,
                         LightType.BLOCK_LIGHTING)) {
                     if (getLightEngineType() == LightEngineType.STARLIGHT) {
-                        LightEngineLayerEventListener leleBlock = lightEngine.a(EnumSkyBlock.b);
-                        LightEngineLayerEventListener leleSky = lightEngine.a(EnumSkyBlock.a);
-
-                        // nms
-                        int maxUpdateCount = Integer.MAX_VALUE;
-                        int integer4 = maxUpdateCount / 2;
-                        int integer5 = leleBlock.a(integer4, true, true);
-                        int integer6 = maxUpdateCount - integer4 + integer5;
-                        int integer7 = leleSky.a(integer6, true, true);
-                        if (integer5 == 0 && integer7 > 0) {
-                            getPlatformImpl().debug("recalculateLighting");
-                            leleBlock.a(integer7, true, true);
+                        // beykerykt -- tell starlight engine propagate changes
+                        try {
+                            StarLightInterface starLightInterface = (StarLightInterface) starInterface.get(lightEngine);
+                            starLightInterface.propagateChanges();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
                         }
+                        // beykerykt -- tell starlight engine propagate changes
                     } else if (getLightEngineType() == LightEngineType.VANILLA) {
                         LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.b);
                         LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.a);
@@ -369,8 +551,14 @@ public class NMSHandler extends BaseNMSHandler {
                     if ((flags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
                         if (isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
                             if (getLightEngineType() == LightEngineType.STARLIGHT) {
-                                LightEngineLayerEventListener lele = lightEngine.a(EnumSkyBlock.b);
-                                lele.a(Integer.MAX_VALUE, true, true);
+                                // beykerykt -- tell starlight engine propagate changes
+                                try {
+                                    StarLightInterface starLightInterface = (StarLightInterface) starInterface.get(lightEngine);
+                                    starLightInterface.propagateChanges();
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                                // beykerykt -- tell starlight engine propagate changes
                                 getPlatformImpl().debug("recalculateLighting");
                             } else if (getLightEngineType() == LightEngineType.VANILLA) {
                                 LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.b);
@@ -383,8 +571,14 @@ public class NMSHandler extends BaseNMSHandler {
                     if ((flags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
                         if (isLightingSupported(world, LightType.SKY_LIGHTING)) {
                             if (getLightEngineType() == LightEngineType.STARLIGHT) {
-                                LightEngineLayerEventListener lele = lightEngine.a(EnumSkyBlock.a);
-                                lele.a(Integer.MAX_VALUE, true, true);
+                                // beykerykt -- tell starlight engine propagate changes
+                                try {
+                                    StarLightInterface starLightInterface = (StarLightInterface) starInterface.get(lightEngine);
+                                    starLightInterface.propagateChanges();
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                                // beykerykt -- tell starlight engine propagate changes
                             } else if (getLightEngineType() == LightEngineType.VANILLA) {
                                 LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.a);
                                 les.a(Integer.MAX_VALUE, true, true);
@@ -397,8 +591,15 @@ public class NMSHandler extends BaseNMSHandler {
                 if ((flags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
                     if (isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
                         if (getLightEngineType() == LightEngineType.STARLIGHT) {
-                            LightEngineLayerEventListener lele = lightEngine.a(EnumSkyBlock.b);
-                            lele.a(Integer.MAX_VALUE, true, true);
+                            // beykerykt -- tell starlight engine propagate changes
+                            try {
+                                StarLightInterface starLightInterface = (StarLightInterface) starInterface.get(lightEngine);
+                                starLightInterface.propagateChanges();
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                            // beykerykt -- tell starlight engine propagate changes
+
                             getPlatformImpl().debug("recalculateLighting");
                         } else if (getLightEngineType() == LightEngineType.VANILLA) {
                             LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.b);
