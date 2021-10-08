@@ -29,7 +29,6 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightStrategy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendStrategy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
-import ru.beykerykt.minecraft.lightapi.common.internal.IComponentFactory;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.InternalCode;
 import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
@@ -47,11 +46,6 @@ import java.util.UUID;
 public final class LightAPI {
     private static volatile LightAPI singleton;
     private final IPlatformImpl mInternal;
-
-    private ILightEngine mLightEngine;
-    private IChunkObserver mChunkObserver;
-    private IBackgroundService mBackgroundService;
-    private IExtension mExtension;
 
     private LightAPI(IPlatformImpl internal) {
         if (singleton != null) {
@@ -89,43 +83,10 @@ public final class LightAPI {
             synchronized (LightAPI.class) {
                 int initCode = get().getPluginImpl().initialization();
                 if (initCode == ResultCode.SUCCESS) {
-                    IComponentFactory factory = get().getPluginImpl().getFactory();
-                    if (factory != null) {
-                        // create background service
-                        get().mBackgroundService = factory.createBackgroundService();
-                        if (get().getBackgroundService() != null) {
-                            get().getBackgroundService().onStart();
-                            get().getPluginImpl().sendCmd(InternalCode.UPDATE_BACKGROUND_SERVICE, get().getBackgroundService());
-                        }
-
-                        // create chunk observer
-                        get().mChunkObserver = factory.createChunkObserver();
-                        if (get().getChunkObserver() != null) {
-                            get().getChunkObserver().onStart();
-                            get().getPluginImpl().sendCmd(InternalCode.UPDATE_CHUNK_OBSERVER, get().getChunkObserver());
-                        }
-
-                        // create light engine
-                        get().mLightEngine = factory.createLightEngine();
-                        if (get().getLightEngine() != null) {
-                            get().getLightEngine().onStart();
-                            get().getPluginImpl().sendCmd(InternalCode.UPDATE_LIGHT_ENGINE, get().getLightEngine());
-                        }
-
-                        // create extension (extension can be null)
-                        get().mExtension = factory.createExtension();
-                        if (get().getExtension() != null) {
-                            get().getPluginImpl().sendCmd(InternalCode.UPDATE_EXTENSION, get().getExtension());
-                        }
-
-                        get().log("LightAPI initialized!");
-
-                        // send random generated uuid
-                        UUID uuid = UUID.randomUUID();
-                        get().getPluginImpl().sendCmd(InternalCode.UPDATE_UUID, uuid);
-                    } else {
-                        throw new NullPointerException("Factory is null");
-                    }
+                    // send random generated uuid
+                    UUID uuid = UUID.randomUUID();
+                    get().getPluginImpl().sendCmd(InternalCode.UPDATE_UUID, uuid);
+                    get().log("LightAPI initialized!");
                 } else {
                     // Initialization failed
                     throw new IllegalStateException("Initialization failed! Code: " + initCode);
@@ -141,12 +102,14 @@ public final class LightAPI {
         if (get().isInitialized() && get().getPluginImpl().getUUID().equals(impl.getUUID())) {
             get().log("Shutdown LightAPI...");
             synchronized (LightAPI.class) {
+                /*
                 get().getChunkObserver().onShutdown();
                 get().mChunkObserver = null;
                 get().getLightEngine().onShutdown();
                 get().mLightEngine = null;
                 get().getBackgroundService().onShutdown();
                 get().mBackgroundService = null;
+                */
                 get().getPluginImpl().shutdown();
             }
         } else {
@@ -182,41 +145,37 @@ public final class LightAPI {
      * N/A
      */
     private ILightEngine getLightEngine() {
-        if (get().mLightEngine == null) {
+        if (getPluginImpl().getLightEngine() == null) {
             throw new IllegalStateException("LightEngine not yet initialized!");
         }
-        return get().mLightEngine;
+        return getPluginImpl().getLightEngine();
     }
 
     /**
      * N/A
      */
     private IChunkObserver getChunkObserver() {
-        if (get().mChunkObserver == null) {
+        if (getPluginImpl().getChunkObserver() == null) {
             throw new IllegalStateException("ChunkObserver not yet initialized!");
         }
-        return get().mChunkObserver;
+        return getPluginImpl().getChunkObserver();
     }
 
     /**
      * N/A
      */
     private IBackgroundService getBackgroundService() {
-        if (get().mBackgroundService == null) {
+        if (getPluginImpl().getBackgroundService() == null) {
             throw new IllegalStateException("BackgroundService not yet initialized!");
         }
-        return get().mBackgroundService;
+        return getPluginImpl().getBackgroundService();
     }
 
     /**
      * N/A
      */
     public IExtension getExtension() {
-        /*
-        if (get().mExtension == null) {
-            throw new IllegalStateException("Extension not yet initialized!");
-        }*/
-        return get().mExtension;
+        return getPluginImpl().getExtension();
     }
 
     /**

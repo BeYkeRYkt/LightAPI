@@ -95,11 +95,6 @@ public interface IPlatformImpl {
     /**
      * N/A
      */
-    IComponentFactory getFactory();
-
-    /**
-     * N/A
-     */
     ILightEngine getLightEngine();
 
     /**

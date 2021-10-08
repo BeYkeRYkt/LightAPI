@@ -27,11 +27,13 @@ import org.bukkit.ChatColor;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.sched.observer.impl.BukkitScheduledChunkObserver;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched.impl.BukkitScheduledLightEngine;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.HandlerFactory;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BukkitBackgroundService;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
-import ru.beykerykt.minecraft.lightapi.common.internal.IComponentFactory;
 import ru.beykerykt.minecraft.lightapi.common.internal.InternalCode;
 import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.IChunkObserver;
@@ -45,13 +47,12 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     private boolean DEBUG = false;
 
     private BukkitPlugin mPlugin;
-    private BukkitComponentFactory mFactory;
     private boolean isInit = false;
 
-    // will be receive from LightAPI class
+    private IHandler mHandler;
     private IChunkObserver mChunkObserver;
     private ILightEngine mLightEngine;
-    private BukkitBackgroundService mBukkitBackgroundService;
+    private IBackgroundService mBackgroundService;
     private IExtension mExtension;
     private UUID mUUID;
 
@@ -63,27 +64,49 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     public int prepare() {
         // debug mode
         this.DEBUG = mPlugin.getConfig().getBoolean(ConfigurationPath.GENERAL_DEBUG);
-
-        // create component factory
-        this.mFactory = new BukkitComponentFactory(this);
         return ResultCode.SUCCESS;
     }
 
     @Override
     public int initialization() {
+        // create factory
+        HandlerFactory factory = new HandlerFactory(getPlugin(), this);
+
+        // init handler
         try {
-            this.mFactory.init();
+            this.mHandler = factory.createHandler();
+            this.mHandler.onInitialization(this);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultCode.FAILED;
         }
+
+        // init background service
+        mBackgroundService = new BukkitBackgroundService(this, getHandler());
+        mBackgroundService.onStart();
+
+        // init chunk observer
+        mChunkObserver = new BukkitScheduledChunkObserver(this, getBackgroundService(), getHandler());
+        mChunkObserver.onStart();
+
+        // init light engine
+        mLightEngine = new BukkitScheduledLightEngine(this, getBackgroundService(), getHandler());
+        mLightEngine.onStart();
+
+        // init extension
+        mExtension = this;
+
         isInit = true;
         return ResultCode.SUCCESS;
     }
 
     @Override
     public void shutdown() {
-        this.mFactory.shutdown();
+        mLightEngine.onShutdown();
+        mChunkObserver.onShutdown();
+        mBackgroundService.onShutdown();
+        mHandler.onShutdown(this);
+        mHandler = null;
         isInit = false;
     }
 
@@ -121,11 +144,6 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     }
 
     @Override
-    public IComponentFactory getFactory() {
-        return mFactory;
-    }
-
-    @Override
     public ILightEngine getLightEngine() {
         return mLightEngine;
     }
@@ -137,7 +155,7 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
 
     @Override
     public IBackgroundService getBackgroundService() {
-        return mBukkitBackgroundService;
+        return mBackgroundService;
     }
 
     @Override
@@ -156,7 +174,7 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
         // handle internal codes
         switch (cmdId) {
             case InternalCode.UPDATE_BACKGROUND_SERVICE:
-                mBukkitBackgroundService = (BukkitBackgroundService) args[0];
+                mBackgroundService = (BukkitBackgroundService) args[0];
                 break;
             case InternalCode.UPDATE_LIGHT_ENGINE:
                 mLightEngine = (ILightEngine) args[0];
@@ -194,7 +212,7 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
 
     @Override
     public IHandler getHandler() {
-        return mFactory.getHandler();
+        return mHandler;
     }
 
     @Override

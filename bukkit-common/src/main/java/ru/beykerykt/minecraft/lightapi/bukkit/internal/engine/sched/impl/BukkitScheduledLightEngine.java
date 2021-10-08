@@ -30,8 +30,11 @@ import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightStrategy;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.IScheduledChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduler;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.impl.PriorityScheduler;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.impl.ScheduledLightEngine;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
@@ -39,9 +42,9 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
 
     private final IHandler mHandler;
 
-    public BukkitScheduledLightEngine(IBukkitPlatformImpl pluginImpl, IBackgroundService service, RelightStrategy strategy, IHandler handler) {
-        super(pluginImpl, service, strategy);
-        this.mHandler = handler;
+    /** @hide **/
+    public BukkitScheduledLightEngine(IBukkitPlatformImpl pluginImpl, IBackgroundService service, IHandler handler) {
+        this(pluginImpl, service, RelightStrategy.DEFERRED, handler, 250, 250);
     }
 
     public BukkitScheduledLightEngine(IBukkitPlatformImpl pluginImpl, IBackgroundService service, RelightStrategy strategy, IHandler handler, int maxRequestCount,
@@ -59,10 +62,7 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
         return (IBukkitPlatformImpl) super.getPlatformImpl();
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
+    private void configure() {
         // load config
         String relightStrategyName = getPlatformImpl().getPlugin().getConfig().getString(ConfigurationPath.GENERAL_RELIGHT_STRATEGY);
         try {
@@ -79,6 +79,18 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
                 getPlatformImpl().getPlugin().getConfig().getInt(ConfigurationPath.LIGHT_OBSERVER_MAX_TIME_MS_IN_PER_TICK);
         maxRequestCount = c_maxIterations;
         maxTimeMsPerTick = c_maxTimeMsPerTick;
+
+        // scheduler
+        // TODO: Make config (?)
+        IScheduler scheduler = new PriorityScheduler(this,
+                (IScheduledChunkObserver) getPlatformImpl().getChunkObserver(), getBackgroundService());
+        setScheduler(scheduler);
+    }
+
+    @Override
+    public void onStart() {
+        configure();
+        super.onStart();
     }
 
     @Override
