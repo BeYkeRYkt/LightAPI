@@ -111,13 +111,13 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
 
     @Override
     public void onShutdown() {
+        getPlatformImpl().info(getClass().getName() + " is shutdown!");
         getBackgroundService().removeRepeat(this);
         lightQueue.clear();
         lightQueue = null;
         relightQueue.clear();
         relightQueue = null;
         mPlatformImpl = null;
-        getPlatformImpl().info(getClass().getName() + " is shutdown!");
     }
 
     @Override
