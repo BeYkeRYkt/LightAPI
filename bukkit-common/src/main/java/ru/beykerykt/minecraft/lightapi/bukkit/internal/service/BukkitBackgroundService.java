@@ -24,7 +24,7 @@
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.service;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
+import org.bukkit.configuration.file.FileConfiguration;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
@@ -36,6 +36,13 @@ import java.util.Queue;
 import java.util.concurrent.*;
 
 public class BukkitBackgroundService implements IBackgroundService, Runnable {
+    /**
+     * CONFIG
+     **/
+    private final String CONFIG_TITLE = getClass().getSimpleName();
+    private final String CONFIG_TICK_DELAY = CONFIG_TITLE + ".tick-period";
+    private final String CONFIG_CORE_POOL_SIZE = CONFIG_TITLE + ".corePoolSize";
+
     private long maxAliveTimePerTick = 50;
     private long maxTimePerTick = 50;
     private int taskId = -1;
@@ -54,7 +61,7 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
         this.mHandler = handler;
     }
 
-    private IBukkitPlatformImpl getInternal() {
+    private IBukkitPlatformImpl getPlatformImpl() {
         return mInternal;
     }
 
@@ -62,32 +69,52 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
         return mHandler;
     }
 
+    private void checkAndSetDefaults() {
+        boolean needSave = false;
+        FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
+        if (fc.getString(CONFIG_TICK_DELAY) == null) {
+            fc.set(CONFIG_TICK_DELAY, 1);
+            needSave = true;
+        }
+        if (fc.getString(CONFIG_CORE_POOL_SIZE) == null) {
+            fc.set(CONFIG_CORE_POOL_SIZE, 1);
+            needSave = true;
+        }
+
+        if (needSave) {
+            getPlatformImpl().getPlugin().saveConfig();
+        }
+    }
+
     @Override
     public void onStart() {
+        checkAndSetDefaults();
+
         // executor service
         ThreadFactory namedThreadFactory =
                 new ThreadFactoryBuilder().setNameFormat("lightapi-background-thread-%d").build();
-        this.corePoolSize =
-                getInternal().getPlugin().getConfig().getInt(ConfigurationPath.BACKGROUND_SERVICE_CORE_POOL_SIZE);
+        FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
+        this.corePoolSize = fc.getInt(CONFIG_CORE_POOL_SIZE);
         this.executorService = Executors.newScheduledThreadPool(this.corePoolSize, namedThreadFactory);
 
-        int period = getInternal().getPlugin().getConfig().getInt(ConfigurationPath.BACKGROUND_SERVICE_TICK_DELAY);
+        int period = fc.getInt(CONFIG_TICK_DELAY);
         sch = scheduleWithFixedDelay(this, 0, 50 * period, TimeUnit.MILLISECONDS);
 
         maxAliveTimePerTick = 50 * period;
         maxTimePerTick = 50 * period;
 
         taskId =
-                getInternal().getPlugin().getServer().getScheduler().runTaskTimer(getInternal().getPlugin(), () -> {
+                getPlatformImpl().getPlugin().getServer().getScheduler().runTaskTimer(getPlatformImpl().getPlugin(), () -> {
                     lastAliveTime = System.currentTimeMillis();
                     isServerThrottled = false;
                 }, 0, 1).getTaskId();
+        getPlatformImpl().debug("Background service is started! TaskID=" + taskId);
     }
 
     @Override
     public void onShutdown() {
         if (taskId != -1) {
-            getInternal().getPlugin().getServer().getScheduler().cancelTask(taskId);
+            getPlatformImpl().getPlugin().getServer().getScheduler().cancelTask(taskId);
         }
         if (sch != null) {
             this.sch.cancel(false);
@@ -115,7 +142,7 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
     @Override
     public void executeAsync(Runnable runnable) {
         // TODO: ???
-        getInternal().getPlugin().getServer().getScheduler().runTaskAsynchronously(getInternal().getPlugin(), runnable);
+        getPlatformImpl().getPlugin().getServer().getScheduler().runTaskAsynchronously(getPlatformImpl().getPlugin(), runnable);
     }
 
     @Override
@@ -154,7 +181,7 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
             while ((request = QUEUE.poll()) != null) {
                 long time = System.currentTimeMillis() - startTime;
                 if (time > maxTimePerTick) {
-                    getInternal().debug("handleQueueLocked: maxTimePerTick (" + time + " ms)");
+                    getPlatformImpl().debug("handleQueueLocked: maxTimePerTick (" + time + " ms)");
                     isServerThrottled = true;
                     break;
                 }

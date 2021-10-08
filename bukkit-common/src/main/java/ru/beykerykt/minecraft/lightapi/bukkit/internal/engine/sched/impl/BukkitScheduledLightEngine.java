@@ -25,7 +25,7 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
+import org.bukkit.configuration.file.FileConfiguration;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
@@ -40,9 +40,19 @@ import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundServic
 
 public class BukkitScheduledLightEngine extends ScheduledLightEngine {
 
+    /**
+     * CONFIG
+     **/
+    private final String CONFIG_TITLE = getClass().getSimpleName();
+    private final String CONFIG_RELIGHT_STRATEGY = CONFIG_TITLE + ".relight-strategy";
+    private final String CONFIG_MAX_TIME_MS_IN_PER_TICK = CONFIG_TITLE + ".max-time-ms-in-per-tick";
+    private final String CONFIG_MAX_ITERATIONS_IN_PER_TICK = CONFIG_TITLE + ".max-iterations-in-per-tick";
+
     private final IHandler mHandler;
 
-    /** @hide **/
+    /**
+     * @hide
+     **/
     public BukkitScheduledLightEngine(IBukkitPlatformImpl pluginImpl, IBackgroundService service, IHandler handler) {
         this(pluginImpl, service, RelightStrategy.DEFERRED, handler, 250, 250);
     }
@@ -62,9 +72,32 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
         return (IBukkitPlatformImpl) super.getPlatformImpl();
     }
 
+    private void checkAndSetDefaults() {
+        boolean needSave = false;
+        FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
+        if (fc.getString(CONFIG_RELIGHT_STRATEGY) == null) {
+            fc.set(CONFIG_RELIGHT_STRATEGY, RelightStrategy.DEFERRED.name());
+            needSave = true;
+        }
+        if (fc.getString(CONFIG_MAX_TIME_MS_IN_PER_TICK) == null) {
+            fc.set(CONFIG_MAX_TIME_MS_IN_PER_TICK, 50);
+            needSave = true;
+        }
+        if (fc.getString(CONFIG_MAX_ITERATIONS_IN_PER_TICK) == null) {
+            fc.set(CONFIG_MAX_ITERATIONS_IN_PER_TICK, 256);
+            needSave = true;
+        }
+
+        if (needSave) {
+            getPlatformImpl().getPlugin().saveConfig();
+        }
+    }
+
     private void configure() {
+        checkAndSetDefaults();
         // load config
-        String relightStrategyName = getPlatformImpl().getPlugin().getConfig().getString(ConfigurationPath.GENERAL_RELIGHT_STRATEGY);
+        FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
+        String relightStrategyName = fc.getString(CONFIG_RELIGHT_STRATEGY);
         try {
             // TODO: move to throw exception
             RelightStrategy relightStrategy = RelightStrategy.valueOf(relightStrategyName);
@@ -73,10 +106,8 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
             ex.printStackTrace();
         }
 
-        int c_maxIterations =
-                getPlatformImpl().getPlugin().getConfig().getInt(ConfigurationPath.LIGHT_OBSERVER_MAX_ITERATIONS_IN_PER_TICK);
-        int c_maxTimeMsPerTick =
-                getPlatformImpl().getPlugin().getConfig().getInt(ConfigurationPath.LIGHT_OBSERVER_MAX_TIME_MS_IN_PER_TICK);
+        int c_maxIterations = fc.getInt(CONFIG_MAX_ITERATIONS_IN_PER_TICK);
+        int c_maxTimeMsPerTick = fc.getInt(CONFIG_MAX_TIME_MS_IN_PER_TICK);
         maxRequestCount = c_maxIterations;
         maxTimeMsPerTick = c_maxTimeMsPerTick;
 

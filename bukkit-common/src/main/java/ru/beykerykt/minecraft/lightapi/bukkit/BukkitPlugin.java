@@ -142,14 +142,8 @@ public class BukkitPlugin extends JavaPlugin {
         if (!file.exists()) {
             fc.set(ConfigurationPath.GENERAL_VERSION, mConfigVersion);
             fc.set(ConfigurationPath.GENERAL_DEBUG, true);
-            fc.set(ConfigurationPath.GENERAL_RELIGHT_STRATEGY, "DEFERRED");
             fc.set(ConfigurationPath.GENERAL_SPECIFIC_HANDLER, "none");
             fc.set(ConfigurationPath.GENERAL_SPECIFIC_STORAGE_PROVIDER, "none");
-            fc.set(ConfigurationPath.BACKGROUND_SERVICE_TICK_DELAY, 1);
-            fc.set(ConfigurationPath.BACKGROUND_SERVICE_CORE_POOL_SIZE, 1);
-            //fc.set(ConfigurationPath.CHUNK_OBSERVER_MERGE_CHUNK_SECTIONS, true);
-            fc.set(ConfigurationPath.LIGHT_OBSERVER_MAX_TIME_MS_IN_PER_TICK, 50);
-            fc.set(ConfigurationPath.LIGHT_OBSERVER_MAX_ITERATIONS_IN_PER_TICK, 256);
             saveConfig();
         }
     }
