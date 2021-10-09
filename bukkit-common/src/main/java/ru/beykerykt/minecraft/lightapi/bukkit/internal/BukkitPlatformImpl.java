@@ -128,15 +128,14 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     @Override
     public void debug(String msg) {
         if (DEBUG) {
-            info(ChatColor.YELLOW + "[DEBUG] " + msg);
+            log(ChatColor.YELLOW + "[DEBUG] " + msg);
         }
     }
 
     @Override
     public void error(String msg) {
-        info(ChatColor.RED + "[ERROR] " + msg);
+        log(ChatColor.RED + "[ERROR] " + msg);
     }
-
 
     @Override
     public PlatformType getPlatformType() {
