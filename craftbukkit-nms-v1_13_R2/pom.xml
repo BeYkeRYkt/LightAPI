@@ -8,15 +8,15 @@
         <artifactId>lightapi-parent</artifactId>
         <version>5.0.0</version>
     </parent>
-    <artifactId>lightapi-bukkit-nms-v1_13_R2</artifactId>
+    <artifactId>lightapi-craftbukkit-nms-v1_13_R2</artifactId>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
-        <!-- Bukkit common LightAPI -->
+        <!-- Common CraftBukkit LightAPI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>lightapi-bukkit-common</artifactId>
+            <artifactId>lightapi-craftbukkit-common</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>provided</scope>

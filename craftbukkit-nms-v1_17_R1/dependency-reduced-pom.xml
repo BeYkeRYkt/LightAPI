@@ -6,7 +6,7 @@
     <version>5.0.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>lightapi-bukkit-nms-v1_17_R1</artifactId>
+  <artifactId>lightapi-craftbukkit-nms-v1_17_R1</artifactId>
   <build>
     <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
     <defaultGoal>clean package install</defaultGoal>
@@ -40,12 +40,12 @@
   <dependencies>
     <dependency>
       <groupId>ru.beykerykt.minecraft</groupId>
-      <artifactId>lightapi-bukkit-common</artifactId>
+      <artifactId>lightapi-craftbukkit-common</artifactId>
       <version>5.0.0</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
-          <artifactId>lightapi-common</artifactId>
+          <artifactId>lightapi-bukkit-common</artifactId>
           <groupId>ru.beykerykt.minecraft</groupId>
         </exclusion>
       </exclusions>

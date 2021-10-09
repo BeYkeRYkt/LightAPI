@@ -25,15 +25,17 @@
         <!-- Bukkit -->
         <module>bukkit-common</module>
         <module>bukkit-example</module>
-        <module>bukkit-nms-v1_13_R2</module>
-        <module>bukkit-nms-v1_14_R1</module>
-        <module>bukkit-nms-v1_15_R1</module>
-        <module>bukkit-nms-v1_16_R1</module>
-        <module>bukkit-nms-v1_16_R2</module>
-        <module>bukkit-nms-v1_16_R3</module>
-        <module>bukkit-nms-v1_17_R1</module>
         <module>bukkit-nms-all</module>
         <module>bukkit-backward-support</module>
+        <!-- CraftBukkit -->
+        <module>craftbukkit-common</module>
+        <module>craftbukkit-nms-v1_13_R2</module>
+        <module>craftbukkit-nms-v1_14_R1</module>
+        <module>craftbukkit-nms-v1_15_R1</module>
+        <module>craftbukkit-nms-v1_16_R1</module>
+        <module>craftbukkit-nms-v1_16_R2</module>
+        <module>craftbukkit-nms-v1_16_R3</module>
+        <module>craftbukkit-nms-v1_17_R1</module>
         <!-- Sponge (Temporarily disable) -->
         <!-- <module>sponge-common</module>
         <module>sponge-mcp-v1_12_R1</module>

@@ -23,14 +23,16 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.FileConfiguration;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.sched.observer.impl.BukkitScheduledChunkObserver;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched.impl.BukkitScheduledLightEngine;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.HandlerFactory;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandlerFactory;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BukkitBackgroundService;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
@@ -56,26 +58,74 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     private IExtension mExtension;
     private UUID mUUID;
 
+    private static final String DEFAULT_IMPL_NAME = "craftbukkit";
+
     public BukkitPlatformImpl(BukkitPlugin plugin) {
         this.mPlugin = plugin;
+    }
+
+    private FileConfiguration getConfig() {
+        return getPlugin().getConfig();
+    }
+
+    private void checkAndSetDefaults() {
+        boolean needSave = false;
+        if (getConfig().getString("handler.specific-handler-path") == null) {
+            getConfig().set("handler.specific-handler-path", "none");
+            needSave = true;
+        }
+        if (getConfig().getString("handler." + DEFAULT_IMPL_NAME + ".factory-path") == null) {
+            getConfig().set("handler." + DEFAULT_IMPL_NAME + ".factory-path",
+                    "ru.beykerykt.minecraft.lightapi.bukkit.internal.handler." + DEFAULT_IMPL_NAME + ".HandlerFactory");
+            needSave = true;
+        }
+        if (needSave) {
+            getPlugin().saveConfig();
+        }
+    }
+
+    private void initHandler() throws Exception {
+        checkAndSetDefaults();
+        // load specific handler if available
+        String specificPkg = getConfig().getString("handler.specific-handler-path");
+        if (specificPkg != null && !specificPkg.equalsIgnoreCase("none")) {
+            info("Initial load specific handler");
+            mHandler = (IHandler) Class.forName(specificPkg).getConstructor().newInstance();
+            info("Custom handler is loaded: " + mHandler.getClass().getName());
+            return;
+        }
+
+        // First, check Bukkit server implementation, since Bukkit is only an API, and there
+        // may be several implementations (for example: Spigot, Paper, Glowstone and etc)
+        String implName = Bukkit.getName().toLowerCase();
+        debug("Server implementation name: " + implName);
+
+        String modFactoryPath = getConfig().getString("handler." + implName + ".factory-path");
+        try {
+            Class.forName(modFactoryPath);
+        } catch (Exception ex) {
+            debug("Specific HandlerFactory for " + implName + " is not detected. Switch to default: " + DEFAULT_IMPL_NAME);
+            implName = DEFAULT_IMPL_NAME;
+            modFactoryPath = getConfig().getString("handler." + implName + ".factory-path");
+        }
+        IHandlerFactory factory = (IHandlerFactory) Class.forName(modFactoryPath).getConstructor().newInstance();
+        mHandler = factory.createHandler();
+        debug("Handler is loaded: " + mHandler.getClass().getName());
     }
 
     @Override
     public int prepare() {
         // debug mode
-        this.DEBUG = mPlugin.getConfig().getBoolean(ConfigurationPath.GENERAL_DEBUG);
+        this.DEBUG = getConfig().getBoolean(ConfigurationPath.GENERAL_DEBUG);
         return ResultCode.SUCCESS;
     }
 
     @Override
     public int initialization() {
-        // create factory
-        HandlerFactory factory = new HandlerFactory(getPlugin(), this);
-
         // init handler
         try {
-            this.mHandler = factory.createHandler();
-            this.mHandler.onInitialization(this);
+            initHandler();
+            mHandler.onInitialization(this);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultCode.FAILED;

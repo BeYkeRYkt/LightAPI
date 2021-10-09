@@ -23,7 +23,7 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-        <!-- Bukkit common LightAPI -->
+        <!-- Common Bukkit LightAPI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>lightapi-bukkit-common</artifactId>
@@ -31,58 +31,66 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-        <!-- Bukkit NMS v1_13_R2 LightAPI -->
+        <!-- Common CraftBukkit LightAPI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>lightapi-bukkit-nms-v1_13_R2</artifactId>
+            <artifactId>lightapi-craftbukkit-common</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-        <!-- Bukkit NMS v1_14_R1 LightAPI -->
+        <!-- CraftBukkit NMS v1_13_R2 LightAPI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>lightapi-bukkit-nms-v1_14_R1</artifactId>
+            <artifactId>lightapi-craftbukkit-nms-v1_13_R2</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-        <!-- Bukkit NMS v1_15_R1 LightAPI -->
+        <!-- CraftBukkit NMS v1_14_R1 LightAPI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>lightapi-bukkit-nms-v1_15_R1</artifactId>
+            <artifactId>lightapi-craftbukkit-nms-v1_14_R1</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-        <!-- Bukkit NMS v1_16_R1 LightAPI -->
+        <!-- CraftBukkit NMS v1_15_R1 LightAPI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>lightapi-bukkit-nms-v1_16_R1</artifactId>
+            <artifactId>lightapi-craftbukkit-nms-v1_15_R1</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-        <!-- Bukkit NMS v1_16_R2 LightAPI -->
+        <!-- CraftBukkit NMS v1_16_R1 LightAPI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>lightapi-bukkit-nms-v1_16_R2</artifactId>
+            <artifactId>lightapi-craftbukkit-nms-v1_16_R1</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-        <!-- Bukkit NMS v1_16_R3 LightAPI -->
+        <!-- CraftBukkit NMS v1_16_R2 LightAPI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>lightapi-bukkit-nms-v1_16_R3</artifactId>
+            <artifactId>lightapi-craftbukkit-nms-v1_16_R2</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-        <!-- Bukkit NMS v1_17_R1 LightAPI -->
+        <!-- CraftBukkit NMS v1_16_R3 LightAPI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>lightapi-bukkit-nms-v1_17_R1</artifactId>
+            <artifactId>lightapi-craftbukkit-nms-v1_16_R3</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <!-- CraftBukkit NMS v1_17_R1 LightAPI -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>lightapi-craftbukkit-nms-v1_17_R1</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>

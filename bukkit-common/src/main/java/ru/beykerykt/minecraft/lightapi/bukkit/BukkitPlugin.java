@@ -142,7 +142,6 @@ public class BukkitPlugin extends JavaPlugin {
         if (!file.exists()) {
             fc.set(ConfigurationPath.GENERAL_VERSION, mConfigVersion);
             fc.set(ConfigurationPath.GENERAL_DEBUG, true);
-            fc.set(ConfigurationPath.GENERAL_SPECIFIC_HANDLER, "none");
             fc.set(ConfigurationPath.GENERAL_SPECIFIC_STORAGE_PROVIDER, "none");
             saveConfig();
         }
