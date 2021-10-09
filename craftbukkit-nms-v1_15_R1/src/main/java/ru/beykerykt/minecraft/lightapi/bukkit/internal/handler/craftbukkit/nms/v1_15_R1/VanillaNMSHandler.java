@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_14_R1;
+package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_15_R1;
 
 import com.google.common.collect.Lists;
-import net.minecraft.server.v1_14_R1.*;
+import net.minecraft.server.v1_15_R1.*;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.BaseNMSHandler;
@@ -36,6 +36,7 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IntChunkData;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion;
 
 import java.lang.reflect.Field;
@@ -45,11 +46,11 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-public class NMSHandler extends BaseNMSHandler {
+public class VanillaNMSHandler extends BaseNMSHandler {
 
     private Field lightEngine_ThreadedMailbox;
     private Field lightEngineLayer_c;
-    private Method lightEngineStorage_c;
+    private Method lightEngineStorage_d;
     private Method lightEngineGraph_a;
 
     private static RuntimeException toRuntimeException(Throwable e) {
@@ -84,7 +85,7 @@ public class NMSHandler extends BaseNMSHandler {
     private void lightEngineLayer_a(LightEngineLayer<?, ?> les, BlockPosition var0, int var1) {
         try {
             LightEngineStorage<?> ls = (LightEngineStorage<?>) lightEngineLayer_c.get(les);
-            lightEngineStorage_c.invoke(ls);
+            lightEngineStorage_d.invoke(ls);
             lightEngineGraph_a.invoke(les, 9223372036854775807L, var0.asLong(), 15 - var1, true);
         } catch (InvocationTargetException e) {
             throw toRuntimeException(e.getCause());
@@ -106,8 +107,8 @@ public class NMSHandler extends BaseNMSHandler {
 
             lightEngineLayer_c = LightEngineLayer.class.getDeclaredField("c");
             lightEngineLayer_c.setAccessible(true);
-            lightEngineStorage_c = LightEngineStorage.class.getDeclaredMethod("c");
-            lightEngineStorage_c.setAccessible(true);
+            lightEngineStorage_d = LightEngineStorage.class.getDeclaredMethod("d");
+            lightEngineStorage_d.setAccessible(true);
             lightEngineGraph_a = LightEngineGraph.class.getDeclaredMethod("a", long.class, long.class, int.class,
                     boolean.class);
             lightEngineGraph_a.setAccessible(true);
@@ -120,6 +121,11 @@ public class NMSHandler extends BaseNMSHandler {
     @Override
     public void onShutdown(IPlatformImpl impl) {
 
+    }
+
+    @Override
+    public LightEngineType getLightEngineType() {
+        return LightEngineType.VANILLA;
     }
 
     @Override

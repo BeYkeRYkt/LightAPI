@@ -32,21 +32,31 @@ import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandlerFactory;
 public class HandlerFactory implements IHandlerFactory {
 
     private static final String CRAFTBUKKIT_PKG = "org.bukkit.craftbukkit";
+    private static final String STARLIGHT_ENGINE_PKG = "ca.spottedleaf.starlight.light.StarLightEngine";
+
+    private boolean isStarlight() {
+        try {
+            Class.forName(STARLIGHT_ENGINE_PKG);
+            return true;
+        } catch (ClassNotFoundException e) {
+            // nothing
+        }
+        return false;
+    }
 
     @Override
     public IHandler createHandler(IBukkitPlatformImpl impl) throws Exception {
         IHandler handler = null;
         String serverImplPackage = Bukkit.getServer().getClass().getPackage().getName();
-        String extPath = "";
 
         if (serverImplPackage.startsWith(CRAFTBUKKIT_PKG)) { // make sure it's craftbukkit
             String[] line = serverImplPackage.replace(".", ",").split(",");
             String version = line[3];
-            extPath += "nms.";
+
+            String handlerClassName = (isStarlight() ? "Starlight" : "Vanilla") + "NMSHandler";
+            String handlerPath = getClass().getPackage().getName() + ".nms." + version + "." + handlerClassName;
             // start using nms handler
-            handler = (IHandler) Class
-                    .forName(getClass().getPackage().getName() + "." + extPath + version + "." + "NMSHandler")
-                    .getConstructor().newInstance();
+            handler = (IHandler) Class.forName(handlerPath).getConstructor().newInstance();
         } else { // something else
             throw new NotImplementedException(Bukkit.getName() + " is currently not supported.");
         }

@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_16_R1;
+package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_16_R2;
 
 import com.google.common.collect.Lists;
-import net.minecraft.server.v1_16_R1.*;
+import net.minecraft.server.v1_16_R2.*;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.BaseNMSHandler;
@@ -36,6 +36,7 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IntChunkData;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion;
 
 import java.lang.reflect.Field;
@@ -45,7 +46,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-public class NMSHandler extends BaseNMSHandler {
+public class VanillaNMSHandler extends BaseNMSHandler {
 
     private Field lightEngine_ThreadedMailbox;
     private Field lightEngineLayer_c;
@@ -120,6 +121,11 @@ public class NMSHandler extends BaseNMSHandler {
     @Override
     public void onShutdown(IPlatformImpl impl) {
 
+    }
+
+    @Override
+    public LightEngineType getLightEngineType() {
+        return LightEngineType.VANILLA;
     }
 
     @Override

@@ -26,24 +26,13 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 
 public abstract class BaseNMSHandler implements IHandler {
-    private static final String STARLIGHT_ENGINE_PKG = "ca.spottedleaf.starlight.light.StarLightEngine";
     private IPlatformImpl mPlatformImpl;
-    private LightEngineType engineType = LightEngineType.VANILLA;
 
     @Override
     public void onInitialization(IPlatformImpl impl) throws Exception {
         this.mPlatformImpl = impl;
-        try {
-            Class<?> starlight = Class.forName(STARLIGHT_ENGINE_PKG);
-            if (starlight != null) {
-                engineType = LightEngineType.STARLIGHT;
-            }
-        } catch (ClassNotFoundException e) {
-            // nothing
-        }
     }
 
     protected IPlatformImpl getPlatformImpl() {
@@ -53,10 +42,5 @@ public abstract class BaseNMSHandler implements IHandler {
     @Override
     public PlatformType getPlatformType() {
         return PlatformType.CRAFTBUKKIT;
-    }
-
-    @Override
-    public LightEngineType getLightEngineType() {
-        return engineType;
     }
 }

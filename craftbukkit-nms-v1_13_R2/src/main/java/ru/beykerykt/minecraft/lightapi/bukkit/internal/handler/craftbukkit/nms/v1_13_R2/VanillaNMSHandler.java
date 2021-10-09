@@ -40,11 +40,12 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.LegacyIntChunkData;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion;
 
 import java.util.List;
 
-public class NMSHandler extends BaseNMSHandler {
+public class VanillaNMSHandler extends BaseNMSHandler {
 
     private static BlockFace[] SIDES = {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
             BlockFace.WEST};
@@ -101,6 +102,11 @@ public class NMSHandler extends BaseNMSHandler {
 
     @Override
     public void onShutdown(IPlatformImpl impl) {
+    }
+
+    @Override
+    public LightEngineType getLightEngineType() {
+        return LightEngineType.VANILLA;
     }
 
     @Override

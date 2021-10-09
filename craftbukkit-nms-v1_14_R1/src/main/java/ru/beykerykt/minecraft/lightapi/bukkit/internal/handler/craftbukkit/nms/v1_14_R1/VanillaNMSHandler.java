@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_16_R3;
+package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_14_R1;
 
 import com.google.common.collect.Lists;
-import net.minecraft.server.v1_16_R3.*;
+import net.minecraft.server.v1_14_R1.*;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.BaseNMSHandler;
@@ -36,6 +36,7 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IntChunkData;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion;
 
 import java.lang.reflect.Field;
@@ -43,18 +44,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-public class NMSHandler extends BaseNMSHandler {
-    private Field threadedMailbox_State;
-    private Method threadedMailbox_DoLoopStep;
+public class VanillaNMSHandler extends BaseNMSHandler {
+
     private Field lightEngine_ThreadedMailbox;
     private Field lightEngineLayer_c;
-    private Method lightEngineStorage_d;
+    private Method lightEngineStorage_c;
     private Method lightEngineGraph_a;
-
-    private Field serverThreadQueue;
 
     private static RuntimeException toRuntimeException(Throwable e) {
         if (e instanceof RuntimeException) {
@@ -70,68 +67,16 @@ public class NMSHandler extends BaseNMSHandler {
         return (((x ^ ((-dx >> 4) & 15)) + 1) & (-(dx & 1)));
     }
 
-    // For compatibility with vanilla lighting (?)
-    private void executeInServerThread(LightEngineThreaded lightEngine, Runnable task) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
+    private void executeSync(LightEngineThreaded lightEngine, Runnable task) {
         try {
             ThreadedMailbox<Runnable> threadedMailbox = (ThreadedMailbox<Runnable>) lightEngine_ThreadedMailbox
                     .get(lightEngine);
+            CompletableFuture<Void> future = new CompletableFuture<>();
             threadedMailbox.a(() -> {
                 task.run();
                 future.complete(null);
             });
-        } catch (IllegalAccessException e) {
-            throw toRuntimeException(e);
-        }
-        future.join();
-    }
-
-    private void executeSync(LightEngineThreaded lightEngine, Runnable task) {
-        try {
-            // ##### STEP 1: Pause light engine mailbox to process its tasks. #####
-            ThreadedMailbox<Runnable> threadedMailbox = (ThreadedMailbox<Runnable>) lightEngine_ThreadedMailbox
-                    .get(lightEngine);
-            // State flags bit mask:
-            // 0x0001 - Closing flag (ThreadedMailbox is closing if non zero).
-            // 0x0002 - Busy flag (ThreadedMailbox performs a task from queue if non zero).
-            AtomicInteger stateFlags = (AtomicInteger) threadedMailbox_State.get(threadedMailbox);
-            int flags; // to hold values from stateFlags
-            long timeToWait = -1;
-            // Trying to set bit 1 in state bit mask when it is not set yet.
-            // This will break the loop in other thread where light engine mailbox processes the taks.
-            while (!stateFlags.compareAndSet(flags = stateFlags.get() & ~2, flags | 2)) {
-                if ((flags & 1) != 0) {
-                    // ThreadedMailbox is closing. The light engine mailbox may also stop processing tasks.
-                    // The light engine mailbox can be close due to server shutdown or unloading (closing) the world.
-                    // I am not sure is it unsafe to process our tasks while the world is closing is closing,
-                    // but will try it (one can throw exception here if it crashes the server).
-                    if (timeToWait == -1) {
-                        // Try to wait 3 seconds until light engine mailbox is busy.
-                        timeToWait = System.currentTimeMillis() + 3 * 1000;
-                        getPlatformImpl().debug("ThreadedMailbox is closing. Will wait...");
-                    } else if (System.currentTimeMillis() >= timeToWait) {
-                        throw new RuntimeException("Failed to enter critical section while ThreadedMailbox is closing");
-                    }
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-            }
-            try {
-                // ##### STEP 2: Safely running the task while the mailbox process is stopped. #####
-                task.run();
-            } finally {
-                // STEP 3: ##### Continue light engine mailbox to process its tasks. #####
-                // Firstly: Clearing busy flag to allow ThreadedMailbox to use it for running light engine tasks.
-                while (!stateFlags.compareAndSet(flags = stateFlags.get(), flags & ~2)) ;
-                // Secondly: IMPORTANT! The main loop of ThreadedMailbox was broken. Not completed tasks may still be
-                // in the queue. Therefore, it is important to start the loop again to process tasks from the queue.
-                // Otherwise, the main server thread may be frozen due to tasks stuck in the queue.
-                threadedMailbox_DoLoopStep.invoke(threadedMailbox);
-            }
-        } catch (InvocationTargetException e) {
-            throw toRuntimeException(e.getCause());
+            future.join();
         } catch (IllegalAccessException e) {
             throw toRuntimeException(e);
         }
@@ -140,7 +85,7 @@ public class NMSHandler extends BaseNMSHandler {
     private void lightEngineLayer_a(LightEngineLayer<?, ?> les, BlockPosition var0, int var1) {
         try {
             LightEngineStorage<?> ls = (LightEngineStorage<?>) lightEngineLayer_c.get(les);
-            lightEngineStorage_d.invoke(ls);
+            lightEngineStorage_c.invoke(ls);
             lightEngineGraph_a.invoke(les, 9223372036854775807L, var0.asLong(), 15 - var1, true);
         } catch (InvocationTargetException e) {
             throw toRuntimeException(e.getCause());
@@ -157,20 +102,13 @@ public class NMSHandler extends BaseNMSHandler {
     public void onInitialization(IPlatformImpl impl) throws Exception {
         super.onInitialization(impl);
         try {
-            serverThreadQueue = ChunkProviderServer.class.getDeclaredField("serverThreadQueue");
-            serverThreadQueue.setAccessible(true);
-
-            threadedMailbox_DoLoopStep = ThreadedMailbox.class.getDeclaredMethod("f");
-            threadedMailbox_DoLoopStep.setAccessible(true);
-            threadedMailbox_State = ThreadedMailbox.class.getDeclaredField("c");
-            threadedMailbox_State.setAccessible(true);
             lightEngine_ThreadedMailbox = LightEngineThreaded.class.getDeclaredField("b");
             lightEngine_ThreadedMailbox.setAccessible(true);
 
             lightEngineLayer_c = LightEngineLayer.class.getDeclaredField("c");
             lightEngineLayer_c.setAccessible(true);
-            lightEngineStorage_d = LightEngineStorage.class.getDeclaredMethod("d");
-            lightEngineStorage_d.setAccessible(true);
+            lightEngineStorage_c = LightEngineStorage.class.getDeclaredMethod("c");
+            lightEngineStorage_c.setAccessible(true);
             lightEngineGraph_a = LightEngineGraph.class.getDeclaredMethod("a", long.class, long.class, int.class,
                     boolean.class);
             lightEngineGraph_a.setAccessible(true);
@@ -182,6 +120,12 @@ public class NMSHandler extends BaseNMSHandler {
 
     @Override
     public void onShutdown(IPlatformImpl impl) {
+
+    }
+
+    @Override
+    public LightEngineType getLightEngineType() {
+        return LightEngineType.VANILLA;
     }
 
     @Override
@@ -293,8 +237,8 @@ public class NMSHandler extends BaseNMSHandler {
         }
 
         executeSync(lightEngine, () -> {
-            if (((flags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING)
-                    && ((flags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING)) {
+            if ((flags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING
+                    && (flags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
                 if (isLightingSupported(world, LightType.SKY_LIGHTING) && isLightingSupported(world,
                         LightType.BLOCK_LIGHTING)) {
                     LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
@@ -445,7 +389,7 @@ public class NMSHandler extends BaseNMSHandler {
         // y=-16 to y=-1) and the highest bit for chunk section 16 (above the world,
         // y=256 to y=271).
         PacketPlayOutLightUpdate packet = new PacketPlayOutLightUpdate(chunk.getPos(), chunk.e(),
-                sectionMaskSky, sectionMaskBlock, true);
+                sectionMaskSky, sectionMaskBlock);
         stream.forEach(e -> e.playerConnection.sendPacket(packet));
         return ResultCode.SUCCESS;
     }
