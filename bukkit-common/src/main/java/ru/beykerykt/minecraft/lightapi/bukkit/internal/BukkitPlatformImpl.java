@@ -109,7 +109,7 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
             modFactoryPath = getConfig().getString("handler." + implName + ".factory-path");
         }
         IHandlerFactory factory = (IHandlerFactory) Class.forName(modFactoryPath).getConstructor().newInstance();
-        mHandler = factory.createHandler();
+        mHandler = factory.createHandler(this);
         debug("Handler is loaded: " + mHandler.getClass().getName());
     }
 

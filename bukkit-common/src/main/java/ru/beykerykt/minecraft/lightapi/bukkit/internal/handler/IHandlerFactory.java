@@ -23,10 +23,11 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler;
 
-public interface IHandlerFactory {
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
 
+public interface IHandlerFactory {
     /**
      * N/A
      */
-    IHandler createHandler() throws Exception;
+    IHandler createHandler(IBukkitPlatformImpl impl) throws Exception;
 }
