@@ -42,6 +42,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.LegacyIntChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion;
+import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 import java.util.List;
 
@@ -134,10 +135,10 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     @Override
     public boolean isLightingSupported(World world, int lightFlags) {
-        if ((lightFlags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+        if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
             WorldServer worldServer = ((CraftWorld) world).getHandle();
             return worldServer.worldProvider.g();
-        } else if ((lightFlags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
+        } else if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
             return true;
         }
         return false;
@@ -149,12 +150,12 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
         if (finalLightLevel == 0) {
             BlockPosition adjacentPosition = new BlockPosition(blockX, blockY, blockZ);
-            if ((lightFlags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
+            if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
                 if (isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
                     worldServer.c(EnumSkyBlock.BLOCK, adjacentPosition);
                 }
             }
-            if ((lightFlags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+            if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
                 if (isLightingSupported(world, LightType.SKY_LIGHTING)) {
                     worldServer.c(EnumSkyBlock.SKY, adjacentPosition);
                 }
@@ -162,12 +163,12 @@ public class VanillaNMSHandler extends BaseNMSHandler {
             return ResultCode.SUCCESS;
         }
         BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
-        if ((lightFlags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
+        if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
             if (isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
                 worldServer.a(EnumSkyBlock.BLOCK, position, finalLightLevel);
             }
         }
-        if ((lightFlags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+        if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
             if (isLightingSupported(world, LightType.SKY_LIGHTING)) {
                 worldServer.a(EnumSkyBlock.SKY, position, finalLightLevel);
             }
@@ -180,12 +181,12 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
         int lightlevel = -1;
-        if ((lightFlags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING
-                && (lightFlags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+        if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)
+                && FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
             lightlevel = worldServer.getLightLevel(position);
-        } else if ((lightFlags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
+        } else if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
             lightlevel = worldServer.getBrightness(EnumSkyBlock.BLOCK, position);
-        } else if ((lightFlags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+        } else if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
             lightlevel = worldServer.getBrightness(EnumSkyBlock.SKY, position);
         }
         return lightlevel;
@@ -201,12 +202,12 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         int az = adjacent.getZ();
 
         BlockPosition adjacentPosition = new BlockPosition(ax, ay, az);
-        if ((lightFlags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
+        if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
             if (isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
                 worldServer.c(EnumSkyBlock.BLOCK, adjacentPosition);
             }
         }
-        if ((lightFlags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+        if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
             if (isLightingSupported(world, LightType.SKY_LIGHTING)) {
                 worldServer.c(EnumSkyBlock.SKY, adjacentPosition);
             }
@@ -251,12 +252,12 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                                 if (isValidChunkSection(sectionY)) {
                                     isFilled = true;
                                     // block lighting
-                                    if ((lightFlags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
+                                    if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
                                         sectionMaskBlock |= asSectionMask(sectionY);
                                     }
 
                                     // sky lighting
-                                    if ((lightFlags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+                                    if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
                                         sectionMaskSky |= asSectionMask(sectionY);
                                     }
                                 }

@@ -42,6 +42,7 @@ import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
+import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -177,9 +178,9 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
     public boolean isLightingSupported(World world, int lightFlags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
-        if ((lightFlags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+        if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
             return lightEngine.a(EnumSkyBlock.a) != null;
-        } else if ((lightFlags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
+        } else if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
             return lightEngine.a(EnumSkyBlock.b) != null;
         }
         return false;
@@ -194,7 +195,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
 
         executeSync(lightEngine, () -> {
             // block lighting
-            if ((flags & LightType.BLOCK_LIGHTING) == LightType.BLOCK_LIGHTING) {
+            if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING)) {
                 if (isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
                     LightEngineLayerEventListener lele = lightEngine.a(EnumSkyBlock.b);
                     if (finalLightLevel == 0) {
@@ -224,7 +225,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
             }
 
             // sky lighting
-            if ((flags & LightType.SKY_LIGHTING) == LightType.SKY_LIGHTING) {
+            if (FlagUtils.isFlagSet(flags, LightType.SKY_LIGHTING)) {
                 if (isLightingSupported(world, LightType.SKY_LIGHTING)) {
                     LightEngineLayerEventListener lele = lightEngine.a(EnumSkyBlock.a);
                     if (finalLightLevel == 0) {
