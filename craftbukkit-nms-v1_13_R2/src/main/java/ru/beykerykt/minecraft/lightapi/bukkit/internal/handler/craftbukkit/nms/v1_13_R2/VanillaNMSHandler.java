@@ -148,6 +148,11 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     public int setRawLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
+
+        if (!worldServer.getChunkProvider().isLoaded(blockX >> 4, blockZ >> 4)) {
+            return ResultCode.CHUNK_NOT_LOADED;
+        }
+
         if (finalLightLevel == 0) {
             BlockPosition adjacentPosition = new BlockPosition(blockX, blockY, blockZ);
             if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
@@ -195,6 +200,10 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     @Override
     public int recalculateLighting(World world, int blockX, int blockY, int blockZ, int lightFlags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
+
+        if (!worldServer.getChunkProvider().isLoaded(blockX >> 4, blockZ >> 4)) {
+            return ResultCode.CHUNK_NOT_LOADED;
+        }
 
         Block adjacent = getAdjacentAirBlock(world.getBlockAt(blockX, blockY, blockZ));
         int ax = adjacent.getX();

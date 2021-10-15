@@ -173,6 +173,10 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
         final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
+        if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
+            return ResultCode.CHUNK_NOT_LOADED;
+        }
+
         executeSync(lightEngine, () -> {
             // block lighting
             if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING)) {
@@ -231,6 +235,10 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     public int recalculateLighting(World world, int blockX, int blockY, int blockZ, int flags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
+
+        if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
+            return ResultCode.CHUNK_NOT_LOADED;
+        }
 
         // Do not recalculate if no changes!
         if (!lightEngine.a()) {

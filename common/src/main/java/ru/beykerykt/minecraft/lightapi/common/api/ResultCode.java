@@ -72,4 +72,9 @@ public class ResultCode {
      * Current function is not implemented
      */
     public static final int NOT_IMPLEMENTED = -7;
+
+    /**
+     * Chunk is not loaded
+     */
+    public static final int CHUNK_NOT_LOADED = -8;
 }
