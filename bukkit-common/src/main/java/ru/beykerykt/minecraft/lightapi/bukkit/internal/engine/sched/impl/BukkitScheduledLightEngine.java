@@ -48,6 +48,8 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     private final String CONFIG_MAX_TIME_MS_IN_PER_TICK = CONFIG_TITLE + ".max-time-ms-in-per-tick";
     private final String CONFIG_MAX_ITERATIONS_IN_PER_TICK = CONFIG_TITLE + ".max-iterations-in-per-tick";
 
+    private int mTaskId = -1;
+
     private final IHandler mHandler;
 
     /**
@@ -111,6 +113,10 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
         maxRequestCount = c_maxIterations;
         maxTimeMsPerTick = c_maxTimeMsPerTick;
 
+        this.mTaskId = getPlatformImpl().getPlugin().getServer().getScheduler().runTaskTimer(getPlatformImpl().getPlugin(), () -> {
+            onTickPenaltyTime();
+        }, 0, 1).getTaskId();
+
         // scheduler
         // TODO: Make config (?)
         IScheduler scheduler = new PriorityScheduler(this,
@@ -122,6 +128,14 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     public void onStart() {
         configure();
         super.onStart();
+    }
+
+    @Override
+    public void onShutdown() {
+        if (mTaskId != -1) {
+            getPlatformImpl().getPlugin().getServer().getScheduler().cancelTask(mTaskId);
+        }
+        super.onShutdown();
     }
 
     @Override

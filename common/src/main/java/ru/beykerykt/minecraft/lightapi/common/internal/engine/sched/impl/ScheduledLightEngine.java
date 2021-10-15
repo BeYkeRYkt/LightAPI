@@ -61,6 +61,8 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
             new PriorityBlockingQueue<>(10, (o1, o2) -> o2.getPriority() - o1.getPriority());
     private Queue<Request> relightQueue = new PriorityBlockingQueue<>(10,
             (o1, o2) -> o2.getPriority() - o1.getPriority());
+    private long penaltyTime = 0;
+    private long TICK_MS = 50;
 
     public ScheduledLightEngine(IPlatformImpl pluginImpl, IBackgroundService service, RelightStrategy strategy) {
         this(pluginImpl, service, strategy, 250, 50); // with default params
@@ -98,7 +100,7 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     }
 
     protected boolean canExecuteSync() {
-        return getBackgroundService().canExecuteSync();
+        return getBackgroundService().canExecuteSync() && (penaltyTime < maxTimeMsPerTick);
     }
 
     @Override
@@ -140,7 +142,10 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
             case IMMEDIATE: {
                 if (canExecuteSync()) {
                     // Execute the request only if we can provide it
+                    long startTime = System.currentTimeMillis();
                     handleRequest(request);
+                    long time = System.currentTimeMillis() - startTime;
+                    penaltyTime += time;
                 } else {
                     // add request to queue
                     int code = notifyChangeLightLevel(request);
@@ -291,6 +296,14 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
 
         synchronized (relightQueue) {
             handleRelightQueueLocked();
+        }
+    }
+
+    protected void onTickPenaltyTime() {
+        if (penaltyTime > 0) {
+            penaltyTime -= TICK_MS;
+        } else if (penaltyTime < 0) {
+            penaltyTime = 0;
         }
     }
 }
