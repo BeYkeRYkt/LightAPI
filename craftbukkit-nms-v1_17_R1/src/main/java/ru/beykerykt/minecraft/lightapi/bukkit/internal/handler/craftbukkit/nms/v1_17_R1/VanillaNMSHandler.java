@@ -145,7 +145,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         }
     }
 
-    private IChunkData createChunkData(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
+    private IChunkData createBitChunkData(String worldName, int chunkX, int chunkZ) {
         World world = Bukkit.getWorld(worldName);
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
@@ -369,7 +369,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     @Override
     public IChunkData createChunkData(String worldName, int chunkX, int chunkZ) {
-        return createChunkData(worldName, chunkX, chunkZ, 0, 0);
+        return createBitChunkData(worldName, chunkX, chunkZ);
     }
 
     private IChunkData searchChunkDataFromList(List<IChunkData> list, World world, int chunkX, int chunkZ) {
@@ -385,18 +385,12 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     @Override
     public List<IChunkData> collectChunkSections(World world, int blockX, int blockY, int blockZ, int lightLevel,
-                                                 int lightType) {
+                                                 int lightFlags) {
         List<IChunkData> list = Lists.newArrayList();
-        int finalLightLevel = lightLevel;
+        int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
         if (world == null) {
             return list;
-        }
-
-        if (lightLevel < 0) {
-            finalLightLevel = 0;
-        } else if (lightLevel > 15) {
-            finalLightLevel = 15;
         }
 
         for (int dX = -1; dX <= 1; dX++) {
@@ -416,7 +410,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                                     if (!list.contains(data)) {
                                         list.add(data);
                                     }
-                                    data.markSectionForUpdate(lightType, sectionY);
+                                    data.markSectionForUpdate(lightFlags, sectionY);
                                 }
                             }
                         }

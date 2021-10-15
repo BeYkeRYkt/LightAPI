@@ -95,7 +95,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         }
     }
 
-    private IChunkData createChunkData(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
+    private IChunkData createIntChunkData(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
         return new IntChunkData(worldName, chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
     }
 
@@ -302,23 +302,28 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     @Override
     public IChunkData createChunkData(String worldName, int chunkX, int chunkZ) {
-        return createChunkData(worldName, chunkX, chunkZ, 0, 0);
+        return createIntChunkData(worldName, chunkX, chunkZ, 0, 0);
+    }
+
+    private IChunkData searchChunkDataFromList(List<IChunkData> list, World world, int chunkX, int chunkZ) {
+        for (int i = 0; i < list.size(); i++) {
+            IChunkData data = list.get(i);
+            if (data.getWorldName().equals(world.getName()) && data.getChunkX() == chunkX
+                    && data.getChunkZ() == chunkZ) {
+                return data;
+            }
+        }
+        return createChunkData(world.getName(), chunkX, chunkZ);
     }
 
     @Override
     public List<IChunkData> collectChunkSections(World world, int blockX, int blockY, int blockZ, int lightLevel,
-                                                 int lightType) {
+                                                 int lightFlags) {
         List<IChunkData> list = Lists.newArrayList();
-        int finalLightLevel = lightLevel;
+        int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
         if (world == null) {
             return list;
-        }
-
-        if (lightLevel < 0) {
-            finalLightLevel = 0;
-        } else if (lightLevel > 15) {
-            finalLightLevel = 15;
         }
 
         for (int dX = -1; dX <= 1; dX++) {
@@ -327,35 +332,19 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                 for (int dZ = -1; dZ <= 1; dZ++) {
                     int lightLevelZ = lightLevelX - getDeltaLight(blockZ & 15, dZ);
                     if (lightLevelZ > 0) {
-                        int chunkX = blockX >> 4;
-                        int chunkZ = blockZ >> 4;
-                        int sectionMaskSky = 0;
-                        int sectionMaskBlock = 0;
-                        boolean isFilled = false;
                         for (int dY = -1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
                                 if (isValidChunkSection(sectionY)) {
-                                    isFilled = true;
-                                    // block lighting
-                                    if (FlagUtils.isFlagSet(lightType, LightType.BLOCK_LIGHTING)) {
-                                        sectionMaskBlock |= asSectionMask(sectionY);
-                                    }
+                                    int chunkX = (blockX >> 4) + dX;
+                                    int chunkZ = (blockZ >> 4) + dZ;
 
-                                    // sky lighting
-                                    if (FlagUtils.isFlagSet(lightType, LightType.SKY_LIGHTING)) {
-                                        sectionMaskSky |= asSectionMask(sectionY);
+                                    IChunkData data = searchChunkDataFromList(list, world, chunkX, chunkZ);
+                                    if (!list.contains(data)) {
+                                        list.add(data);
                                     }
+                                    data.markSectionForUpdate(lightFlags, sectionY);
                                 }
-                            }
-                        }
-
-                        // don't add null section mask
-                        if (isFilled) {
-                            IChunkData chunkData = createChunkData(world.getName(), chunkX + dX, chunkZ + dZ,
-                                    sectionMaskSky, sectionMaskBlock);
-                            if (!list.contains(chunkData)) {
-                                list.add(chunkData);
                             }
                         }
                     }
