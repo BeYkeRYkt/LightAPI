@@ -31,16 +31,21 @@ import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 public class Build {
 
     /**
+     * ONLY FOR PREVIEW BUILD
+     */
+    public static final int PREVIEW = 0;
+
+    /**
      * Public version for users. May change during any changes in the API. The string should
      * change when common 'api' package is changed.
      */
-    public static final int API_VERSION = 1;
+    public static final int API_VERSION = PREVIEW;
 
     /**
      * Internal version. May change during any changes in the API. The string should
      * change when common 'internal' package is changed.
      */
-    public static final int INTERNAL_VERSION = 1;
+    public static final int INTERNAL_VERSION = PREVIEW;
 
     @Deprecated
     public static final int CURRENT_VERSION = API_VERSION;
