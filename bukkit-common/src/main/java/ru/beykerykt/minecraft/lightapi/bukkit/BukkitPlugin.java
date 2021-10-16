@@ -107,18 +107,6 @@ public class BukkitPlugin extends JavaPlugin {
         getInternal().info("Metrics is " + (enableMetrics ? "en" : "dis") + "abled!");
     }
 
-    public List<String> getAuthors() {
-        List<String> list = new ArrayList<>(getDescription().getAuthors());
-        /*
-        for (int i = 0; i < getPlatformImpl().getHandler().getAuthors().size(); i++) {
-            String name = getPlatformImpl().getHandler().getAuthors().get(i);
-            if (!list.contains(name)) {
-                list.add(1, name);
-            }
-        }*/
-        return list;
-    }
-
     public IBukkitPlatformImpl getInternal() {
         if (mImpl == null) {
             throw new IllegalStateException("IBukkitLightAPI not yet initialized!");
@@ -188,7 +176,7 @@ public class BukkitPlugin extends JavaPlugin {
                     text.addExtra(new TextComponent(ChatColor.WHITE + " | "));
 
                     TextComponent developer = new TextComponent(ChatColor.AQUA + "Developers");
-                    List<String> authors = getAuthors();
+                    List<String> authors = getDescription().getAuthors();
                     String authorsLine = "none";
                     if (authors.size() > 0) {
                         authorsLine = authors.get(0);
@@ -242,7 +230,7 @@ public class BukkitPlugin extends JavaPlugin {
                             ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
                     console.sendMessage(ChatColor.AQUA + " Source code: " + ChatColor.WHITE
                             + "http://github.com/BeYkeRYkt/LightAPI/");
-                    List<String> authors = getAuthors();
+                    List<String> authors = getDescription().getAuthors();
                     String authorsLine = "none";
                     if (authors.size() > 0) {
                         authorsLine = authors.get(0);
