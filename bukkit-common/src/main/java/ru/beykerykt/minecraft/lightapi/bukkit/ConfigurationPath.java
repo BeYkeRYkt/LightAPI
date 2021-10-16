@@ -31,7 +31,6 @@ public class ConfigurationPath {
     public static final String GENERAL_TITLE = "general";
     public static final String GENERAL_VERSION = GENERAL_TITLE + ".version";
     public static final String GENERAL_DEBUG = GENERAL_TITLE + ".debug";
-    public static final String GENERAL_RELIGHT_STRATEGY = GENERAL_TITLE + ".relight-strategy";
-    public static final String GENERAL_SPECIFIC_HANDLER = GENERAL_TITLE + ".specific-handler";
+    public static final String GENERAL_ENABLE_METRICS = GENERAL_TITLE + ".enable-metrics";
     public static final String GENERAL_SPECIFIC_STORAGE_PROVIDER = GENERAL_TITLE + ".specific-storage-provider";
 }

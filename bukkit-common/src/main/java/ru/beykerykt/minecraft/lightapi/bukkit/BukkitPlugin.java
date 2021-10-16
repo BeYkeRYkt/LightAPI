@@ -27,6 +27,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -46,6 +47,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BukkitPlugin extends JavaPlugin {
+
+    private static final int BSTATS_ID = 13051;
 
     private static final int mConfigVersion = 1;
     private static BukkitPlugin plugin = null;
@@ -96,12 +99,22 @@ public class BukkitPlugin extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+        enableMetrics();
     }
 
     @Override
     public void onDisable() {
         LightAPI.shutdown(mImpl);
         HandlerList.unregisterAll(this);
+    }
+
+    private void enableMetrics() {
+        boolean enableMetrics = getConfig().getBoolean(ConfigurationPath.GENERAL_ENABLE_METRICS);
+        if (enableMetrics) {
+            Metrics metrics = new Metrics(this, BSTATS_ID);
+            // TODO: Add custom charts ?
+        }
+        getInternal().info("Metrics is " + (enableMetrics ? "en" : "dis") + "abled!");
     }
 
     public List<String> getAuthors() {
@@ -142,6 +155,7 @@ public class BukkitPlugin extends JavaPlugin {
         if (!file.exists()) {
             fc.set(ConfigurationPath.GENERAL_VERSION, mConfigVersion);
             fc.set(ConfigurationPath.GENERAL_DEBUG, true);
+            fc.set(ConfigurationPath.GENERAL_ENABLE_METRICS, true);
             fc.set(ConfigurationPath.GENERAL_SPECIFIC_STORAGE_PROVIDER, "none");
             saveConfig();
         }
