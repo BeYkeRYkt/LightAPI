@@ -2,6 +2,7 @@ name: LightTest
 main: ru.beykerykt.minecraft.lightapi.bukkit.example.BukkitPlugin
 version: ${SERVER_API}-${project.version} (build ${BUILD_NUMBER})
 description: Test plugin for LightAPI
+api-version: 1.17
 depend: [ LightAPI ]
 author: BeYkeRYkt
 authors: [ other contributors in GitHub ]
