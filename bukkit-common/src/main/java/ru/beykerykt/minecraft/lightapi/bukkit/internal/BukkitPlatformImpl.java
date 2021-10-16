@@ -230,18 +230,6 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
         int resultCode = ResultCode.SUCCESS;
         // handle internal codes
         switch (cmdId) {
-            case InternalCode.UPDATE_BACKGROUND_SERVICE:
-                mBackgroundService = (BukkitBackgroundService) args[0];
-                break;
-            case InternalCode.UPDATE_LIGHT_ENGINE:
-                mLightEngine = (ILightEngine) args[0];
-                break;
-            case InternalCode.UPDATE_CHUNK_OBSERVER:
-                mChunkObserver = (IChunkObserver) args[0];
-                break;
-            case InternalCode.UPDATE_EXTENSION:
-                mExtension = (IExtension) args[0];
-                break;
             case InternalCode.UPDATE_UUID:
                 mUUID = (UUID) args[0];
                 break;

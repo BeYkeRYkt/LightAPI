@@ -30,29 +30,5 @@ public class InternalCode {
     /**
      * N/A
      */
-    @Deprecated
-    public static final int UPDATE_BACKGROUND_SERVICE = 1;
-
-    /**
-     * N/A
-     */
-    @Deprecated
-    public static final int UPDATE_LIGHT_ENGINE = 2;
-
-    /**
-     * N/A
-     */
-    @Deprecated
-    public static final int UPDATE_CHUNK_OBSERVER = 3;
-
-    /**
-     * N/A
-     */
-    @Deprecated
-    public static final int UPDATE_EXTENSION = 4;
-
-    /**
-     * N/A
-     */
     public static final int UPDATE_UUID = 5;
 }
