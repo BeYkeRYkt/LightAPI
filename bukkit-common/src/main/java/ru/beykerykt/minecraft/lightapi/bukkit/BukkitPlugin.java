@@ -114,16 +114,6 @@ public class BukkitPlugin extends JavaPlugin {
         return mImpl;
     }
 
-    public boolean isBackwardAvailable() {
-        boolean flag = Build.CURRENT_VERSION <= 1;
-        try {
-            Class.forName("ru.beykerykt.lightapi.LightAPI");
-            return flag & true;
-        } catch (ClassNotFoundException ex) {
-        }
-        return flag & false;
-    }
-
     public void log(CommandSender sender, String message) {
         sender.sendMessage(ChatColor.AQUA + "<LightAPI>: " + ChatColor.WHITE + message);
     }
@@ -133,6 +123,11 @@ public class BukkitPlugin extends JavaPlugin {
         if (!file.exists()) {
             fc.set(ConfigurationPath.GENERAL_DEBUG, true);
             fc.set(ConfigurationPath.GENERAL_ENABLE_METRICS, true);
+            if (Build.API_VERSION == Build.PREVIEW) { // only for PREVIEW build
+                fc.set(ConfigurationPath.GENERAL_FORCE_ENABLE_LEGACY, true);
+            } else {
+                fc.set(ConfigurationPath.GENERAL_FORCE_ENABLE_LEGACY, false);
+            }
             fc.set(ConfigurationPath.GENERAL_SPECIFIC_STORAGE_PROVIDER, "none");
             saveConfig();
         }
@@ -203,8 +198,8 @@ public class BukkitPlugin extends JavaPlugin {
                     licensed.addExtra(MIT);
                     player.spigot().sendMessage(licensed);
 
-                    if (isBackwardAvailable()) {
-                        player.sendMessage(ChatColor.BLACK + "backwards compatibility enabled");
+                    if (getInternal().isBackwardAvailable()) {
+                        player.sendMessage(ChatColor.WHITE + "backwards compatibility is enabled");
                     }
                 } else {
                     log(player, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly ?");
@@ -242,8 +237,8 @@ public class BukkitPlugin extends JavaPlugin {
                     console.sendMessage("");
                     console.sendMessage(ChatColor.WHITE + " Licensed under: " + ChatColor.AQUA + "MIT License");
 
-                    if (isBackwardAvailable()) {
-                        console.sendMessage(ChatColor.BLACK + "backwards compatibility enabled");
+                    if (getInternal().isBackwardAvailable()) {
+                        console.sendMessage(ChatColor.WHITE + "backwards compatibility is enabled");
                     }
                 } else {
                     log(console, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly ?");

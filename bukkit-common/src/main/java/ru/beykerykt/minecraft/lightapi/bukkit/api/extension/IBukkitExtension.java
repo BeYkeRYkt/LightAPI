@@ -31,5 +31,10 @@ public interface IBukkitExtension extends IExtension {
     /**
      * N/A
      */
+    boolean isBackwardAvailable();
+
+    /**
+     * N/A
+     */
     IHandler getHandler();
 }

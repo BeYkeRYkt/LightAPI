@@ -50,13 +50,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Deprecated
 public class LightAPI extends JavaPlugin {
 
-    /**
-     * for debugging
-     */
-    private final static int LATEST_SUPPORTED_API = 2;
     @Deprecated
     private static BlockFace[] SIDES = {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
             BlockFace.WEST};
+
+    private static boolean isBackwardEnabled() {
+        return ((IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension()).isBackwardAvailable();
+    }
 
     @Deprecated
     private static void log(CommandSender sender, String message) {
@@ -108,7 +108,7 @@ public class LightAPI extends JavaPlugin {
 
     @Deprecated
     public static boolean updateChunk(ChunkInfo info) {
-        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
+        if (!isBackwardEnabled()) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
@@ -136,7 +136,7 @@ public class LightAPI extends JavaPlugin {
 
     @Deprecated
     public static boolean updateChunks(World world, int x, int y, int z, Collection<? extends Player> players) {
-        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
+        if (!isBackwardEnabled()) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
@@ -158,7 +158,7 @@ public class LightAPI extends JavaPlugin {
 
     @Deprecated
     public static boolean updateChunk(World world, int x, int y, int z, Collection<? extends Player> players) {
-        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
+        if (!isBackwardEnabled()) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
@@ -200,7 +200,7 @@ public class LightAPI extends JavaPlugin {
     public static boolean createLight(World world, int x, final int y, final int z,
                                       ru.beykerykt.lightapi.LightType lightType,
                                       final int lightlevel, boolean async) {
-        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
+        if (!isBackwardEnabled()) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
@@ -252,7 +252,7 @@ public class LightAPI extends JavaPlugin {
     public static boolean deleteLight(final World world, final int x, final int y, final int z,
                                       ru.beykerykt.lightapi.LightType lightType,
                                       boolean async) {
-        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
+        if (!isBackwardEnabled()) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
@@ -302,7 +302,7 @@ public class LightAPI extends JavaPlugin {
 
     public static List<ChunkInfo> collectChunks(World world, int x, int y, int z,
                                                 ru.beykerykt.lightapi.LightType lightType, int lightLevel) {
-        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
+        if (!isBackwardEnabled()) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return null;
         }
@@ -329,7 +329,7 @@ public class LightAPI extends JavaPlugin {
 
     public static boolean updateChunk(ChunkInfo info, ru.beykerykt.lightapi.LightType lightType, Collection<?
             extends Player> players) {
-        if (Build.CURRENT_VERSION > LATEST_SUPPORTED_API) {
+        if (!isBackwardEnabled()) {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }

@@ -31,5 +31,6 @@ public class ConfigurationPath {
     public static final String GENERAL_TITLE = "general";
     public static final String GENERAL_DEBUG = GENERAL_TITLE + ".debug";
     public static final String GENERAL_ENABLE_METRICS = GENERAL_TITLE + ".enable-metrics";
+    public static final String GENERAL_FORCE_ENABLE_LEGACY = GENERAL_TITLE + ".force-enable-legacy";
     public static final String GENERAL_SPECIFIC_STORAGE_PROVIDER = GENERAL_TITLE + ".specific-storage-provider";
 }

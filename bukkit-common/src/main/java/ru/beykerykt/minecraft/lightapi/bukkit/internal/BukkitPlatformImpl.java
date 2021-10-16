@@ -34,6 +34,7 @@ import ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched.impl.BukkitS
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandlerFactory;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BukkitBackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
 import ru.beykerykt.minecraft.lightapi.common.internal.InternalCode;
@@ -50,6 +51,7 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
 
     private BukkitPlugin mPlugin;
     private boolean isInit = false;
+    private boolean forceLegacy = false;
 
     private IHandler mHandler;
     private IChunkObserver mChunkObserver;
@@ -122,6 +124,12 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
 
     @Override
     public int initialization() {
+        // enable force legacy
+        forceLegacy = getConfig().getBoolean(ConfigurationPath.GENERAL_FORCE_ENABLE_LEGACY);
+        if (forceLegacy) {
+            info("Force legacy is enabled");
+        }
+
         // init handler
         try {
             initHandler();
@@ -267,5 +275,16 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     @Override
     public boolean isMainThread() {
         return getHandler().isMainThread();
+    }
+
+    @Override
+    public boolean isBackwardAvailable() {
+        boolean flag = Build.API_VERSION == Build.PREVIEW;
+        try {
+            Class.forName("ru.beykerykt.lightapi.LightAPI");
+            return forceLegacy ? true : (flag & true);
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
     }
 }

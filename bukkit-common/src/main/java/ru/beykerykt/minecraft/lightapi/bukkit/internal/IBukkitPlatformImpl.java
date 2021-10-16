@@ -36,4 +36,6 @@ public interface IBukkitPlatformImpl extends IPlatformImpl {
     IHandler getHandler();
 
     boolean isMainThread();
+
+    boolean isBackwardAvailable();
 }
