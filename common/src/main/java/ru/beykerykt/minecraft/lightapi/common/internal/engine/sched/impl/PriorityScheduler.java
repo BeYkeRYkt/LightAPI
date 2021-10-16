@@ -137,10 +137,6 @@ public class PriorityScheduler implements IScheduler {
             if (request.getCallback() != null) {
                 request.getCallback().onResult(RequestFlag.EDIT, resultCode);
             }
-
-            // start notify engine clients
-            //getLightEngine().notifyLightChanged(request.getWorldName(), request.getBlockX(),
-            //        request.getBlockY(), request.getBlockZ(), request.getLightLevel(), request.getLightType());
         }
 
         if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.RECALCULATE)) {

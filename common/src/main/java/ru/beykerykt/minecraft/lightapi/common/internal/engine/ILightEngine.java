@@ -79,14 +79,4 @@ public interface ILightEngine {
      * Performs re-illumination of the light in the given coordinates.
      */
     int recalculateLighting(String worldName, int blockX, int blockY, int blockZ, int lightType);
-
-    /**
-     * N/A
-     */
-    void addListener(ILightListener listener);
-
-    /**
-     * N/A
-     */
-    void removeListener(ILightListener listener);
 }

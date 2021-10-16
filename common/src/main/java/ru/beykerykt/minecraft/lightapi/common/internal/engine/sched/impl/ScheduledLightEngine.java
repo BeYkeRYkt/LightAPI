@@ -29,16 +29,12 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightStrategy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendStrategy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightListener;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduledLightEngine;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduler;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.Request;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
@@ -49,8 +45,6 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     protected long maxTimeMsPerTick;
     protected int maxRequestCount;
     private final IBackgroundService mBackgroundService;
-
-    private final List<ILightListener> mListeners;
 
     private IPlatformImpl mPlatformImpl;
     private IScheduler mScheduler;
@@ -75,7 +69,6 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
         this.mRelightStrategy = strategy;
         this.maxRequestCount = maxRequestCount;
         this.maxTimeMsPerTick = maxTimeMsPerTick;
-        this.mListeners = new ArrayList<>();
     }
 
     protected IPlatformImpl getPlatformImpl() {
@@ -84,19 +77,6 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
 
     protected IBackgroundService getBackgroundService() {
         return mBackgroundService;
-    }
-
-    protected List<ILightListener> getListeners() {
-        return mListeners;
-    }
-
-    private void notifyLightChanged(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
-                                    int lightType) {
-        Iterator<ILightListener> iterator = getListeners().iterator();
-        while (iterator.hasNext()) {
-            ILightListener listener = iterator.next();
-            listener.onLightLevelChanged(worldName, blockX, blockY, blockZ, lightLevel, lightType);
-        }
     }
 
     protected boolean canExecuteSync() {
@@ -177,16 +157,6 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
         }
         return setLightLevelLocked(worldName, blockX, blockY, blockZ, lightLevel, lightType, editStrategy,
                 sendStrategy, callback);
-    }
-
-    @Override
-    public void addListener(ILightListener listener) {
-        mListeners.add(listener);
-    }
-
-    @Override
-    public void removeListener(ILightListener listener) {
-        mListeners.remove(listener);
     }
 
     @Override
