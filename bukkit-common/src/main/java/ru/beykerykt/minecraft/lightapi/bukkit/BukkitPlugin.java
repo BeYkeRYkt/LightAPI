@@ -147,21 +147,13 @@ public class BukkitPlugin extends JavaPlugin {
                     player.sendMessage(ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE
                             + getDescription().getVersion() + "> ------- ");
 
-                    TextComponent version = new TextComponent(ChatColor.AQUA + " Current version: ");
-                    TextComponent update = new TextComponent(ChatColor.WHITE + getDescription().getVersion());
-                    update.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lightapi update"));
-                    update.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                            new ComponentBuilder("Click here for check update").create()));
-                    version.addExtra(update);
-                    player.spigot().sendMessage(version);
-
-                    player.sendMessage(ChatColor.AQUA + " Impl: " + ChatColor.WHITE + Build.CURRENT_IMPLEMENTATION);
-
-                    player.sendMessage(
-                            ChatColor.AQUA + " LightEngine version: " + ChatColor.WHITE + getInternal().getLightEngine().getLightEngineVersion());
+                    player.sendMessage(ChatColor.AQUA + " Current version: " + ChatColor.WHITE + getDescription().getVersion());
+                    player.sendMessage(ChatColor.AQUA + " Current implementation: " + ChatColor.WHITE +
+                            Build.CURRENT_IMPLEMENTATION);
                     player.sendMessage(
                             ChatColor.AQUA + " LightEngine type: " + ChatColor.WHITE + getInternal().getLightEngine().getLightEngineType());
-
+                    player.sendMessage(
+                            ChatColor.AQUA + " LightEngine version: " + ChatColor.WHITE + getInternal().getLightEngine().getLightEngineVersion());
                     player.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
                     player.sendMessage(
                             ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
@@ -224,7 +216,12 @@ public class BukkitPlugin extends JavaPlugin {
                             + getDescription().getVersion() + "> ------- ");
                     console.sendMessage(
                             ChatColor.AQUA + " Current version: " + ChatColor.WHITE + getDescription().getVersion());
-                    console.sendMessage(ChatColor.AQUA + " Impl: " + ChatColor.WHITE + Build.CURRENT_IMPLEMENTATION);
+                    console.sendMessage(ChatColor.AQUA + " Current implementation: " + ChatColor.WHITE +
+                            Build.CURRENT_IMPLEMENTATION);
+                    console.sendMessage(
+                            ChatColor.AQUA + " LightEngine type: " + ChatColor.WHITE + getInternal().getLightEngine().getLightEngineType());
+                    console.sendMessage(
+                            ChatColor.AQUA + " LightEngine version: " + ChatColor.WHITE + getInternal().getLightEngine().getLightEngineVersion());
                     console.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
                     console.sendMessage(
                             ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
