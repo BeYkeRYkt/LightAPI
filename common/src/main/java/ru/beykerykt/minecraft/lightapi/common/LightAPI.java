@@ -222,6 +222,15 @@ public final class LightAPI {
     }
 
     /**
+     * Placement of a specific type of light with a given level of illumination in
+     * the named world in certain coordinates with the return code result.
+     */
+    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType, ICallback callback) {
+        return setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, lightType, EditStrategy.DEFERRED,
+                SendStrategy.DEFERRED, callback);
+    }
+
+    /**
      * Send specific commands for implementation
      */
     public int sendCmd(int cmdId, Object... args) {
