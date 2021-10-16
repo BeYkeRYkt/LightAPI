@@ -42,7 +42,6 @@ import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +49,6 @@ public class BukkitPlugin extends JavaPlugin {
 
     private static final int BSTATS_ID = 13051;
 
-    private static final int mConfigVersion = 1;
     private static BukkitPlugin plugin = null;
     private static BukkitPlatformImpl mImpl = null;
 
@@ -65,16 +63,8 @@ public class BukkitPlugin extends JavaPlugin {
 
         // create config
         try {
-            FileConfiguration fc = getConfig();
             File file = new File(getDataFolder(), "config.yml");
-            if (file.exists()) {
-                if (fc.getInt(ConfigurationPath.GENERAL_VERSION) < mConfigVersion) {
-                    if (!file.delete()) {
-                        throw new IOException("Can not delete " + file.getPath());
-                    }
-                    upgradeConfig(fc, fc.getInt("version"), mConfigVersion);
-                }
-            } else {
+            if (!file.exists()) {
                 generateConfig(file);
             }
         } catch (Exception e) {
@@ -153,18 +143,11 @@ public class BukkitPlugin extends JavaPlugin {
     private void generateConfig(File file) {
         FileConfiguration fc = getConfig();
         if (!file.exists()) {
-            fc.set(ConfigurationPath.GENERAL_VERSION, mConfigVersion);
             fc.set(ConfigurationPath.GENERAL_DEBUG, true);
             fc.set(ConfigurationPath.GENERAL_ENABLE_METRICS, true);
             fc.set(ConfigurationPath.GENERAL_SPECIFIC_STORAGE_PROVIDER, "none");
             saveConfig();
         }
-    }
-
-    private void upgradeConfig(FileConfiguration fc, int from, int to) {
-        // TODO: Implement upgrade config
-        File file = new File(getDataFolder(), "config.yml");
-        generateConfig(file);
     }
 
     @Override
