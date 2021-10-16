@@ -49,32 +49,27 @@ public class ResultCode {
     public static final int WORLD_NOT_AVAILABLE = -2;
 
     /**
-     * N/A
-     */
-    public static final int MANUAL_MODE_CHUNK_LIST_IS_NULL = -3;
-
-    /**
      * (1.14+) No lighting changes in current world
      */
-    public static final int RECALCULATE_NO_CHANGES = -4;
+    public static final int RECALCULATE_NO_CHANGES = -3;
 
     /**
      * (1.14+) SkyLight data is not available in current world
      */
-    public static final int SKYLIGHT_DATA_NOT_AVAILABLE = -5;
+    public static final int SKYLIGHT_DATA_NOT_AVAILABLE = -4;
 
     /**
      * (1.14+) BlockLight data is not available in current world
      */
-    public static final int BLOCKLIGHT_DATA_NOT_AVAILABLE = -6;
+    public static final int BLOCKLIGHT_DATA_NOT_AVAILABLE = -5;
 
     /**
      * Current function is not implemented
      */
-    public static final int NOT_IMPLEMENTED = -7;
+    public static final int NOT_IMPLEMENTED = -6;
 
     /**
      * Chunk is not loaded
      */
-    public static final int CHUNK_NOT_LOADED = -8;
+    public static final int CHUNK_NOT_LOADED = -7;
 }
