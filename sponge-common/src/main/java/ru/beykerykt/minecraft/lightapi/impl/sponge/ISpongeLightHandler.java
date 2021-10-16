@@ -1,33 +1,30 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com>
- * Copyright (c) 2016-2017 The ImplexDevOne Project
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com> Copyright (c) 2016-2017 The
+ * ImplexDevOne Project
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.impl.sponge;
 
-import java.util.List;
-
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.World;
+
+import java.util.List;
 
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.ILightHandler;
@@ -41,8 +38,8 @@ import ru.beykerykt.minecraft.lightapi.common.LightType;
 public interface ISpongeLightHandler extends ILightHandler {
 
     /**
-     * Placement of a certain type of light with a given level of illumination in
-     * the named world in certain coordinates with the return result.
+     * Placement of a certain type of light with a given level of illumination in the named world in
+     * certain coordinates with the return result.
      *
      * @param world      - World
      * @param type       - Light type
@@ -50,28 +47,25 @@ public interface ISpongeLightHandler extends ILightHandler {
      * @param blockY     - Block Y coordinate
      * @param blockZ     - Block Z coordinate
      * @param lightlevel - light level. Default range - 0 - 15
-     * @return true - if the light in the given coordinates has changed, false - if
-     * not
+     * @return true - if the light in the given coordinates has changed, false - if not
      */
     public boolean createLight(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
 
     /**
-     * Removing a certain type of light in the named world in certain coordinates
-     * with the return result.
+     * Removing a certain type of light in the named world in certain coordinates with the return
+     * result.
      *
      * @param world  - World
      * @param type   - Light type
      * @param blockX - Block X coordinate
      * @param blockY - Block Y coordinate
      * @param blockZ - Block Z coordinate
-     * @return true - if the light in the given coordinates has changed, false - if
-     * not
+     * @return true - if the light in the given coordinates has changed, false - if not
      */
     public boolean deleteLight(World world, LightType type, int blockX, int blockY, int blockZ);
 
     /**
-     * Sets "directly" the level of light in given coordinates without additional
-     * processing.
+     * Sets "directly" the level of light in given coordinates without additional processing.
      *
      * @param world      - World
      * @param type       - Light type
@@ -83,8 +77,7 @@ public interface ISpongeLightHandler extends ILightHandler {
     public void setRawLightLevel(World world, LightType type, int blockX, int blockY, int blockZ, int lightlevel);
 
     /**
-     * Gets "directly" the level of light from given coordinates without additional
-     * processing.
+     * Gets "directly" the level of light from given coordinates without additional processing.
      *
      * @param world  - World
      * @param type   - Light type

@@ -1,35 +1,33 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightPolicy;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.IScheduledChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion;
@@ -42,25 +40,24 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
 
     /**
      * CONFIG
-     **/
+     */
     private final String CONFIG_TITLE = getClass().getSimpleName();
+
     private final String CONFIG_RELIGHT_STRATEGY = CONFIG_TITLE + ".relight-strategy";
     private final String CONFIG_MAX_TIME_MS_IN_PER_TICK = CONFIG_TITLE + ".max-time-ms-in-per-tick";
     private final String CONFIG_MAX_ITERATIONS_IN_PER_TICK = CONFIG_TITLE + ".max-iterations-in-per-tick";
-
-    private int mTaskId = -1;
-
     private final IHandler mHandler;
+    private int mTaskId = - 1;
 
     /**
      * @hide
-     **/
+     */
     public BukkitScheduledLightEngine(IBukkitPlatformImpl pluginImpl, IBackgroundService service, IHandler handler) {
-        this(pluginImpl, service, RelightStrategy.DEFERRED, handler, 250, 250);
+        this(pluginImpl, service, RelightPolicy.DEFERRED, handler, 250, 250);
     }
 
-    public BukkitScheduledLightEngine(IBukkitPlatformImpl pluginImpl, IBackgroundService service, RelightStrategy strategy, IHandler handler, int maxRequestCount,
-                                      int maxTimeMsPerTick) {
+    public BukkitScheduledLightEngine(IBukkitPlatformImpl pluginImpl, IBackgroundService service,
+            RelightPolicy strategy, IHandler handler, int maxRequestCount, int maxTimeMsPerTick) {
         super(pluginImpl, service, strategy, maxRequestCount, maxTimeMsPerTick);
         this.mHandler = handler;
     }
@@ -78,7 +75,7 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
         boolean needSave = false;
         FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
         if (fc.getString(CONFIG_RELIGHT_STRATEGY) == null) {
-            fc.set(CONFIG_RELIGHT_STRATEGY, RelightStrategy.DEFERRED.name());
+            fc.set(CONFIG_RELIGHT_STRATEGY, RelightPolicy.DEFERRED.name());
             needSave = true;
         }
         if (fc.getString(CONFIG_MAX_TIME_MS_IN_PER_TICK) == null) {
@@ -102,8 +99,8 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
         String relightStrategyName = fc.getString(CONFIG_RELIGHT_STRATEGY);
         try {
             // TODO: move to throw exception
-            RelightStrategy relightStrategy = RelightStrategy.valueOf(relightStrategyName);
-            mRelightStrategy = relightStrategy;
+            RelightPolicy relightPolicy = RelightPolicy.valueOf(relightStrategyName);
+            mRelightPolicy = relightPolicy;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -113,9 +110,10 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
         maxRequestCount = c_maxIterations;
         maxTimeMsPerTick = c_maxTimeMsPerTick;
 
-        this.mTaskId = getPlatformImpl().getPlugin().getServer().getScheduler().runTaskTimer(getPlatformImpl().getPlugin(), () -> {
-            onTickPenaltyTime();
-        }, 0, 1).getTaskId();
+        this.mTaskId = getPlatformImpl().getPlugin().getServer().getScheduler().runTaskTimer(
+                getPlatformImpl().getPlugin(), () -> {
+                    onTickPenaltyTime();
+                }, 0, 1).getTaskId();
 
         // scheduler
         // TODO: Make config (?)
@@ -132,7 +130,7 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
 
     @Override
     public void onShutdown() {
-        if (mTaskId != -1) {
+        if (mTaskId != - 1) {
             getPlatformImpl().getPlugin().getServer().getScheduler().cancelTask(mTaskId);
         }
         super.onShutdown();
@@ -149,29 +147,29 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     }
 
     @Override
-    public int getLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightType) {
-        if (!getPlatformImpl().isWorldAvailable(worldName)) {
+    public int getLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
+        if (! getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
         World world = Bukkit.getWorld(worldName);
-        return getHandler().getRawLightLevel(world, blockX, blockY, blockZ, lightType);
+        return getHandler().getRawLightLevel(world, blockX, blockY, blockZ, lightFlags);
     }
 
     @Override
-    public int setRawLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType) {
-        if (!getPlatformImpl().isWorldAvailable(worldName)) {
+    public int setRawLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags) {
+        if (! getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
         World world = Bukkit.getWorld(worldName);
-        return getHandler().setRawLightLevel(world, blockX, blockY, blockZ, lightLevel, lightType);
+        return getHandler().setRawLightLevel(world, blockX, blockY, blockZ, lightLevel, lightFlags);
     }
 
     @Override
-    public int recalculateLighting(String worldName, int blockX, int blockY, int blockZ, int lightType) {
-        if (!getPlatformImpl().isWorldAvailable(worldName)) {
+    public int recalculateLighting(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
+        if (! getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
         World world = Bukkit.getWorld(worldName);
-        return getHandler().recalculateLighting(world, blockX, blockY, blockZ, lightType);
+        return getHandler().recalculateLighting(world, blockX, blockY, blockZ, lightFlags);
     }
 }

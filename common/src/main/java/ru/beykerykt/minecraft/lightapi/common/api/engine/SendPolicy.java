@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * <p>Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
+ * <p>Copyright (c) 2020 Vladimir Mikhailov <beykerykt@gmail.com>
  *
  * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -18,42 +18,30 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common.internal;
+package ru.beykerykt.minecraft.lightapi.common.api.engine;
 
-/**
- * Supported Platforms
- *
- * @author BeYkeRYkt
- */
-public enum PlatformType {
+public enum SendPolicy {
 
     /**
-     * UNKNOWN
+     * Updated chunks are collected in a local pool after the light level changes, but are not
+     * automatically sent.
      */
-    UNKNOWN(0),
+    @Deprecated MANUAL(0),
 
     /**
-     * Platforms built on the Bukkit API. The implication is that pure Bukkit API is used without NMS
-     * and other implementations.
+     * Updated chunks are immediately collected and sent to players after the light level changes.
      */
-    BUKKIT(1),
+    IMMEDIATE(1),
 
     /**
-     * Platforms built on CraftBukkit. Spigot, Paper and etc
+     * Updated chunks are collected in a common pool after the light level changes. Then they are
+     * automatically sent to players at regular intervals.
      */
-    CRAFTBUKKIT(2),
-
-    /**
-     * Platforms built on SpongePowered.
-     */
-    @Deprecated SPONGE(3);
-
-    // TODO
-    // GLOWSTONE(4)
+    DEFERRED(2);
 
     private final int id;
 
-    PlatformType(int id) {
+    SendPolicy(int id) {
         this.id = id;
     }
 

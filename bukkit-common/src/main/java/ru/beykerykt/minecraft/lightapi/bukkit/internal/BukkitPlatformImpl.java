@@ -1,31 +1,31 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
+
+import java.util.UUID;
+
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
@@ -43,24 +43,19 @@ import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.IChunkObs
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightEngine;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
-import java.util.UUID;
-
 public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension {
 
+    private static final String DEFAULT_IMPL_NAME = "craftbukkit";
     private boolean DEBUG = false;
-
     private BukkitPlugin mPlugin;
     private boolean isInit = false;
     private boolean forceLegacy = false;
-
     private IHandler mHandler;
     private IChunkObserver mChunkObserver;
     private ILightEngine mLightEngine;
     private IBackgroundService mBackgroundService;
     private IExtension mExtension;
     private UUID mUUID;
-
-    private static final String DEFAULT_IMPL_NAME = "craftbukkit";
 
     public BukkitPlatformImpl(BukkitPlugin plugin) {
         this.mPlugin = plugin;
@@ -90,7 +85,7 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
         checkAndSetDefaults();
         // load specific handler if available
         String specificPkg = getConfig().getString("handler.specific-handler-path");
-        if (specificPkg != null && !specificPkg.equalsIgnoreCase("none")) {
+        if (specificPkg != null && ! specificPkg.equalsIgnoreCase("none")) {
             info("Initial load specific handler");
             mHandler = (IHandler) Class.forName(specificPkg).getConstructor().newInstance();
             info("Custom handler is loaded: " + mHandler.getClass().getName());
@@ -106,7 +101,8 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
         try {
             Class.forName(modFactoryPath);
         } catch (Exception ex) {
-            debug("Specific HandlerFactory for " + implName + " is not detected. Switch to default: " + DEFAULT_IMPL_NAME);
+            debug("Specific HandlerFactory for " + implName + " is not detected. Switch to default: "
+                    + DEFAULT_IMPL_NAME);
             implName = DEFAULT_IMPL_NAME;
             modFactoryPath = getConfig().getString("handler." + implName + ".factory-path");
         }

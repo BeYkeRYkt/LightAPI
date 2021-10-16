@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * <p>Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
+ * <p>Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
  *
  * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -18,42 +18,31 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common.internal;
+package ru.beykerykt.minecraft.lightapi.common.api.engine;
 
-/**
- * Supported Platforms
- *
- * @author BeYkeRYkt
- */
-public enum PlatformType {
+public enum EditPolicy {
 
     /**
-     * UNKNOWN
+     * Changes are made immediately, regardless of the state of the server. It can cause the server to
+     * freeze with a large number of requests.
      */
-    UNKNOWN(0),
+    FORCE_IMMEDIATE(0),
 
     /**
-     * Platforms built on the Bukkit API. The implication is that pure Bukkit API is used without NMS
-     * and other implementations.
+     * Changes are made immediately depending on the state of the server. If the server cannot perform
+     * this task right now, then the policy changes to {@link EditPolicy#DEFERRED}. It can cause a
+     * drop in the TPS server with a large number of requests.
      */
-    BUKKIT(1),
+    IMMEDIATE(1),
 
     /**
-     * Platforms built on CraftBukkit. Spigot, Paper and etc
+     * The change request is added to the queue. The result will be available after a while.
      */
-    CRAFTBUKKIT(2),
-
-    /**
-     * Platforms built on SpongePowered.
-     */
-    @Deprecated SPONGE(3);
-
-    // TODO
-    // GLOWSTONE(4)
+    DEFERRED(2);
 
     private final int id;
 
-    PlatformType(int id) {
+    EditPolicy(int id) {
         this.id = id;
     }
 

@@ -72,8 +72,12 @@ public class Utils {
                 last = start;
             }
         }
-        if (last == 0) return text;
-        if (last < text.length()) sb.append(text, last, text.length());
+        if (last == 0) {
+            return text;
+        }
+        if (last < text.length()) {
+            sb.append(text, last, text.length());
+        }
         return sb.toString();
     }
 }

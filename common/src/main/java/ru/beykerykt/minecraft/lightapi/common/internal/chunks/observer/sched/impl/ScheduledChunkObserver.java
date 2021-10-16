@@ -1,37 +1,34 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.impl;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.IScheduledChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 public abstract class ScheduledChunkObserver implements IScheduledChunkObserver {
 
@@ -68,7 +65,7 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
     }
 
     private int getDeltaLight(int x, int dx) {
-        return (((x ^ ((-dx >> 4) & 15)) + 1) & (-(dx & 1)));
+        return (((x ^ ((- dx >> 4) & 15)) + 1) & (- (dx & 1)));
     }
 
     private long chunkCoordToLong(int chunkX, int chunkZ) {
@@ -83,27 +80,22 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
 
     /* @hide */
     private int notifyUpdateChunksLocked(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
-                                         int lightType) {
-        if (!getPlatformImpl().isWorldAvailable(worldName)) {
+            int lightType) {
+        if (! getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
 
-        int finalLightLevel = lightLevel;
-        if (lightLevel < 0) {
-            finalLightLevel = 0;
-        } else if (lightLevel > 15) {
-            finalLightLevel = 15;
-        }
+        int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
         // start watching chunks
         int CHUNK_RADIUS = 1;
-        for (int dX = -CHUNK_RADIUS; dX <= CHUNK_RADIUS; dX++) {
+        for (int dX = - CHUNK_RADIUS; dX <= CHUNK_RADIUS; dX++) {
             int lightLevelX = finalLightLevel - getDeltaLight(blockX & 15, dX);
             if (lightLevelX > 0) {
-                for (int dZ = -CHUNK_RADIUS; dZ <= CHUNK_RADIUS; dZ++) {
+                for (int dZ = - CHUNK_RADIUS; dZ <= CHUNK_RADIUS; dZ++) {
                     int lightLevelZ = lightLevelX - getDeltaLight(blockZ & 15, dZ);
                     if (lightLevelZ > 0) {
-                        for (int dY = -1; dY <= 1; dY++) {
+                        for (int dY = - 1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
                                 if (isValidChunkSection(sectionY)) {
@@ -131,12 +123,13 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
     }
 
     @Override
-    public int notifyUpdateChunks(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType) {
+    public int notifyUpdateChunks(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
+            int lightFlags) {
         if (getBackgroundService().isMainThread()) {
-            return notifyUpdateChunksLocked(worldName, blockX, blockY, blockZ, lightLevel, lightType);
+            return notifyUpdateChunksLocked(worldName, blockX, blockY, blockZ, lightLevel, lightFlags);
         } else {
             synchronized (observedChunks) {
-                return notifyUpdateChunksLocked(worldName, blockX, blockY, blockZ, lightLevel, lightType);
+                return notifyUpdateChunksLocked(worldName, blockX, blockY, blockZ, lightLevel, lightFlags);
             }
         }
     }

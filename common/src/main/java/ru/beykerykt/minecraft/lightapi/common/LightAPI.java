@@ -1,32 +1,30 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.common;
 
+import java.util.UUID;
+
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.EditStrategy;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightStrategy;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.SendStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
@@ -36,14 +34,13 @@ import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.IChunkObs
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightEngine;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
-import java.util.UUID;
-
 /**
  * Main class for all platforms. Contains basic methods for all implementations.
  *
  * @author BeYkeRYkt
  */
 public final class LightAPI {
+
     private static volatile LightAPI singleton;
     private final IPlatformImpl mInternal;
 
@@ -58,7 +55,7 @@ public final class LightAPI {
      * Must be called in onLoad();
      */
     public static void prepare(IPlatformImpl impl) throws Exception {
-        if (singleton == null && impl != null || !get().isInitialized()) {
+        if (singleton == null && impl != null || ! get().isInitialized()) {
             impl.info("Preparing LightAPI...");
             synchronized (LightAPI.class) {
                 if (singleton == null) {
@@ -78,7 +75,7 @@ public final class LightAPI {
      * Must be called in onEnable();
      */
     public static void initialization() throws Exception {
-        if (!get().isInitialized()) {
+        if (! get().isInitialized()) {
             get().log("Initializing LightAPI...");
             synchronized (LightAPI.class) {
                 int initCode = get().getPluginImpl().initialization();
@@ -102,14 +99,6 @@ public final class LightAPI {
         if (get().isInitialized() && get().getPluginImpl().getUUID().equals(impl.getUUID())) {
             get().log("Shutdown LightAPI...");
             synchronized (LightAPI.class) {
-                /*
-                get().getChunkObserver().onShutdown();
-                get().mChunkObserver = null;
-                get().getLightEngine().onShutdown();
-                get().mLightEngine = null;
-                get().getBackgroundService().onShutdown();
-                get().mBackgroundService = null;
-                */
                 get().getPluginImpl().shutdown();
             }
         } else {
@@ -198,36 +187,30 @@ public final class LightAPI {
     }
 
     /**
-     * N/A
-     */
-    public RelightStrategy getRelightStrategy() {
-        return getLightEngine().getRelightStrategy();
-    }
-
-    /**
      * Gets the level of light from given coordinates with specific flags.
      */
-    public int getLightLevel(String worldName, int blockX, int blockY, int blockZ, int flags) {
-        return getLightEngine().getLightLevel(worldName, blockX, blockY, blockZ, flags);
+    public int getLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
+        return getLightEngine().getLightLevel(worldName, blockX, blockY, blockZ, lightFlags);
     }
 
     /**
-     * Placement of a specific type of light with a given level of illumination in
-     * the named world in certain coordinates with the return code result.
+     * Placement of a specific type of light with a given level of illumination in the named world in
+     * certain coordinates with the return code result.
      */
-    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType,
-                             EditStrategy editStrategy, SendStrategy sendStrategy, ICallback callback) {
-        return getLightEngine().setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, lightType, editStrategy,
-                sendStrategy, callback);
+    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags,
+            EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback) {
+        return getLightEngine().setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, editPolicy,
+                sendPolicy, callback);
     }
 
     /**
-     * Placement of a specific type of light with a given level of illumination in
-     * the named world in certain coordinates with the return code result.
+     * Placement of a specific type of light with a given level of illumination in the named world in
+     * certain coordinates with the return code result.
      */
-    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType, ICallback callback) {
-        return setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, lightType, EditStrategy.DEFERRED,
-                SendStrategy.DEFERRED, callback);
+    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags,
+            ICallback callback) {
+        return setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, EditPolicy.DEFERRED,
+                SendPolicy.DEFERRED, callback);
     }
 
     /**

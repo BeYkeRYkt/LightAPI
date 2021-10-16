@@ -1,33 +1,30 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com>
- * Copyright (c) 2016-2017 The ImplexDevOne Project
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com> Copyright (c) 2016-2017 The
+ * ImplexDevOne Project
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.impl.sponge;
 
-import java.util.Collection;
-
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.World;
+
+import java.util.Collection;
 
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 
@@ -85,9 +82,9 @@ public class SpongeChunkData implements IChunkData {
     }
 
     /**
-     * Bitmask with bits set to 1 for every 16×16×16 chunk section whose data is
-     * included in Data. The least significant bit represents the chunk section at
-     * the bottom of the chunk column (from y=0 to y=15).
+     * Bitmask with bits set to 1 for every 16×16×16 chunk section whose data is included in Data. The
+     * least significant bit represents the chunk section at the bottom of the chunk column (from y=0
+     * to y=15).
      *
      * @return The height (0 - 255) on which the chunk column depends
      */
@@ -123,24 +120,32 @@ public class SpongeChunkData implements IChunkData {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         SpongeChunkData other = (SpongeChunkData) obj;
         if (world == null) {
-            if (other.world != null)
+            if (other.world != null) {
                 return false;
-        } else if (!world.getName().equals(other.world.getName()))
+            }
+        } else if (! world.getName().equals(other.world.getName())) {
             return false;
-        if (x != other.x)
+        }
+        if (x != other.x) {
             return false;
-        if ((y >> 4) != (other.y >> 4))
+        }
+        if ((y >> 4) != (other.y >> 4)) {
             return false;
-        if (z != other.z)
+        }
+        if (z != other.z) {
             return false;
+        }
         return true;
     }
 

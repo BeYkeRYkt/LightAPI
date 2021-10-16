@@ -1,51 +1,58 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2020 Vladimir Mikhailov <beykerykt@gmail.com>
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2020 Vladimir Mikhailov <beykerykt@gmail.com>
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.service;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.bukkit.configuration.file.FileConfiguration;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.ITickable;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.*;
-
 public class BukkitBackgroundService implements IBackgroundService, Runnable {
+
     /**
      * CONFIG
-     **/
+     */
     private final String CONFIG_TITLE = getClass().getSimpleName();
+
     private final String CONFIG_TICK_DELAY = CONFIG_TITLE + ".tick-period";
     private final String CONFIG_CORE_POOL_SIZE = CONFIG_TITLE + ".corePoolSize";
 
     private long maxAliveTimePerTick = 50;
     private long maxTimePerTick = 50;
-    private int taskId = -1;
+    private int taskId = - 1;
     private long lastAliveTime = 0;
     private IBukkitPlatformImpl mInternal;
     private IHandler mHandler;
@@ -91,8 +98,8 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
         checkAndSetDefaults();
 
         // executor service
-        ThreadFactory namedThreadFactory =
-                new ThreadFactoryBuilder().setNameFormat("lightapi-background-thread-%d").build();
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat(
+                "lightapi-background-thread-%d").build();
         FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
         this.corePoolSize = fc.getInt(CONFIG_CORE_POOL_SIZE);
         this.executorService = Executors.newScheduledThreadPool(this.corePoolSize, namedThreadFactory);
@@ -103,8 +110,8 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
         maxAliveTimePerTick = 50 * period;
         maxTimePerTick = 50 * period;
 
-        taskId =
-                getPlatformImpl().getPlugin().getServer().getScheduler().runTaskTimer(getPlatformImpl().getPlugin(), () -> {
+        taskId = getPlatformImpl().getPlugin().getServer().getScheduler().runTaskTimer(getPlatformImpl().getPlugin(),
+                () -> {
                     lastAliveTime = System.currentTimeMillis();
                     isServerThrottled = false;
                 }, 0, 1).getTaskId();
@@ -113,7 +120,7 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
 
     @Override
     public void onShutdown() {
-        if (taskId != -1) {
+        if (taskId != - 1) {
             getPlatformImpl().getPlugin().getServer().getScheduler().cancelTask(taskId);
         }
         if (sch != null) {
@@ -126,7 +133,7 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
 
     @Override
     public boolean canExecuteSync() {
-        return !isServerThrottled;
+        return ! isServerThrottled;
     }
 
     @Override
@@ -142,7 +149,8 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
     @Override
     public void executeAsync(Runnable runnable) {
         // TODO: ???
-        getPlatformImpl().getPlugin().getServer().getScheduler().runTaskAsynchronously(getPlatformImpl().getPlugin(), runnable);
+        getPlatformImpl().getPlugin().getServer().getScheduler().runTaskAsynchronously(getPlatformImpl().getPlugin(),
+                runnable);
     }
 
     @Override

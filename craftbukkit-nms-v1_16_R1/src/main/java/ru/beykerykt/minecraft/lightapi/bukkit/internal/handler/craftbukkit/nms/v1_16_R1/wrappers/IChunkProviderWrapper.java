@@ -1,29 +1,35 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_16_R1.wrappers;
 
-import net.minecraft.server.v1_16_R1.*;
+import net.minecraft.server.v1_16_R1.BlockPosition;
+import net.minecraft.server.v1_16_R1.ChunkCoordIntPair;
+import net.minecraft.server.v1_16_R1.EnumSkyBlock;
+import net.minecraft.server.v1_16_R1.IBlockAccess;
+import net.minecraft.server.v1_16_R1.IChunkAccess;
+import net.minecraft.server.v1_16_R1.IChunkProvider;
+import net.minecraft.server.v1_16_R1.ILightAccess;
+import net.minecraft.server.v1_16_R1.SectionPosition;
+import net.minecraft.server.v1_16_R1.WorldServer;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -32,12 +38,13 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
-import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
-import ru.beykerykt.minecraft.lightapi.common.internal.storage.LightStorage;
 
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
+
+import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.LightStorage;
 
 /*
  * Sources:
@@ -66,7 +73,7 @@ public class IChunkProviderWrapper implements ILightAccess, Listener {
         World world = e.getWorld();
         WorldServer worldServer = (WorldServer) getWorld();
 
-        if (!world.getName().equals(worldServer.worldDataServer.getName())) {
+        if (! world.getName().equals(worldServer.worldDataServer.getName())) {
             return;
         }
 
@@ -112,13 +119,13 @@ public class IChunkProviderWrapper implements ILightAccess, Listener {
             }
 
             IChunkAccess res = (IChunkAccess) Proxy.newProxyInstance(IChunkAccess.class.getClassLoader(),
-                    new Class[]{IChunkAccess.class}, (proxy, method, args) -> {
+                    new Class[] {IChunkAccess.class}, (proxy, method, args) -> {
                         if (method.getName().equals(GET_LUMINANCE_METHOD)) {
                             return getOverrideLuminance(originalChunk, (BlockPosition) args[0]);
                         }
                         return method.invoke(originalChunk, args);
                     });
-            if (res != null && !mProxiesToOutput.containsKey(chunkCoords)) {
+            if (res != null && ! mProxiesToOutput.containsKey(chunkCoords)) {
                 mProxiesToOutput.put(chunkCoords, res);
             }
         }

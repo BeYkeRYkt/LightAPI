@@ -1,25 +1,22 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2019 Vladimir Mikhailov <beykerykt@gmail.com>
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.bukkit;
 
@@ -27,6 +24,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+
 import org.bstats.bukkit.Metrics;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -36,14 +34,14 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.File;
+import java.util.List;
+
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 public class BukkitPlugin extends JavaPlugin {
 
@@ -64,7 +62,7 @@ public class BukkitPlugin extends JavaPlugin {
         // create config
         try {
             File file = new File(getDataFolder(), "config.yml");
-            if (!file.exists()) {
+            if (! file.exists()) {
                 generateConfig(file);
             }
         } catch (Exception e) {
@@ -104,12 +102,12 @@ public class BukkitPlugin extends JavaPlugin {
             Metrics metrics = new Metrics(this, BSTATS_ID);
             // TODO: Add custom charts ?
         }
-        getInternal().info("Metrics is " + (enableMetrics ? "en" : "dis") + "abled!");
+        getPluginImpl().info("Metrics is " + (enableMetrics ? "en" : "dis") + "abled!");
     }
 
-    public IBukkitPlatformImpl getInternal() {
+    public IBukkitPlatformImpl getPluginImpl() {
         if (mImpl == null) {
-            throw new IllegalStateException("IBukkitLightAPI not yet initialized!");
+            throw new IllegalStateException("IBukkitPlatformImpl not yet initialized!");
         }
         return mImpl;
     }
@@ -120,7 +118,7 @@ public class BukkitPlugin extends JavaPlugin {
 
     private void generateConfig(File file) {
         FileConfiguration fc = getConfig();
-        if (!file.exists()) {
+        if (! file.exists()) {
             fc.set(ConfigurationPath.GENERAL_DEBUG, false);
             fc.set(ConfigurationPath.GENERAL_ENABLE_METRICS, true);
             if (Build.API_VERSION == Build.PREVIEW) { // only for PREVIEW build
@@ -139,16 +137,18 @@ public class BukkitPlugin extends JavaPlugin {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
                 if (args.length == 0) {
-                    player.sendMessage(ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE
-                            + getDescription().getVersion() + "> ------- ");
+                    player.sendMessage(
+                            ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE + getDescription().getVersion()
+                                    + "> ------- ");
 
-                    player.sendMessage(ChatColor.AQUA + " Current version: " + ChatColor.WHITE + getDescription().getVersion());
-                    player.sendMessage(ChatColor.AQUA + " Current implementation: " + ChatColor.WHITE +
-                            Build.CURRENT_IMPLEMENTATION);
                     player.sendMessage(
-                            ChatColor.AQUA + " LightEngine type: " + ChatColor.WHITE + getInternal().getLightEngine().getLightEngineType());
-                    player.sendMessage(
-                            ChatColor.AQUA + " LightEngine version: " + ChatColor.WHITE + getInternal().getLightEngine().getLightEngineVersion());
+                            ChatColor.AQUA + " Current version: " + ChatColor.WHITE + getDescription().getVersion());
+                    player.sendMessage(ChatColor.AQUA + " Current implementation: " + ChatColor.WHITE
+                            + Build.CURRENT_IMPLEMENTATION);
+                    player.sendMessage(ChatColor.AQUA + " LightEngine type: " + ChatColor.WHITE
+                            + getPluginImpl().getLightEngine().getLightEngineType());
+                    player.sendMessage(ChatColor.AQUA + " LightEngine version: " + ChatColor.WHITE
+                            + getPluginImpl().getLightEngine().getLightEngineVersion());
                     player.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
                     player.sendMessage(
                             ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
@@ -198,7 +198,7 @@ public class BukkitPlugin extends JavaPlugin {
                     licensed.addExtra(MIT);
                     player.spigot().sendMessage(licensed);
 
-                    if (getInternal().isBackwardAvailable()) {
+                    if (getPluginImpl().isBackwardAvailable()) {
                         player.sendMessage(ChatColor.WHITE + "backwards compatibility is enabled");
                     }
                 } else {
@@ -207,16 +207,17 @@ public class BukkitPlugin extends JavaPlugin {
             } else if (sender instanceof ConsoleCommandSender) {
                 ConsoleCommandSender console = (ConsoleCommandSender) sender;
                 if (args.length == 0) {
-                    console.sendMessage(ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE
-                            + getDescription().getVersion() + "> ------- ");
+                    console.sendMessage(
+                            ChatColor.AQUA + " ------- <LightAPI " + ChatColor.WHITE + getDescription().getVersion()
+                                    + "> ------- ");
                     console.sendMessage(
                             ChatColor.AQUA + " Current version: " + ChatColor.WHITE + getDescription().getVersion());
-                    console.sendMessage(ChatColor.AQUA + " Current implementation: " + ChatColor.WHITE +
-                            Build.CURRENT_IMPLEMENTATION);
-                    console.sendMessage(
-                            ChatColor.AQUA + " LightEngine type: " + ChatColor.WHITE + getInternal().getLightEngine().getLightEngineType());
-                    console.sendMessage(
-                            ChatColor.AQUA + " LightEngine version: " + ChatColor.WHITE + getInternal().getLightEngine().getLightEngineVersion());
+                    console.sendMessage(ChatColor.AQUA + " Current implementation: " + ChatColor.WHITE
+                            + Build.CURRENT_IMPLEMENTATION);
+                    console.sendMessage(ChatColor.AQUA + " LightEngine type: " + ChatColor.WHITE
+                            + getPluginImpl().getLightEngine().getLightEngineType());
+                    console.sendMessage(ChatColor.AQUA + " LightEngine version: " + ChatColor.WHITE
+                            + getPluginImpl().getLightEngine().getLightEngineVersion());
                     console.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
                     console.sendMessage(
                             ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
@@ -237,7 +238,7 @@ public class BukkitPlugin extends JavaPlugin {
                     console.sendMessage("");
                     console.sendMessage(ChatColor.WHITE + " Licensed under: " + ChatColor.AQUA + "MIT License");
 
-                    if (getInternal().isBackwardAvailable()) {
+                    if (getPluginImpl().isBackwardAvailable()) {
                         console.sendMessage(ChatColor.WHITE + "backwards compatibility is enabled");
                     }
                 } else {

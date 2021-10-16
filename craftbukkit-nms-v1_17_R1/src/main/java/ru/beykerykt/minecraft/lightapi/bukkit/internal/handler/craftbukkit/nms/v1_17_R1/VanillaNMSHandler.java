@@ -1,29 +1,27 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_17_R1;
 
 import com.google.common.collect.Lists;
+
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.SectionPosition;
 import net.minecraft.network.protocol.game.PacketPlayOutLightUpdate;
@@ -35,12 +33,26 @@ import net.minecraft.util.thread.ThreadedMailbox;
 import net.minecraft.world.level.ChunkCoordIntPair;
 import net.minecraft.world.level.EnumSkyBlock;
 import net.minecraft.world.level.chunk.Chunk;
-import net.minecraft.world.level.lighting.*;
+import net.minecraft.world.level.lighting.LightEngineBlock;
+import net.minecraft.world.level.lighting.LightEngineGraph;
+import net.minecraft.world.level.lighting.LightEngineLayer;
+import net.minecraft.world.level.lighting.LightEngineSky;
+import net.minecraft.world.level.lighting.LightEngineStorage;
+
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.BitSet;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.BaseNMSHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
@@ -50,14 +62,6 @@ import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.BitSet;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 public class VanillaNMSHandler extends BaseNMSHandler {
 
@@ -79,29 +83,30 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     private int getDeltaLight(int x, int dx) {
-        return (((x ^ ((-dx >> 4) & 15)) + 1) & (-(dx & 1)));
+        return (((x ^ ((- dx >> 4) & 15)) + 1) & (- (dx & 1)));
     }
 
     protected void executeSync(LightEngineThreaded lightEngine, Runnable task) {
         try {
             // ##### STEP 1: Pause light engine mailbox to process its tasks. #####
-            ThreadedMailbox<Runnable> threadedMailbox = (ThreadedMailbox<Runnable>) lightEngine_ThreadedMailbox
-                    .get(lightEngine);
+            ThreadedMailbox<Runnable> threadedMailbox = (ThreadedMailbox<Runnable>) lightEngine_ThreadedMailbox.get(
+                    lightEngine);
             // State flags bit mask:
             // 0x0001 - Closing flag (ThreadedMailbox is closing if non zero).
             // 0x0002 - Busy flag (ThreadedMailbox performs a task from queue if non zero).
             AtomicInteger stateFlags = (AtomicInteger) threadedMailbox_State.get(threadedMailbox);
             int flags; // to hold values from stateFlags
-            long timeToWait = -1;
+            long timeToWait = - 1;
             // Trying to set bit 1 in state bit mask when it is not set yet.
             // This will break the loop in other thread where light engine mailbox processes the taks.
-            while (!stateFlags.compareAndSet(flags = stateFlags.get() & ~2, flags | 2)) {
+            while (! stateFlags.compareAndSet(flags = stateFlags.get() & ~ 2, flags | 2)) {
                 if ((flags & 1) != 0) {
                     // ThreadedMailbox is closing. The light engine mailbox may also stop processing tasks.
-                    // The light engine mailbox can be close due to server shutdown or unloading (closing) the world.
+                    // The light engine mailbox can be close due to server shutdown or unloading (closing) the
+                    // world.
                     // I am not sure is it unsafe to process our tasks while the world is closing is closing,
                     // but will try it (one can throw exception here if it crashes the server).
-                    if (timeToWait == -1) {
+                    if (timeToWait == - 1) {
                         // Try to wait 3 seconds until light engine mailbox is busy.
                         timeToWait = System.currentTimeMillis() + 3 * 1000;
                         getPlatformImpl().debug("ThreadedMailbox is closing. Will wait...");
@@ -119,10 +124,14 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                 task.run();
             } finally {
                 // STEP 3: ##### Continue light engine mailbox to process its tasks. #####
-                // Firstly: Clearing busy flag to allow ThreadedMailbox to use it for running light engine tasks.
-                while (!stateFlags.compareAndSet(flags = stateFlags.get(), flags & ~2)) ;
-                // Secondly: IMPORTANT! The main loop of ThreadedMailbox was broken. Not completed tasks may still be
-                // in the queue. Therefore, it is important to start the loop again to process tasks from the queue.
+                // Firstly: Clearing busy flag to allow ThreadedMailbox to use it for running light engine
+                // tasks.
+                while (! stateFlags.compareAndSet(flags = stateFlags.get(), flags & ~ 2))
+                    ;
+                // Secondly: IMPORTANT! The main loop of ThreadedMailbox was broken. Not completed tasks may
+                // still be
+                // in the queue. Therefore, it is important to start the loop again to process tasks from
+                // the queue.
                 // Otherwise, the main server thread may be frozen due to tasks stuck in the queue.
                 threadedMailbox_DoLoopStep.invoke(threadedMailbox);
             }
@@ -170,8 +179,8 @@ public class VanillaNMSHandler extends BaseNMSHandler {
             lightEngineLayer_d.setAccessible(true);
             lightEngineStorage_d = LightEngineStorage.class.getDeclaredMethod("d");
             lightEngineStorage_d.setAccessible(true);
-            lightEngineGraph_a = LightEngineGraph.class.getDeclaredMethod(
-                    "a", long.class, long.class, int.class, boolean.class);
+            lightEngineGraph_a = LightEngineGraph.class.getDeclaredMethod("a", long.class, long.class, int.class,
+                    boolean.class);
             lightEngineGraph_a.setAccessible(true);
             impl.info("Handler initialization is done");
         } catch (Exception e) {
@@ -190,12 +199,10 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     @Override
     public void onWorldLoad(WorldLoadEvent event) {
-
     }
 
     @Override
     public void onWorldUnload(WorldUnloadEvent event) {
-
     }
 
     @Override
@@ -221,29 +228,24 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     @Override
-    public int asSectionMask(int sectionY) {
-        return 1 << sectionY + 1;
-    }
-
-    @Override
     public int setRawLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int flags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
         final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
-        if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
+        if (! worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
         if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING)) {
-            if (!isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
+            if (! isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
                 return ResultCode.BLOCKLIGHT_DATA_NOT_AVAILABLE;
             }
         }
 
         if (FlagUtils.isFlagSet(flags, LightType.SKY_LIGHTING)) {
-            if (!isLightingSupported(world, LightType.SKY_LIGHTING)) {
+            if (! isLightingSupported(world, LightType.SKY_LIGHTING)) {
                 return ResultCode.SKYLIGHT_DATA_NOT_AVAILABLE;
             }
         }
@@ -284,11 +286,11 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     @Override
     public int getRawLightLevel(World world, int blockX, int blockY, int blockZ, int flags) {
-        int lightLevel = -1;
+        int lightLevel = - 1;
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
-        if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING)
-                && FlagUtils.isFlagSet(flags, LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING) && FlagUtils.isFlagSet(flags,
+                LightType.SKY_LIGHTING)) {
             lightLevel = worldServer.getLightLevel(position);
         } else if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING)) {
             lightLevel = worldServer.getBrightness(EnumSkyBlock.b, position);
@@ -303,18 +305,18 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
 
-        if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
+        if (! worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
         // Do not recalculate if no changes!
-        if (!lightEngine.z_()) {
+        if (! lightEngine.z_()) {
             return ResultCode.RECALCULATE_NO_CHANGES;
         }
 
         executeSync(lightEngine, () -> {
-            if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING)
-                    && FlagUtils.isFlagSet(flags, LightType.SKY_LIGHTING)) {
+            if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING) && FlagUtils.isFlagSet(flags,
+                    LightType.SKY_LIGHTING)) {
                 if (isLightingSupported(world, LightType.SKY_LIGHTING) && isLightingSupported(world,
                         LightType.BLOCK_LIGHTING)) {
                     LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.b);
@@ -385,7 +387,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     @Override
     public List<IChunkData> collectChunkSections(World world, int blockX, int blockY, int blockZ, int lightLevel,
-                                                 int lightFlags) {
+            int lightFlags) {
         List<IChunkData> list = Lists.newArrayList();
         int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
@@ -393,13 +395,13 @@ public class VanillaNMSHandler extends BaseNMSHandler {
             return list;
         }
 
-        for (int dX = -1; dX <= 1; dX++) {
+        for (int dX = - 1; dX <= 1; dX++) {
             int lightLevelX = finalLightLevel - getDeltaLight(blockX & 15, dX);
             if (lightLevelX > 0) {
-                for (int dZ = -1; dZ <= 1; dZ++) {
+                for (int dZ = - 1; dZ <= 1; dZ++) {
                     int lightLevelZ = lightLevelX - getDeltaLight(blockZ & 15, dZ);
                     if (lightLevelZ > 0) {
-                        for (int dY = -1; dY <= 1; dY++) {
+                        for (int dY = - 1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
                                 if (isValidChunkSection(sectionY)) {
@@ -407,7 +409,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                                     int chunkZ = (blockZ >> 4) + dZ;
 
                                     IChunkData data = searchChunkDataFromList(list, world, chunkX, chunkZ);
-                                    if (!list.contains(data)) {
+                                    if (! list.contains(data)) {
                                         list.add(data);
                                     }
                                     data.markSectionForUpdate(lightFlags, sectionY);
@@ -423,7 +425,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     @Override
     public boolean isValidChunkSection(int sectionY) {
-        return sectionY >= -1 && sectionY <= 16;
+        return sectionY >= - 1 && sectionY <= 16;
     }
 
     @Override

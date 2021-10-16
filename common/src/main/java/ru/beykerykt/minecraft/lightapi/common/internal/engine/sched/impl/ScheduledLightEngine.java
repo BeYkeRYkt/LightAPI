@@ -1,32 +1,32 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.impl;
 
+import java.util.Queue;
+import java.util.concurrent.PriorityBlockingQueue;
+
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.EditStrategy;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightStrategy;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.SendStrategy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightPolicy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduledLightEngine;
@@ -35,38 +35,34 @@ import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.Request;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
-import java.util.Queue;
-import java.util.concurrent.PriorityBlockingQueue;
-
 /**
  * Abstract class for scheduled light engines
  */
 public abstract class ScheduledLightEngine implements IScheduledLightEngine {
+
+    private final IBackgroundService mBackgroundService;
     protected long maxTimeMsPerTick;
     protected int maxRequestCount;
-    private final IBackgroundService mBackgroundService;
-
+    protected RelightPolicy mRelightPolicy;
     private IPlatformImpl mPlatformImpl;
     private IScheduler mScheduler;
-    protected RelightStrategy mRelightStrategy;
-
     private int requestCount = 0;
-    private Queue<Request> lightQueue =
-            new PriorityBlockingQueue<>(10, (o1, o2) -> o2.getPriority() - o1.getPriority());
+    private Queue<Request> lightQueue = new PriorityBlockingQueue<>(10,
+            (o1, o2) -> o2.getPriority() - o1.getPriority());
     private Queue<Request> relightQueue = new PriorityBlockingQueue<>(10,
             (o1, o2) -> o2.getPriority() - o1.getPriority());
     private long penaltyTime = 0;
     private long TICK_MS = 50;
 
-    public ScheduledLightEngine(IPlatformImpl pluginImpl, IBackgroundService service, RelightStrategy strategy) {
+    public ScheduledLightEngine(IPlatformImpl pluginImpl, IBackgroundService service, RelightPolicy strategy) {
         this(pluginImpl, service, strategy, 250, 50); // with default params
     }
 
-    public ScheduledLightEngine(IPlatformImpl platformImpl, IBackgroundService service, RelightStrategy strategy,
-                                int maxRequestCount, int maxTimeMsPerTick) {
+    public ScheduledLightEngine(IPlatformImpl platformImpl, IBackgroundService service, RelightPolicy strategy,
+            int maxRequestCount, int maxTimeMsPerTick) {
         this.mPlatformImpl = platformImpl;
         this.mBackgroundService = service;
-        this.mRelightStrategy = strategy;
+        this.mRelightPolicy = strategy;
         this.maxRequestCount = maxRequestCount;
         this.maxTimeMsPerTick = maxTimeMsPerTick;
     }
@@ -103,17 +99,17 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     }
 
     @Override
-    public RelightStrategy getRelightStrategy() {
-        return mRelightStrategy;
+    public RelightPolicy getRelightPolicy() {
+        return mRelightPolicy;
     }
 
     /* @hide */
     private int setLightLevelLocked(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType,
-                                    EditStrategy editStrategy, SendStrategy sendStrategy, ICallback callback) {
+            EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback) {
         int resultCode = ResultCode.SUCCESS;
-        Request request = getScheduler().createRequest(RequestFlag.EDIT, worldName, blockX, blockY, blockZ,
-                lightLevel, lightType, editStrategy, sendStrategy, callback);
-        switch (editStrategy) {
+        Request request = getScheduler().createRequest(RequestFlag.EDIT, worldName, blockX, blockY, blockZ, lightLevel,
+                lightType, editPolicy, sendPolicy, callback);
+        switch (editPolicy) {
             case FORCE_IMMEDIATE: {
                 // Execute request immediately
                 handleLightRequest(request);
@@ -144,19 +140,19 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
                 break;
             }
             default:
-                throw new IllegalArgumentException("Not supported strategy: " + editStrategy.name());
+                throw new IllegalArgumentException("Not supported strategy: " + editPolicy.name());
         }
         return resultCode;
     }
 
     @Override
-    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightType,
-                             EditStrategy editStrategy, SendStrategy sendStrategy, ICallback callback) {
-        if (!getPlatformImpl().isWorldAvailable(worldName)) {
+    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags,
+            EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback) {
+        if (! getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
-        return setLightLevelLocked(worldName, blockX, blockY, blockZ, lightLevel, lightType, editStrategy,
-                sendStrategy, callback);
+        return setLightLevelLocked(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, editPolicy, sendPolicy,
+                callback);
     }
 
     @Override
@@ -234,6 +230,7 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
         long startTime = System.currentTimeMillis();
         requestCount = 0;
         while (lightQueue.peek() != null) {
+            getPlatformImpl().debug("handleLightQueueLocked()");
             long time = System.currentTimeMillis() - startTime;
             if (time > maxTimeMsPerTick) {
                 getPlatformImpl().debug("handleLightQueueLocked: maxRelightTimePerTick is reached (" + time + " ms)");
@@ -253,6 +250,7 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
         long startTime = System.currentTimeMillis();
         requestCount = 0;
         while (relightQueue.peek() != null) {
+            getPlatformImpl().debug("handleRelightQueueLocked()");
             long time = System.currentTimeMillis() - startTime;
             if (time > maxTimeMsPerTick) {
                 getPlatformImpl().debug("handleRelightQueueLocked: maxRelightTimePerTick is reached (" + time + " ms)");

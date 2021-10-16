@@ -1,30 +1,35 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_13_R2;
 
 import com.google.common.collect.Lists;
-import net.minecraft.server.v1_13_R2.*;
+
+import net.minecraft.server.v1_13_R2.BlockPosition;
+import net.minecraft.server.v1_13_R2.Chunk;
+import net.minecraft.server.v1_13_R2.EntityPlayer;
+import net.minecraft.server.v1_13_R2.EnumSkyBlock;
+import net.minecraft.server.v1_13_R2.MinecraftServer;
+import net.minecraft.server.v1_13_R2.PacketPlayOutMapChunk;
+import net.minecraft.server.v1_13_R2.WorldServer;
+
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -34,6 +39,9 @@ import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
+
+import java.util.List;
+
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.BaseNMSHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
@@ -44,23 +52,25 @@ import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
-import java.util.List;
-
 public class VanillaNMSHandler extends BaseNMSHandler {
 
-    private static BlockFace[] SIDES = {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
-            BlockFace.WEST};
+    private static BlockFace[] SIDES =
+            {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
 
     public static Block getAdjacentAirBlock(Block block) {
         for (BlockFace face : SIDES) {
             if (block.getY() == 0x0 && face == BlockFace.DOWN) // 0
+            {
                 continue;
+            }
             if (block.getY() == 0xFF && face == BlockFace.UP) // 255
+            {
                 continue;
+            }
 
             Block candidate = block.getRelative(face);
 
-            if (!candidate.getType().isOccluding()) {
+            if (! candidate.getType().isOccluding()) {
                 return candidate;
             }
         }
@@ -68,8 +78,9 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     private int distanceTo(Chunk from, Chunk to) {
-        if (!from.world.getWorldData().getName().equals(to.world.getWorldData().getName()))
+        if (! from.world.getWorldData().getName().equals(to.world.getWorldData().getName())) {
             return 100;
+        }
         double var2 = to.locX - from.locX;
         double var4 = to.locZ - from.locZ;
         return (int) Math.sqrt(var2 * var2 + var4 * var4);
@@ -89,15 +100,11 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     private int getDeltaLight(int x, int dx) {
-        return (((x ^ ((-dx >> 4) & 15)) + 1) & (-(dx & 1)));
+        return (((x ^ ((- dx >> 4) & 15)) + 1) & (- (dx & 1)));
     }
 
-    private int getThreeSectionsMask(int y) {
-        return (isValidChunkSection(y) ? asSectionMask(y) : 0) | (isValidChunkSection(y - 1) ? asSectionMask(y - 1) : 0)
-                | (isValidChunkSection(y + 1) ? asSectionMask(y + 1) : 0);
-    }
-
-    private IChunkData createLegacyChunkData(String worldName, int chunkX, int chunkZ, int sectionMaskSky, int sectionMaskBlock) {
+    private IChunkData createLegacyChunkData(String worldName, int chunkX, int chunkZ, int sectionMaskSky,
+            int sectionMaskBlock) {
         return new LegacyIntChunkData(worldName, chunkX, chunkZ, sectionMaskSky, sectionMaskBlock);
     }
 
@@ -118,11 +125,6 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     @Override
     public boolean isMainThread() {
         return MinecraftServer.getServer().isMainThread();
-    }
-
-    @Override
-    public int asSectionMask(int sectionY) {
-        return 1 << sectionY;
     }
 
     @Override
@@ -149,7 +151,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
-        if (!worldServer.getChunkProvider().isLoaded(blockX >> 4, blockZ >> 4)) {
+        if (! worldServer.getChunkProvider().isLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
@@ -185,9 +187,9 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     public int getRawLightLevel(World world, int blockX, int blockY, int blockZ, int lightFlags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
-        int lightlevel = -1;
-        if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)
-                && FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
+        int lightlevel = - 1;
+        if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING) && FlagUtils.isFlagSet(lightFlags,
+                LightType.SKY_LIGHTING)) {
             lightlevel = worldServer.getLightLevel(position);
         } else if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
             lightlevel = worldServer.getBrightness(EnumSkyBlock.BLOCK, position);
@@ -201,7 +203,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     public int recalculateLighting(World world, int blockX, int blockY, int blockZ, int lightFlags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
 
-        if (!worldServer.getChunkProvider().isLoaded(blockX >> 4, blockZ >> 4)) {
+        if (! worldServer.getChunkProvider().isLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
@@ -242,7 +244,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     @Override
     public List<IChunkData> collectChunkSections(World world, int blockX, int blockY, int blockZ, int lightLevel,
-                                                 int lightFlags) {
+            int lightFlags) {
         List<IChunkData> list = Lists.newArrayList();
         int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
@@ -250,13 +252,13 @@ public class VanillaNMSHandler extends BaseNMSHandler {
             return list;
         }
 
-        for (int dX = -1; dX <= 1; dX++) {
+        for (int dX = - 1; dX <= 1; dX++) {
             int lightLevelX = finalLightLevel - getDeltaLight(blockX & 15, dX);
             if (lightLevelX > 0) {
-                for (int dZ = -1; dZ <= 1; dZ++) {
+                for (int dZ = - 1; dZ <= 1; dZ++) {
                     int lightLevelZ = lightLevelX - getDeltaLight(blockZ & 15, dZ);
                     if (lightLevelZ > 0) {
-                        for (int dY = -1; dY <= 1; dY++) {
+                        for (int dY = - 1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
                                 if (isValidChunkSection(sectionY)) {
@@ -264,7 +266,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                                     int chunkZ = (blockZ >> 4) + dZ;
 
                                     IChunkData data = searchChunkDataFromList(list, world, chunkX, chunkZ);
-                                    if (!list.contains(data)) {
+                                    if (! list.contains(data)) {
                                         list.add(data);
                                     }
                                     data.markSectionForUpdate(lightFlags, sectionY);

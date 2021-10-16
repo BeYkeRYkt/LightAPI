@@ -1,32 +1,25 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2021 Vladimir Mikhailov <beykerykt@gmail.com>
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_17_R1;
 
-import ca.spottedleaf.starlight.light.BlockStarLightEngine;
-import ca.spottedleaf.starlight.light.SkyStarLightEngine;
-import ca.spottedleaf.starlight.light.StarLightEngine;
-import ca.spottedleaf.starlight.light.StarLightInterface;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.SectionPosition;
 import net.minecraft.server.level.LightEngineThreaded;
@@ -36,30 +29,40 @@ import net.minecraft.world.level.EnumSkyBlock;
 import net.minecraft.world.level.block.state.BlockBase;
 import net.minecraft.world.level.chunk.ILightAccess;
 import net.minecraft.world.level.lighting.LightEngineLayerEventListener;
+
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import ca.spottedleaf.starlight.light.BlockStarLightEngine;
+import ca.spottedleaf.starlight.light.SkyStarLightEngine;
+import ca.spottedleaf.starlight.light.StarLightEngine;
+import ca.spottedleaf.starlight.light.StarLightInterface;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
-
 public class StarlightNMSHandler extends VanillaNMSHandler {
 
+    private final int ALL_DIRECTIONS_BITSET = (1 << 6) - 1;
+    private final long FLAG_HAS_SIDED_TRANSPARENT_BLOCKS = Long.MIN_VALUE;
     private Map<ChunkCoordIntPair, List<LightPos>> blockQueueMap = new HashMap<>();
     private Map<ChunkCoordIntPair, List<LightPos>> skyQueueMap = new HashMap<>();
-
     // StarLightInterface
     private Field starInterface;
     private Field starInterface_coordinateOffset;
     private Method starInterface_getBlockLightEngine;
     private Method starInterface_getSkyLightEngine;
-
     // StarLightEngine
     private Method starEngine_setLightLevel;
     private Method starEngine_appendToIncreaseQueue;
@@ -70,24 +73,13 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
     private Method starEngine_setupCaches;
     private Method starEngine_destroyCaches;
 
-    private final int ALL_DIRECTIONS_BITSET = (1 << 6) - 1;
-    private final long FLAG_HAS_SIDED_TRANSPARENT_BLOCKS = Long.MIN_VALUE;
-
-    private static final class LightPos {
-        public BlockPosition blockPos;
-        public int lightLevel;
-
-        public LightPos(BlockPosition blockPos, int lightLevel) {
-            this.blockPos = blockPos;
-            this.lightLevel = lightLevel;
-        }
-    }
-
-    private void scheduleChunkLight(StarLightInterface starLightInterface, ChunkCoordIntPair chunkCoordIntPair, Runnable runnable) {
+    private void scheduleChunkLight(StarLightInterface starLightInterface, ChunkCoordIntPair chunkCoordIntPair,
+            Runnable runnable) {
         starLightInterface.scheduleChunkLight(chunkCoordIntPair, runnable);
     }
 
-    private void addTaskToQueue(WorldServer worldServer, StarLightInterface starLightInterface, StarLightEngine sle, ChunkCoordIntPair chunkCoordIntPair, List<LightPos> lightPoints) {
+    private void addTaskToQueue(WorldServer worldServer, StarLightInterface starLightInterface, StarLightEngine sle,
+            ChunkCoordIntPair chunkCoordIntPair, List<LightPos> lightPoints) {
         int type = (sle instanceof BlockStarLightEngine) ? LightType.BLOCK_LIGHTING : LightType.SKY_LIGHTING;
         scheduleChunkLight(starLightInterface, chunkCoordIntPair, () -> {
             try {
@@ -96,7 +88,8 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
 
                 // blocksChangedInChunk -- start
                 // setup cache
-                starEngine_setupCaches.invoke(sle, worldServer.getChunkProvider(), chunkX * 16 + 7, 128, chunkZ * 16 + 7, true, true);
+                starEngine_setupCaches.invoke(sle, worldServer.getChunkProvider(), chunkX * 16 + 7, 128,
+                        chunkZ * 16 + 7, true, true);
                 try {
                     // propagateBlockChanges -- start
                     Iterator<LightPos> it = lightPoints.iterator();
@@ -105,19 +98,23 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
                             LightPos lightPos = it.next();
                             BlockPosition blockPos = lightPos.blockPos;
                             int lightLevel = lightPos.lightLevel;
-                            int currentLightLevel = getRawLightLevel(worldServer.getWorld(), blockPos.getX(), blockPos.getY(), blockPos.getZ(), type);
+                            int currentLightLevel = getRawLightLevel(worldServer.getWorld(), blockPos.getX(),
+                                    blockPos.getY(), blockPos.getZ(), type);
                             if (lightLevel <= currentLightLevel) {
                                 // do nothing
                                 continue;
                             }
                             int encodeOffset = starInterface_coordinateOffset.getInt(sle);
                             BlockBase.BlockData blockData = worldServer.getType(blockPos);
-                            starEngine_setLightLevel.invoke(sle, blockPos.getX(), blockPos.getY(), blockPos.getZ(), lightLevel);
+                            starEngine_setLightLevel.invoke(sle, blockPos.getX(), blockPos.getY(), blockPos.getZ(),
+                                    lightLevel);
                             if (lightLevel != 0) {
-                                starEngine_appendToIncreaseQueue.invoke(sle, ((blockPos.getX() + (blockPos.getZ() << 6) + (blockPos.getY() << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
-                                        | (lightLevel & 0xFL) << (6 + 6 + 16)
-                                        | (((long) ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
-                                        | (blockData.isConditionallyFullOpaque() ? FLAG_HAS_SIDED_TRANSPARENT_BLOCKS : 0));
+                                starEngine_appendToIncreaseQueue.invoke(sle,
+                                        ((blockPos.getX() + (blockPos.getZ() << 6) + (blockPos.getY() << (6 + 6))
+                                                + encodeOffset) & ((1L << (6 + 6 + 16)) - 1)) | (lightLevel & 0xFL) << (
+                                                6 + 6 + 16) | (((long) ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4)) | (
+                                                blockData.isConditionallyFullOpaque()
+                                                        ? FLAG_HAS_SIDED_TRANSPARENT_BLOCKS : 0));
                             }
                         } finally {
                             it.remove();
@@ -140,19 +137,25 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
     public void onInitialization(IPlatformImpl impl) throws Exception {
         super.onInitialization(impl);
         try {
-            starEngine_setLightLevel = StarLightEngine.class.getDeclaredMethod("setLightLevel", int.class, int.class, int.class, int.class);
+            starEngine_setLightLevel = StarLightEngine.class.getDeclaredMethod("setLightLevel", int.class, int.class,
+                    int.class, int.class);
             starEngine_setLightLevel.setAccessible(true);
-            starEngine_appendToIncreaseQueue = StarLightEngine.class.getDeclaredMethod("appendToIncreaseQueue", long.class);
+            starEngine_appendToIncreaseQueue = StarLightEngine.class.getDeclaredMethod("appendToIncreaseQueue",
+                    long.class);
             starEngine_appendToIncreaseQueue.setAccessible(true);
-            starEngine_appendToDecreaseQueue = StarLightEngine.class.getDeclaredMethod("appendToDecreaseQueue", long.class);
+            starEngine_appendToDecreaseQueue = StarLightEngine.class.getDeclaredMethod("appendToDecreaseQueue",
+                    long.class);
             starEngine_appendToDecreaseQueue.setAccessible(true);
-            starEngine_performLightIncrease = StarLightEngine.class.getDeclaredMethod("performLightIncrease", ILightAccess.class);
+            starEngine_performLightIncrease = StarLightEngine.class.getDeclaredMethod("performLightIncrease",
+                    ILightAccess.class);
             starEngine_performLightIncrease.setAccessible(true);
-            starEngine_performLightDecrease = StarLightEngine.class.getDeclaredMethod("performLightDecrease", ILightAccess.class);
+            starEngine_performLightDecrease = StarLightEngine.class.getDeclaredMethod("performLightDecrease",
+                    ILightAccess.class);
             starEngine_performLightDecrease.setAccessible(true);
             starEngine_updateVisible = StarLightEngine.class.getDeclaredMethod("updateVisible", ILightAccess.class);
             starEngine_updateVisible.setAccessible(true);
-            starEngine_setupCaches = StarLightEngine.class.getDeclaredMethod("setupCaches", ILightAccess.class, int.class, int.class, int.class, boolean.class, boolean.class);
+            starEngine_setupCaches = StarLightEngine.class.getDeclaredMethod("setupCaches", ILightAccess.class,
+                    int.class, int.class, int.class, boolean.class, boolean.class);
             starEngine_setupCaches.setAccessible(true);
             starEngine_destroyCaches = StarLightEngine.class.getDeclaredMethod("destroyCaches");
             starEngine_destroyCaches.setAccessible(true);
@@ -193,7 +196,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
         final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
-        if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
+        if (! worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
@@ -266,7 +269,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
 
-        if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
+        if (! worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
@@ -274,8 +277,10 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
             StarLightInterface starLightInterface = (StarLightInterface) starInterface.get(lightEngine);
             Iterator blockIt = blockQueueMap.entrySet().iterator();
             while (blockIt.hasNext()) {
-                BlockStarLightEngine bsle = (BlockStarLightEngine) starInterface_getBlockLightEngine.invoke(starLightInterface);
-                Map.Entry<ChunkCoordIntPair, List<LightPos>> pair = (Map.Entry<ChunkCoordIntPair, List<LightPos>>) blockIt.next();
+                BlockStarLightEngine bsle = (BlockStarLightEngine) starInterface_getBlockLightEngine.invoke(
+                        starLightInterface);
+                Map.Entry<ChunkCoordIntPair, List<LightPos>> pair =
+                        (Map.Entry<ChunkCoordIntPair, List<LightPos>>) blockIt.next();
                 ChunkCoordIntPair chunkCoordIntPair = pair.getKey();
                 List<LightPos> lightPoints = pair.getValue();
                 addTaskToQueue(worldServer, starLightInterface, bsle, chunkCoordIntPair, lightPoints);
@@ -284,8 +289,10 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
 
             Iterator skyIt = skyQueueMap.entrySet().iterator();
             while (skyIt.hasNext()) {
-                SkyStarLightEngine ssle = (SkyStarLightEngine) starInterface_getSkyLightEngine.invoke(starLightInterface);
-                Map.Entry<ChunkCoordIntPair, List<LightPos>> pair = (Map.Entry<ChunkCoordIntPair, List<LightPos>>) skyIt.next();
+                SkyStarLightEngine ssle = (SkyStarLightEngine) starInterface_getSkyLightEngine.invoke(
+                        starLightInterface);
+                Map.Entry<ChunkCoordIntPair, List<LightPos>> pair =
+                        (Map.Entry<ChunkCoordIntPair, List<LightPos>>) skyIt.next();
                 ChunkCoordIntPair chunkCoordIntPair = pair.getKey();
                 List<LightPos> lightPoints = pair.getValue();
                 addTaskToQueue(worldServer, starLightInterface, ssle, chunkCoordIntPair, lightPoints);
@@ -298,7 +305,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
         }
 
         // Do not recalculate if no changes!
-        if (!lightEngine.z_()) {
+        if (! lightEngine.z_()) {
             return ResultCode.RECALCULATE_NO_CHANGES;
         }
 
@@ -311,5 +318,16 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
             }
         });
         return ResultCode.SUCCESS;
+    }
+
+    private static final class LightPos {
+
+        public BlockPosition blockPos;
+        public int lightLevel;
+
+        public LightPos(BlockPosition blockPos, int lightLevel) {
+            this.blockPos = blockPos;
+            this.lightLevel = lightLevel;
+        }
     }
 }

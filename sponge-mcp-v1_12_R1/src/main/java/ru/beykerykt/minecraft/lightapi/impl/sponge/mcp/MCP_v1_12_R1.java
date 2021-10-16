@@ -1,34 +1,32 @@
 /**
  * The MIT License (MIT)
- * <p>
- * Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com>
- * Copyright (c) 2016-2017 The ImplexDevOne Project
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ *
+ * <p>Copyright (c) 2015 Vladimir Mikhailov <beykerykt@gmail.com> Copyright (c) 2016-2017 The
+ * ImplexDevOne Project
+ *
+ * <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *
+ * <p>The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package ru.beykerykt.minecraft.lightapi.impl.sponge.mcp;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.play.server.SPacketChunkData;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.property.block.GroundLuminanceProperty;
@@ -38,12 +36,12 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.common.SpongeImpl;
 
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.play.server.SPacketChunkData;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.Chunk;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+
 import ru.beykerykt.minecraft.lightapi.common.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.LightType;
 import ru.beykerykt.minecraft.lightapi.common.LightingEngineVersion;
@@ -58,20 +56,24 @@ import ru.beykerykt.minecraft.lightapi.impl.sponge.SpongeLightHandler;
  */
 public class MCP_v1_12_R1 extends SpongeLightHandler {
 
-    private static Direction[] SIDES = {Direction.UP, Direction.DOWN, Direction.NORTH, Direction.EAST, Direction.SOUTH,
-            Direction.WEST};
+    private static Direction[] SIDES =
+            {Direction.UP, Direction.DOWN, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
 
     private static Location<World> getAdjacentAirBlock(Location<World> blockLoc) {
         for (Direction face : SIDES) {
             if (blockLoc.getBlockY() == 0x0 && face == Direction.DOWN) // 0
+            {
                 continue;
+            }
             if (blockLoc.getBlockY() == 0xFF && face == Direction.UP) // 255
+            {
                 continue;
+            }
 
             Location<World> candidate = blockLoc.getRelative(face);
             WorldServer world = (WorldServer) candidate.getExtent();
-            if (!world.getBlockState(new BlockPos(candidate.getBlockX(), candidate.getBlockY(), candidate.getBlockZ()))
-                    .isOpaqueCube()) {
+            if (! world.getBlockState(
+                    new BlockPos(candidate.getBlockX(), candidate.getBlockY(), candidate.getBlockZ())).isOpaqueCube()) {
                 return candidate;
             }
             // if (!candidate.getType().isOccluding()) {
@@ -82,8 +84,9 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
     }
 
     private int distanceToSquared(Chunk from, Chunk to) {
-        if (!from.getWorld().getWorldInfo().getWorldName().equals(to.getWorld().getWorldInfo().getWorldName()))
+        if (! from.getWorld().getWorldInfo().getWorldName().equals(to.getWorld().getWorldInfo().getWorldName())) {
             return 100;
+        }
         double var2 = to.x - from.x;
         double var4 = to.z - from.z;
         return (int) (var2 * var2 + var4 * var4);
@@ -174,12 +177,11 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
         }
 
         /**
-         * With asynchronous lighting, all lighting calculations occur in a separate
-         * thread. This causes problems with defining changed chunks when calling a
-         * function from another thread, since the list of changed chunks can be created
-         * earlier than changes occur that need to be sent to players after placing the
-         * light source. Use the CompletableFuture features from JRE_1.8 to solve the
-         * problem.
+         * With asynchronous lighting, all lighting calculations occur in a separate thread. This causes
+         * problems with defining changed chunks when calling a function from another thread, since the
+         * list of changed chunks can be created earlier than changes occur that need to be sent to
+         * players after placing the light source. Use the CompletableFuture features from JRE_1.8 to
+         * solve the problem.
          */
         if (isAsyncLighting()) {
             // We hope that the user uses the latest version of Java
@@ -226,24 +228,23 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
         WorldServer mixWorld = (WorldServer) world;
         BlockPos adjacentPosition = new BlockPos(blockX, blockY, blockZ);
         /**
-         * With asynchronous lighting, all lighting calculations occur in a separate
-         * thread. This causes problems with defining changed chunks when calling a
-         * function from another thread, since the list of changed chunks can be created
-         * earlier than changes occur that need to be sent to players after placing the
-         * light source. Use the CompletableFuture features from JRE_1.8 to solve the
-         * problem.
+         * With asynchronous lighting, all lighting calculations occur in a separate thread. This causes
+         * problems with defining changed chunks when calling a function from another thread, since the
+         * list of changed chunks can be created earlier than changes occur that need to be sent to
+         * players after placing the light source. Use the CompletableFuture features from JRE_1.8 to
+         * solve the problem.
          *
-         * Unfortunately, performance tests were not performed.
+         * <p>Unfortunately, performance tests were not performed.
          */
         if (isAsyncLighting()) {
             // We hope that the user uses the latest version of Java
             CompletableFuture<Boolean> future = null;
             if (type == LightType.BLOCK) {
-                future = CompletableFuture
-                        .supplyAsync(() -> mixWorld.checkLightFor(EnumSkyBlock.BLOCK, adjacentPosition));
+                future = CompletableFuture.supplyAsync(
+                        () -> mixWorld.checkLightFor(EnumSkyBlock.BLOCK, adjacentPosition));
             } else if (type == LightType.SKY) {
-                future = CompletableFuture
-                        .supplyAsync(() -> mixWorld.checkLightFor(EnumSkyBlock.SKY, adjacentPosition));
+                future = CompletableFuture.supplyAsync(
+                        () -> mixWorld.checkLightFor(EnumSkyBlock.SKY, adjacentPosition));
             }
             try {
                 future.get();
@@ -286,15 +287,15 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
         }
         List<IChunkData> list = new CopyOnWriteArrayList<IChunkData>();
         WorldServer mcpWorld = (WorldServer) world;
-        for (int dX = -radiusBlocks; dX <= radiusBlocks; dX += radiusBlocks) {
-            for (int dZ = -radiusBlocks; dZ <= radiusBlocks; dZ += radiusBlocks) {
+        for (int dX = - radiusBlocks; dX <= radiusBlocks; dX += radiusBlocks) {
+            for (int dZ = - radiusBlocks; dZ <= radiusBlocks; dZ += radiusBlocks) {
                 int chunkX = (x + dX) >> 4;
                 int chunkZ = (z + dZ) >> 4;
                 if (mcpWorld.getChunkProvider().chunkExists(chunkX, chunkZ)) {
                     Chunk chunk = mcpWorld.getChunkFromChunkCoords(chunkX, chunkZ);
                     if (chunk.needsSaving(false)) {
                         IChunkData cCoord = new SpongeChunkData(world, chunk.x, y, chunk.z, world.getPlayers());
-                        if (!list.contains(cCoord)) {
+                        if (! list.contains(cCoord)) {
                             list.add(cCoord);
                         }
                         chunk.setModified(false);
@@ -380,8 +381,9 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 
     @Override
     public void sendChanges(World world, int chunkX, int chunkZ) {
-        if (world == null)
+        if (world == null) {
             return;
+        }
         for (Player player : world.getPlayers()) {
             sendChanges(world, chunkX, chunkZ, player);
         }
@@ -389,8 +391,9 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 
     @Override
     public void sendChanges(World world, int chunkX, int blockY, int chunkZ) {
-        if (world == null)
+        if (world == null) {
             return;
+        }
         for (Player player : world.getPlayers()) {
             sendChanges(world, chunkX, blockY, chunkZ, player);
         }
@@ -430,8 +433,9 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 
     @Override
     public void sendChanges(IChunkData chunkData) {
-        if (chunkData == null)
+        if (chunkData == null) {
             return;
+        }
         if (chunkData instanceof SpongeChunkData) {
             SpongeChunkData bcd = (SpongeChunkData) chunkData;
             for (Player player : bcd.getReceivers()) {
