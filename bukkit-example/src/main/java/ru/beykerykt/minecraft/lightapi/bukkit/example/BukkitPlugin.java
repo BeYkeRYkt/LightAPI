@@ -29,6 +29,7 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -40,6 +41,7 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendStrategy;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +49,11 @@ public class BukkitPlugin extends JavaPlugin {
     public LightAPI mLightAPI;
     public IHandler mHandler;
     public IBukkitExtension mExtension;
+
+    @Override
+    public void onLoad() {
+        generateConfig();
+    }
 
     @Override
     public void onEnable() {
@@ -64,6 +71,19 @@ public class BukkitPlugin extends JavaPlugin {
 
     public void log(CommandSender sender, String message) {
         sender.sendMessage(ChatColor.AQUA + "<LightAPI>: " + ChatColor.WHITE + message);
+    }
+
+    private void generateConfig() {
+        File file = new File(getDataFolder(), "config.yml");
+        FileConfiguration fc = getConfig();
+        if (!file.exists()) {
+            fc.set("debug.offsetY", 1);
+            saveConfig();
+        }
+    }
+
+    public int getOffsetY() {
+        return getConfig().getInt("debug.offsetY");
     }
 
     private void setLightLevel(Location location, int var, int lightLevel, int lightType, EditStrategy editStrategy,

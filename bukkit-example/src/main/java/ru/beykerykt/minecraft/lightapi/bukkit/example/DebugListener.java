@@ -24,12 +24,11 @@
 package ru.beykerykt.minecraft.lightapi.bukkit.example;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditStrategy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
@@ -40,23 +39,60 @@ public class DebugListener implements Listener {
     // testing
     private LightAPI mAPI;
     private BukkitPlugin mPlugin;
-    private Location prevLoc;
 
     public DebugListener(BukkitPlugin plugin) {
         mPlugin = plugin;
         mAPI = LightAPI.get();
     }
 
-    @EventHandler
-    public void onPlayerClick(PlayerInteractEvent event) {
-        int lightlevel = 15;
-        int flag = LightType.BLOCK_LIGHTING;
-
-        if (event.getItem() == null)
-            return;
-
-        if (event.getItem().getType() == Material.STICK) {
-
+    private void setLightLevel(Block block, int lightLevel) {
+        Location location = block.getLocation();
+        switch (block.getType()) {
+            case BEDROCK: {
+                int flags = LightType.BLOCK_LIGHTING;
+                EditStrategy editStrategy = EditStrategy.IMMEDIATE;
+                SendStrategy sendStrategy = SendStrategy.IMMEDIATE;
+                mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + mPlugin.getOffsetY(),
+                        location.getBlockZ(), lightLevel, flags, editStrategy, sendStrategy,
+                        (requestFlag, resultCode) -> mPlugin.getServer().getLogger().info(block.getType().name() +
+                                ": requestFlag: " + requestFlag + " resultCode: " + resultCode));
+                break;
+            }
+            case REDSTONE_BLOCK: {
+                int flags = LightType.BLOCK_LIGHTING;
+                EditStrategy editStrategy = EditStrategy.DEFERRED;
+                SendStrategy sendStrategy = SendStrategy.DEFERRED;
+                int result = mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + mPlugin.getOffsetY(),
+                        location.getBlockZ(), lightLevel, flags, editStrategy, sendStrategy,
+                        (requestFlag, resultCode) -> mPlugin.getServer().getLogger().info(block.getType().name() +
+                                ": requestFlag: " + requestFlag + " resultCode: " + resultCode));
+                int blockLight = mAPI.getLightLevel(location.getWorld().getName(), location.getBlockX(),
+                        location.getBlockY(), location.getBlockZ(), flags);
+                mPlugin.getServer().getLogger().info("blockLight: " + blockLight + " result: " + result);
+                break;
+            }
+            case OBSIDIAN: {
+                int flags = LightType.BLOCK_LIGHTING;
+                EditStrategy editStrategy = EditStrategy.FORCE_IMMEDIATE;
+                SendStrategy sendStrategy = SendStrategy.IMMEDIATE;
+                mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + mPlugin.getOffsetY(),
+                        location.getBlockZ(), lightLevel, flags, editStrategy, sendStrategy,
+                        (requestFlag, resultCode) -> mPlugin.getServer().getLogger().info(block.getType().name() +
+                                ": requestFlag: " + requestFlag + " resultCode: " + resultCode));
+                break;
+            }
+            case GLASS: {
+                int flags = LightType.SKY_LIGHTING;
+                EditStrategy editStrategy = EditStrategy.IMMEDIATE;
+                SendStrategy sendStrategy = SendStrategy.IMMEDIATE;
+                mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + mPlugin.getOffsetY(),
+                        location.getBlockZ(), lightLevel, flags, editStrategy, sendStrategy,
+                        (requestFlag, resultCode) -> mPlugin.getServer().getLogger().info(block.getType().name() +
+                                ": requestFlag: " + requestFlag + " resultCode: " + resultCode));
+                break;
+            }
+            default:
+                break;
         }
     }
 
@@ -64,192 +100,15 @@ public class DebugListener implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         if (event.getBlock() == null) return;
 
-        int lightlevel = 15;
-        int flags = LightType.BLOCK_LIGHTING;
-        Location location = event.getBlock().getLocation();
-        if (event.getBlock().getType() == Material.BEDROCK) {
-            EditStrategy editStrategy = EditStrategy.IMMEDIATE;
-            SendStrategy sendStrategy = SendStrategy.IMMEDIATE;
-            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
-                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy,
-                    (requestFlag, resultCode) -> mPlugin.getServer().getLogger().info("requestFlag: " + requestFlag + " resultCode: " + resultCode));
-        } else if (event.getBlock().getType() == Material.REDSTONE_BLOCK) {
-            EditStrategy editStrategy = EditStrategy.DEFERRED;
-            SendStrategy sendStrategy = SendStrategy.DEFERRED;
-            int result = mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
-                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy, null);
-            int blockLight = mAPI.getLightLevel(location.getWorld().getName(), location.getBlockX(),
-                    location.getBlockY() + 2,
-                    location.getBlockZ(), flags);
-            mPlugin.getServer().getLogger().info("blockLight: " + blockLight + " result: " + result);
-        } else if (event.getBlock().getType() == Material.OBSIDIAN) {
-            EditStrategy editStrategy = EditStrategy.FORCE_IMMEDIATE;
-            SendStrategy sendStrategy = SendStrategy.IMMEDIATE;
-            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
-                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy, null);
-        }
+        int lightLevel = 15;
+        setLightLevel(event.getBlock(), lightLevel);
     }
 
     @EventHandler
-    public void onBlockPlace(BlockBreakEvent event) {
+    public void onBlockBreak(BlockBreakEvent event) {
         if (event.getBlock() == null) return;
 
-        int lightlevel = 0;
-        int flags = LightType.BLOCK_LIGHTING;
-        Location location = event.getBlock().getLocation();
-        if (event.getBlock().getType() == Material.BEDROCK) {
-            EditStrategy editStrategy = EditStrategy.IMMEDIATE;
-            SendStrategy sendStrategy = SendStrategy.IMMEDIATE;
-            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
-                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy,
-                    (requestFlag, resultCode) -> mPlugin.getServer().getLogger().info("relight: " + mAPI.getRelightStrategy() + " requestFlag: " + requestFlag + " resultCode: " + resultCode));
-        } else if (event.getBlock().getType() == Material.REDSTONE_BLOCK) {
-            EditStrategy editStrategy = EditStrategy.DEFERRED;
-            SendStrategy sendStrategy = SendStrategy.DEFERRED;
-            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
-                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy, null);
-            int blockLight = mAPI.getLightLevel(location.getWorld().getName(), location.getBlockX(),
-                    location.getBlockY() + 2,
-                    location.getBlockZ(), flags);
-            mPlugin.getServer().getLogger().info("blockLight: " + blockLight);
-        } else if (event.getBlock().getType() == Material.OBSIDIAN) {
-            EditStrategy editStrategy = EditStrategy.FORCE_IMMEDIATE;
-            SendStrategy sendStrategy = SendStrategy.IMMEDIATE;
-            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY() + 2,
-                    location.getBlockZ(), lightlevel, flags, editStrategy, sendStrategy, null);
-        }
+        int lightLevel = 0;
+        setLightLevel(event.getBlock(), lightLevel);
     }
-
-    /*
-	@EventHandler
-	public void onPlayerClick(PlayerInteractEvent event) {
-		int lightlevel = 15;
-		int flag = LightFlags.BLOCK_LIGHTING;
-
-		if (event.getItem() == null)
-			return;
-
-		if (event.getItem().getType() == Material.STICK) {
-			event.setCancelled(true);
-			if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-				List<ChunkData> list = new ArrayList<ChunkData>();
-				if (mPluginImpl.getLightEngineVersion() == LightEngineVersion.V1) {
-					if (prevLoc != null) {
-						// remove and collect changed chunks
-						int oldBlockLight = mPluginImpl.getRawLightLevel(prevLoc, flag);
-						if (mPluginImpl.setLightLevel(prevLoc, flag, 0) == ResultCodes.SUCCESS) {
-							List<IChunkSectionsData> chunkList = mPluginImpl.collectChunkSections(
-									prevLoc.getWorld().getName(), prevLoc.getBlockX(), prevLoc.getBlockY(),
-									prevLoc.getBlockZ(), oldBlockLight);
-							for (int j = 0; j < chunkList.size(); j++) {
-								IChunkSectionsData data = chunkList.get(j);
-								if (!list.contains(data)) {
-									list.add(data);
-								}
-							}
-						}
-					}
-					prevLoc = event.getClickedBlock().getLocation();
-					if (mPluginImpl.setLightLevel(prevLoc, flag, lightlevel) == ResultCodes.SUCCESS) {
-						List<IChunkSectionsData> chunkList = mPluginImpl.collectChunkSections(
-								prevLoc.getWorld().getName(), prevLoc.getBlockX(), prevLoc.getBlockY(),
-								prevLoc.getBlockZ(), lightlevel);
-						for (int j = 0; j < chunkList.size(); j++) {
-							IChunkSectionsData data = chunkList.get(j);
-							if (!list.contains(data)) {
-								list.add(data);
-							}
-						}
-					}
-				} else if (mPluginImpl.getLightingEngineVersion() == LightingEngineVersion.V2) {
-					if (prevLoc != null) {
-						// remove and collect changed chunks
-						int oldBlockLight = mPluginImpl.getRawLightLevel(prevLoc, flag);
-						mPluginImpl.setRawLightLevel(prevLoc, flag, 0);
-						mPluginImpl.recalculateLighting(prevLoc, flag);
-						List<IChunkSectionsData> chunkList = mPluginImpl.collectChunkSections(
-								prevLoc.getWorld().getName(), prevLoc.getBlockX(), prevLoc.getBlockY(),
-								prevLoc.getBlockZ(), oldBlockLight);
-						for (int j = 0; j < chunkList.size(); j++) {
-							IChunkSectionsData data = chunkList.get(j);
-							if (!list.contains(data)) {
-								list.add(data);
-							}
-						}
-					}
-					prevLoc = event.getClickedBlock().getLocation();
-					mPluginImpl.setRawLightLevel(prevLoc.getWorld(), prevLoc.getBlockX(), prevLoc.getBlockY(),
-							prevLoc.getBlockZ(), flag, lightlevel, new LCallback() {
-
-								@Override
-								public void onSuccess(String worldName, int blockX, int blockY, int blockZ, int type,
-										int lightlevel, LStage stage) {
-									if (stage == LStage.WRITTING) {
-										mPluginImpl.recalculateLighting(worldName, blockX, blockY, blockZ, flag,
-												new LCallback() {
-
-													@Override
-													public void onSuccess(String worldName, int blockX, int blockY,
-															int blockZ, int type, int lightlevel, LStage stage) {
-														List<IChunkSectionsData> chunkList = mPluginImpl
-																.collectChunkSections(prevLoc.getWorld().getName(),
-																		prevLoc.getBlockX(), prevLoc.getBlockY(),
-																		prevLoc.getBlockZ(), lightlevel);
-														for (int j = 0; j < chunkList.size(); j++) {
-															IChunkSectionsData data = chunkList.get(j);
-															if (!list.contains(data)) {
-																list.add(data);
-															}
-														}
-													}
-
-													@Override
-													public void onFailed(String worldName, int blockX, int blockY,
-															int blockZ, int type, int lightlevel, LStage stage) {
-														// TODO Auto-generated method stub
-
-													}
-												});
-									}
-								}
-
-								@Override
-								public void onFailed(String worldName, int blockX, int blockY, int blockZ, int type,
-										int lightlevel, LStage stage) {
-									// TODO Auto-generated method stub
-
-								}
-							});
-				}
-				for (int j = 0; j < list.size(); j++) {
-					IChunkSectionsData coords = list.get(j);
-					mPluginImpl.sendChanges(coords);
-				}
-			} else if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-				List<IChunkSectionsData> list = new ArrayList<IChunkSectionsData>();
-				if (LightAPI.get().getLightingEngineVersion() == LightingEngineVersion.V2) {
-					if (prevLoc != null) {
-						// remove and collect changed chunks
-						int oldBlockLight = mPluginImpl.getRawLightLevel(prevLoc, flag);
-						mPluginImpl.setRawLightLevel(prevLoc, flag, 0);
-						mPluginImpl.recalculateLighting(prevLoc, flag);
-						List<IChunkSectionsData> chunkList = mPluginImpl.collectChunkSections(
-								prevLoc.getWorld().getName(), prevLoc.getBlockX(), prevLoc.getBlockY(),
-								prevLoc.getBlockZ(), oldBlockLight);
-						for (int j = 0; j < chunkList.size(); j++) {
-							IChunkSectionsData data = chunkList.get(j);
-							if (!list.contains(data)) {
-								list.add(data);
-							}
-						}
-					}
-				}
-				for (int j = 0; j < list.size(); j++) {
-					IChunkSectionsData coords = list.get(j);
-					mPluginImpl.sendChanges(coords);
-				}
-			}
-		}
-	}
-     */
 }
