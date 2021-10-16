@@ -33,8 +33,14 @@ import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditStrategy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendStrategy;
+import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DebugListener implements Listener {
+
+    private Map<Long, Integer> mLightTasks = new HashMap<>();
 
     // testing
     private LightAPI mAPI;
@@ -90,6 +96,33 @@ public class DebugListener implements Listener {
                         (requestFlag, resultCode) -> mPlugin.getServer().getLogger().info(block.getType().name() +
                                 ": requestFlag: " + requestFlag + " resultCode: " + resultCode));
                 break;
+            }
+            case REDSTONE_LAMP: {
+                int flags = LightType.BLOCK_LIGHTING;
+                long longPos = BlockPosition.asLong(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+                if (mLightTasks.containsKey(longPos)) {
+                    int taskId = mLightTasks.get(longPos);
+                    mPlugin.getServer().getScheduler().cancelTask(taskId);
+                    mLightTasks.remove(longPos);
+                    mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(),
+                            location.getBlockY(), location.getBlockZ(), 0, flags, null);
+                    return;
+                }
+
+                if (lightLevel > 0) {
+                    int taskId = mPlugin.getServer().getScheduler().runTaskTimer(mPlugin, () -> {
+                        int currentLightLevel = mAPI.getLightLevel(location.getWorld().getName(), location.getBlockX(),
+                                location.getBlockY(), location.getBlockZ(), flags);
+                        if (currentLightLevel == 0) {
+                            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(),
+                                    location.getBlockY(), location.getBlockZ(), lightLevel, flags, null);
+                        } else if (currentLightLevel > 0) {
+                            mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(),
+                                    location.getBlockY(), location.getBlockZ(), 0, flags, null);
+                        }
+                    }, 20L, 20L).getTaskId();
+                    mLightTasks.put(longPos, taskId);
+                }
             }
             default:
                 break;
