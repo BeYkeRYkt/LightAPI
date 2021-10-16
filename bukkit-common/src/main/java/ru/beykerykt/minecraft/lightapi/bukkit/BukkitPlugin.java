@@ -121,7 +121,7 @@ public class BukkitPlugin extends JavaPlugin {
     private void generateConfig(File file) {
         FileConfiguration fc = getConfig();
         if (!file.exists()) {
-            fc.set(ConfigurationPath.GENERAL_DEBUG, true);
+            fc.set(ConfigurationPath.GENERAL_DEBUG, false);
             fc.set(ConfigurationPath.GENERAL_ENABLE_METRICS, true);
             if (Build.API_VERSION == Build.PREVIEW) { // only for PREVIEW build
                 fc.set(ConfigurationPath.GENERAL_FORCE_ENABLE_LEGACY, true);
