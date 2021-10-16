@@ -40,7 +40,12 @@ public interface IScheduler {
                           EditStrategy editStrategy, SendStrategy sendStrategy, ICallback callback);
 
     /**
-     * Processes requests. The function should only process requests without changes in flags.
+     * Processes light requests. The function should only process requests without changes in flags.
      */
-    int handleRequest(Request request);
+    int handleLightRequest(Request request);
+
+    /**
+     * Processes relight requests. The function should only process requests without changes in flags.
+     */
+    int handleRelightRequest(Request request);
 }

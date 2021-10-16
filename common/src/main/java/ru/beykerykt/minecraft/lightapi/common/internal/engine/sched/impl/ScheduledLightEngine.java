@@ -116,14 +116,14 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
         switch (editStrategy) {
             case FORCE_IMMEDIATE: {
                 // Execute request immediately
-                handleRequest(request);
+                handleLightRequest(request);
                 break;
             }
             case IMMEDIATE: {
                 if (canExecuteSync()) {
                     // Execute the request only if we can provide it
                     long startTime = System.currentTimeMillis();
-                    handleRequest(request);
+                    handleLightRequest(request);
                     long time = System.currentTimeMillis() - startTime;
                     penaltyTime += time;
                 } else {
@@ -210,12 +210,22 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
         }
     }
 
-    private void handleRequest(Request request) {
+    private void handleLightRequest(Request request) {
         if (getBackgroundService().isMainThread()) {
-            getScheduler().handleRequest(request);
+            getScheduler().handleLightRequest(request);
         } else {
             synchronized (request) {
-                getScheduler().handleRequest(request);
+                getScheduler().handleLightRequest(request);
+            }
+        }
+    }
+
+    private void handleRelightRequest(Request request) {
+        if (getBackgroundService().isMainThread()) {
+            getScheduler().handleRelightRequest(request);
+        } else {
+            synchronized (request) {
+                getScheduler().handleRelightRequest(request);
             }
         }
     }
@@ -234,7 +244,7 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
                 break;
             }
             Request request = lightQueue.poll();
-            handleRequest(request);
+            handleLightRequest(request);
             requestCount++;
         }
     }
@@ -253,7 +263,7 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
                 break;
             }
             Request request = relightQueue.poll();
-            handleRequest(request);
+            handleRelightRequest(request);
             requestCount++;
         }
     }

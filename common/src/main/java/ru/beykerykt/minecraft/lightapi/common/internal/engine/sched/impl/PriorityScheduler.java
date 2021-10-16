@@ -106,7 +106,6 @@ public class PriorityScheduler implements IScheduler {
                     // move to queue
                     request.addRequestFlag(RequestFlag.DEFERRED_RECALCULATE);
                 }
-
                 request.setPriority(newPriority);
                 break;
             }
@@ -127,9 +126,7 @@ public class PriorityScheduler implements IScheduler {
     }
 
     @Override
-    public int handleRequest(Request request) {
-        //getPlatformImpl().debug("Current Thread: " + Thread.currentThread().getName());
-
+    public int handleLightRequest(Request request) {
         if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.EDIT)) {
             request.removeRequestFlag(RequestFlag.EDIT);
             int resultCode = getLightEngine().setRawLightLevel(request.getWorldName(), request.getBlockX(),
@@ -138,7 +135,12 @@ public class PriorityScheduler implements IScheduler {
                 request.getCallback().onResult(RequestFlag.EDIT, resultCode);
             }
         }
+        handleRelightRequest(request);
+        return ResultCode.SUCCESS;
+    }
 
+    @Override
+    public int handleRelightRequest(Request request) {
         if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.RECALCULATE)) {
             request.removeRequestFlag(RequestFlag.RECALCULATE);
             int resultCode = getLightEngine().recalculateLighting(request.getWorldName(), request.getBlockX(),
