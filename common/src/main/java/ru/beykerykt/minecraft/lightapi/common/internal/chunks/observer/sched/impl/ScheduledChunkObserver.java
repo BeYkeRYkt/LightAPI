@@ -56,10 +56,12 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
     @Override
     public void onStart() {
         getBackgroundService().addToRepeat(this);
+        getPlatformImpl().debug(getClass().getName() + " is started!");
     }
 
     @Override
     public void onShutdown() {
+        getPlatformImpl().debug(getClass().getName() + " is shutdown!");
         getBackgroundService().removeRepeat(this);
         observedChunks.clear();
         mPlatformImpl = null;
@@ -141,6 +143,9 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
 
     private void handleChunksLocked() {
         Iterator it = observedChunks.entrySet().iterator();
+        if (observedChunks.size() > 0) {
+            getPlatformImpl().debug("observedChunks size: " + observedChunks.size());
+        }
         while (it.hasNext()) {
             Map.Entry<Long, IChunkData> pair = (Map.Entry<Long, IChunkData>) it.next();
             IChunkData data = pair.getValue();
