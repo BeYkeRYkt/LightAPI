@@ -39,11 +39,12 @@ import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ca.spottedleaf.starlight.light.BlockStarLightEngine;
 import ca.spottedleaf.starlight.light.SkyStarLightEngine;
@@ -59,8 +60,8 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
 
     private final int ALL_DIRECTIONS_BITSET = (1 << 6) - 1;
     private final long FLAG_HAS_SIDED_TRANSPARENT_BLOCKS = Long.MIN_VALUE;
-    private Map<ChunkCoordIntPair, List<LightPos>> blockQueueMap = new HashMap<>();
-    private Map<ChunkCoordIntPair, List<LightPos>> skyQueueMap = new HashMap<>();
+    private final Map<ChunkCoordIntPair, Set<LightPos>> blockQueueMap = Collections.synchronizedMap(new HashMap<>());
+    private final Map<ChunkCoordIntPair, Set<LightPos>> skyQueueMap = Collections.synchronizedMap(new HashMap<>());
     // StarLightInterface
     private Field starInterface;
     private Field starInterface_coordinateOffset;
@@ -82,7 +83,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
     }
 
     private void addTaskToQueue(WorldServer worldServer, StarLightInterface starLightInterface, StarLightEngine sle,
-            ChunkCoordIntPair chunkCoordIntPair, List<LightPos> lightPoints) {
+            ChunkCoordIntPair chunkCoordIntPair, Set<LightPos> lightPoints) {
         int type = (sle instanceof BlockStarLightEngine) ? LightType.BLOCK_LIGHTING : LightType.SKY_LIGHTING;
         scheduleChunkLight(starLightInterface, chunkCoordIntPair, () -> {
             try {
@@ -219,10 +220,10 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
                         try {
                             ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(blockX >> 4, blockZ >> 4);
                             if (blockQueueMap.containsKey(chunkCoordIntPair)) {
-                                List<LightPos> lightPoints = blockQueueMap.get(chunkCoordIntPair);
+                                Set<LightPos> lightPoints = blockQueueMap.get(chunkCoordIntPair);
                                 lightPoints.add(new LightPos(position, finalLightLevel));
                             } else {
-                                List<LightPos> lightPoints = new ArrayList<>();
+                                Set<LightPos> lightPoints = new HashSet<>();
                                 lightPoints.add(new LightPos(position, finalLightLevel));
                                 blockQueueMap.put(chunkCoordIntPair, lightPoints);
                             }
@@ -249,10 +250,10 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
                         try {
                             ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(blockX >> 4, blockZ >> 4);
                             if (skyQueueMap.containsKey(chunkCoordIntPair)) {
-                                List<LightPos> lightPoints = skyQueueMap.get(chunkCoordIntPair);
+                                Set<LightPos> lightPoints = skyQueueMap.get(chunkCoordIntPair);
                                 lightPoints.add(new LightPos(position, finalLightLevel));
                             } else {
-                                List<LightPos> lightPoints = new ArrayList<>();
+                                Set<LightPos> lightPoints = new HashSet<>();
                                 lightPoints.add(new LightPos(position, finalLightLevel));
                                 skyQueueMap.put(chunkCoordIntPair, lightPoints);
                             }
@@ -282,10 +283,10 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
             while (blockIt.hasNext()) {
                 BlockStarLightEngine bsle = (BlockStarLightEngine) starInterface_getBlockLightEngine.invoke(
                         starLightInterface);
-                Map.Entry<ChunkCoordIntPair, List<LightPos>> pair =
-                        (Map.Entry<ChunkCoordIntPair, List<LightPos>>) blockIt.next();
+                Map.Entry<ChunkCoordIntPair, Set<LightPos>> pair =
+                        (Map.Entry<ChunkCoordIntPair, Set<LightPos>>) blockIt.next();
                 ChunkCoordIntPair chunkCoordIntPair = pair.getKey();
-                List<LightPos> lightPoints = pair.getValue();
+                Set<LightPos> lightPoints = pair.getValue();
                 addTaskToQueue(worldServer, starLightInterface, bsle, chunkCoordIntPair, lightPoints);
                 blockIt.remove();
             }
@@ -294,10 +295,10 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
             while (skyIt.hasNext()) {
                 SkyStarLightEngine ssle = (SkyStarLightEngine) starInterface_getSkyLightEngine.invoke(
                         starLightInterface);
-                Map.Entry<ChunkCoordIntPair, List<LightPos>> pair =
-                        (Map.Entry<ChunkCoordIntPair, List<LightPos>>) skyIt.next();
+                Map.Entry<ChunkCoordIntPair, Set<LightPos>> pair =
+                        (Map.Entry<ChunkCoordIntPair, Set<LightPos>>) skyIt.next();
                 ChunkCoordIntPair chunkCoordIntPair = pair.getKey();
-                List<LightPos> lightPoints = pair.getValue();
+                Set<LightPos> lightPoints = pair.getValue();
                 addTaskToQueue(worldServer, starLightInterface, ssle, chunkCoordIntPair, lightPoints);
                 skyIt.remove();
             }
