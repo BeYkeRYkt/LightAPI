@@ -59,7 +59,7 @@
     </modules>
 
     <properties>
-        <BUILD_NUMBER>null</BUILD_NUMBER>
+        <BUILD_NUMBER>PREVIEW_RC1</BUILD_NUMBER>
         <SERVER_API>Unknown</SERVER_API>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
