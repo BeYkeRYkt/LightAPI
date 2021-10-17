@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
@@ -200,10 +201,18 @@ public final class LightAPI {
      * Placement of a specific type of light with a given level of illumination in the named world in
      * certain coordinates with the return code result.
      */
-    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags,
-            EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback) {
-        return getLightEngine().setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, editPolicy,
-                sendPolicy, callback);
+    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel) {
+        return setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, LightType.BLOCK_LIGHTING,
+                EditPolicy.DEFERRED, SendPolicy.DEFERRED, null);
+    }
+
+    /**
+     * Placement of a specific type of light with a given level of illumination in the named world in
+     * certain coordinates with the return code result.
+     */
+    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags) {
+        return setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, EditPolicy.DEFERRED,
+                SendPolicy.DEFERRED, null);
     }
 
     /**
@@ -214,6 +223,16 @@ public final class LightAPI {
             ICallback callback) {
         return setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, EditPolicy.DEFERRED,
                 SendPolicy.DEFERRED, callback);
+    }
+
+    /**
+     * Placement of a specific type of light with a given level of illumination in the named world in
+     * certain coordinates with the return code result.
+     */
+    public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags,
+            EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback) {
+        return getLightEngine().setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, editPolicy,
+                sendPolicy, callback);
     }
 
     /**

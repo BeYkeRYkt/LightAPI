@@ -25,6 +25,7 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.UUID;
@@ -39,6 +40,10 @@ import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandlerFactory;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BukkitBackgroundService;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
 import ru.beykerykt.minecraft.lightapi.common.internal.InternalCode;
 import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
@@ -262,6 +267,37 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     @Override
     public boolean isMainThread() {
         return getHandler().isMainThread();
+    }
+
+    @Override
+    public int getLightLevel(World world, int blockX, int blockY, int blockZ, int lightFlags) {
+        return getLightEngine().getLightLevel(world.getName(), blockX, blockY, blockZ, lightFlags);
+    }
+
+    @Override
+    public int setLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel) {
+        return setLightLevel(world, blockX, blockY, blockZ, lightLevel, LightType.BLOCK_LIGHTING, EditPolicy.DEFERRED,
+                SendPolicy.DEFERRED, null);
+    }
+
+    @Override
+    public int setLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags) {
+        return setLightLevel(world, blockX, blockY, blockZ, lightLevel, lightFlags, EditPolicy.DEFERRED,
+                SendPolicy.DEFERRED, null);
+    }
+
+    @Override
+    public int setLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags,
+            ICallback callback) {
+        return setLightLevel(world, blockX, blockY, blockZ, lightLevel, lightFlags, EditPolicy.DEFERRED,
+                SendPolicy.DEFERRED, callback);
+    }
+
+    @Override
+    public int setLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags,
+            EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback) {
+        return getLightEngine().setLightLevel(world.getName(), blockX, blockY, blockZ, lightLevel, lightFlags,
+                editPolicy, sendPolicy, callback);
     }
 
     @Override

@@ -23,10 +23,46 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.api.extension;
 
+import org.bukkit.World;
+
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
 
 public interface IBukkitExtension extends IExtension {
+
+    /**
+     * Gets the level of light from given coordinates with specific flags.
+     */
+    int getLightLevel(World world, int blockX, int blockY, int blockZ, int lightFlags);
+
+    /**
+     * Placement of a specific type of light with a given level of illumination in the named world in
+     * certain coordinates with the return code result.
+     */
+    int setLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel);
+
+    /**
+     * Placement of a specific type of light with a given level of illumination in the named world in
+     * certain coordinates with the return code result.
+     */
+    int setLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags);
+
+    /**
+     * Placement of a specific type of light with a given level of illumination in the named world in
+     * certain coordinates with the return code result.
+     */
+    int setLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags,
+            ICallback callback);
+
+    /**
+     * Placement of a specific type of light with a given level of illumination in the named world in
+     * certain coordinates with the return code result.
+     */
+    int setLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags,
+            EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback);
 
     /**
      * N/A
