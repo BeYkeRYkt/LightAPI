@@ -53,7 +53,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -90,22 +89,6 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     private int getDeltaLight(int x, int dx) {
         return (((x ^ ((- dx >> 4) & 15)) + 1) & (- (dx & 1)));
-    }
-
-    // For compatibility with vanilla lighting (?)
-    private void executeInServerThread(LightEngineThreaded lightEngine, Runnable task) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
-        try {
-            ThreadedMailbox<Runnable> threadedMailbox = (ThreadedMailbox<Runnable>) lightEngine_ThreadedMailbox.get(
-                    lightEngine);
-            threadedMailbox.a(() -> {
-                task.run();
-                future.complete(null);
-            });
-        } catch (IllegalAccessException e) {
-            throw toRuntimeException(e);
-        }
-        future.join();
     }
 
     private void executeSync(LightEngineThreaded lightEngine, Runnable task) {
