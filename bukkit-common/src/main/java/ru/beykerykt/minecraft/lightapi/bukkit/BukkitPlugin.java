@@ -167,18 +167,18 @@ public class BukkitPlugin extends JavaPlugin {
 
                     TextComponent developer = new TextComponent(ChatColor.AQUA + "Developers");
                     List<String> authors = getDescription().getAuthors();
-                    String authorsLine = "none";
+                    StringBuilder authorsLine = new StringBuilder("none");
                     if (authors.size() > 0) {
-                        authorsLine = authors.get(0);
+                        authorsLine = new StringBuilder(authors.get(0));
                         if (authors.size() > 1) {
                             for (int i = 1; i < authors.size() - 1; i++) {
-                                authorsLine += ", " + authors.get(i);
+                                authorsLine.append(", ").append(authors.get(i));
                             }
-                            authorsLine += " and " + authors.get(authors.size() - 1);
+                            authorsLine.append(" and ").append(authors.get(authors.size() - 1));
                         }
                     }
-                    developer.setHoverEvent(
-                            new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(authorsLine).create()));
+                    developer.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                            new ComponentBuilder(authorsLine.toString()).create()));
                     text.addExtra(developer);
                     text.addExtra(new TextComponent(ChatColor.WHITE + " | "));
 
@@ -227,14 +227,14 @@ public class BukkitPlugin extends JavaPlugin {
                     console.sendMessage(ChatColor.AQUA + " Source code: " + ChatColor.WHITE
                             + "http://github.com/BeYkeRYkt/LightAPI/");
                     List<String> authors = getDescription().getAuthors();
-                    String authorsLine = "none";
+                    StringBuilder authorsLine = new StringBuilder("none");
                     if (authors.size() > 0) {
-                        authorsLine = authors.get(0);
+                        authorsLine = new StringBuilder(authors.get(0));
                         if (authors.size() > 1) {
                             for (int i = 1; i < authors.size() - 1; i++) {
-                                authorsLine += ", " + authors.get(i);
+                                authorsLine.append(", ").append(authors.get(i));
                             }
-                            authorsLine += " and " + authors.get(authors.size() - 1);
+                            authorsLine.append(" and ").append(authors.get(authors.size() - 1));
                         }
                     }
                     console.sendMessage(ChatColor.AQUA + " Developers: " + ChatColor.WHITE + authorsLine);

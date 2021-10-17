@@ -44,9 +44,9 @@ import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
  */
 public class PriorityScheduler implements IScheduler {
 
-    private IScheduledLightEngine mLightEngine;
-    private IScheduledChunkObserver mChunkObserver;
-    private IBackgroundService mBackgroundService;
+    private final IScheduledLightEngine mLightEngine;
+    private final IScheduledChunkObserver mChunkObserver;
+    private final IBackgroundService mBackgroundService;
 
     public PriorityScheduler(IScheduledLightEngine lightEngine, IScheduledChunkObserver chunkObserver,
             IBackgroundService backgroundService) {

@@ -34,11 +34,11 @@ import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 public class BitChunkData extends ChunkData {
 
     private static final int DEFAULT_SIZE = 2048;
-    private BitSet skyLightUpdateBits;
-    private BitSet blockLightUpdateBits;
+    private final BitSet skyLightUpdateBits;
+    private final BitSet blockLightUpdateBits;
 
-    private int topSection;
-    private int bottomSection;
+    private final int topSection;
+    private final int bottomSection;
 
     public BitChunkData(String worldName, int chunkX, int chunkZ, int topSection, int bottomSection) {
         super(worldName, chunkX, chunkZ);

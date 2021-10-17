@@ -35,20 +35,20 @@ import ru.beykerykt.lightapi.chunks.ChunkInfo;
 public interface INMSHandler {
 
     // Lights...
-    public void createLight(World world, int x, int y, int z, int light);
+    void createLight(World world, int x, int y, int z, int light);
 
-    public void deleteLight(World world, int x, int y, int z);
+    void deleteLight(World world, int x, int y, int z);
 
-    public void recalculateLight(World world, int x, int y, int z);
+    void recalculateLight(World world, int x, int y, int z);
 
     // Chunks...
-    public List<ChunkInfo> collectChunks(World world, int x, int y, int z);
+    List<ChunkInfo> collectChunks(World world, int x, int y, int z);
 
-    public void sendChunkUpdate(World world, int chunkX, int chunkZ, Collection<? extends Player> players);
+    void sendChunkUpdate(World world, int chunkX, int chunkZ, Collection<? extends Player> players);
 
-    public void sendChunkUpdate(World world, int chunkX, int chunkZ, Player player);
+    void sendChunkUpdate(World world, int chunkX, int chunkZ, Player player);
 
-    public void sendChunkUpdate(World world, int chunkX, int y, int chunkZ, Collection<? extends Player> players);
+    void sendChunkUpdate(World world, int chunkX, int y, int chunkZ, Collection<? extends Player> players);
 
-    public void sendChunkUpdate(World world, int chunkX, int y, int chunkZ, Player player);
+    void sendChunkUpdate(World world, int chunkX, int y, int chunkZ, Player player);
 }

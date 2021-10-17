@@ -57,7 +57,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 public class VanillaNMSHandler extends BaseNMSHandler {
 
-    private static BlockFace[] SIDES =
+    private static final BlockFace[] SIDES =
             {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
 
     public static Block getAdjacentAirBlock(Block block) {
@@ -92,7 +92,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     public int parseViewDistance(EntityPlayer player) {
         int viewDistance = Bukkit.getViewDistance();
         try {
-            int playerViewDistance = Integer.valueOf(player.clientViewDistance);
+            int playerViewDistance = player.clientViewDistance;
             if (playerViewDistance < viewDistance) {
                 viewDistance = playerViewDistance;
             }
@@ -143,10 +143,9 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
             WorldServer worldServer = ((CraftWorld) world).getHandle();
             return worldServer.worldProvider.g();
-        } else if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
-            return true;
+        } else {
+            return FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING);
         }
-        return false;
     }
 
     @Override

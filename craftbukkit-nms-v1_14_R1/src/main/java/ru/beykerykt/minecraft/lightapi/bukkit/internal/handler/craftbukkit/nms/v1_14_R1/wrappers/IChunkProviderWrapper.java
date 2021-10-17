@@ -61,7 +61,7 @@ public class IChunkProviderWrapper implements ILightAccess, Listener {
     private final Map<ChunkCoordIntPair, IChunkAccess> mProxiesToOutput = new HashMap<>();
     private final IChunkProvider mChunkProvider;
     private final String GET_LUMINANCE_METHOD = "h"; // getLuminance() (yarn-1.14)
-    private LightStorage mStorage;
+    private final LightStorage mStorage;
 
     public IChunkProviderWrapper(IChunkProvider chunkProvider, LightStorage storage) {
         this.mChunkProvider = chunkProvider;

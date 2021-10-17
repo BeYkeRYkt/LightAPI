@@ -39,9 +39,9 @@ public class Request implements Comparable<Request> {
     private final int mLightLevel;
     private final int mOldLightLevel;
     private final int mLightFlags;
+    private final ICallback mCallback;
     private int mRequestFlags;
     private int mPriority;
-    private ICallback mCallback;
 
     public Request(int priority, int requestFlags, String worldName, int blockX, int blockY, int blockZ,
             int oldLightLevel, int lightLevel, int lightFlags, ICallback callback) {

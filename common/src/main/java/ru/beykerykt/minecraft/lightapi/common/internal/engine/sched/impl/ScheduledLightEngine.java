@@ -44,6 +44,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundServic
 public abstract class ScheduledLightEngine implements IScheduledLightEngine {
 
     private final IBackgroundService mBackgroundService;
+    private final long TICK_MS = 50;
     protected long maxTimeMsPerTick;
     protected int maxRequestCount;
     protected RelightPolicy mRelightPolicy;
@@ -55,7 +56,6 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     private Queue<Request> relightQueue = new PriorityBlockingQueue<>(10,
             (o1, o2) -> o2.getPriority() - o1.getPriority());
     private long penaltyTime = 0;
-    private long TICK_MS = 50;
 
     public ScheduledLightEngine(IPlatformImpl pluginImpl, IBackgroundService service, RelightPolicy strategy) {
         this(pluginImpl, service, strategy, 250, 50); // with default params

@@ -52,15 +52,14 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
 
     private final String CONFIG_TICK_DELAY = CONFIG_TITLE + ".tick-period";
     private final String CONFIG_CORE_POOL_SIZE = CONFIG_TITLE + ".corePoolSize";
-
+    private final IBukkitPlatformImpl mInternal;
+    private final IHandler mHandler;
+    private final Queue<Runnable> QUEUE = new ConcurrentLinkedQueue<>();
+    private final List<ITickable> REPEAT_QUEUE = new CopyOnWriteArrayList<>();
     private long maxAliveTimePerTick = 50;
     private long maxTimePerTick = 50;
     private int taskId = - 1;
     private long lastAliveTime = 0;
-    private IBukkitPlatformImpl mInternal;
-    private IHandler mHandler;
-    private Queue<Runnable> QUEUE = new ConcurrentLinkedQueue<>();
-    private List<ITickable> REPEAT_QUEUE = new CopyOnWriteArrayList<>();
     private boolean isServerThrottled;
     private int corePoolSize = 1;
     private ScheduledExecutorService executorService;

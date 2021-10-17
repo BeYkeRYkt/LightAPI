@@ -31,10 +31,10 @@ import java.util.Collection;
 @Deprecated
 public class ChunkInfo {
 
-    private World world;
-    private int x;
+    private final World world;
+    private final int x;
+    private final int z;
     private int y;
-    private int z;
     private Collection<? extends Player> receivers;
 
     public ChunkInfo(World world, int chunkX, int chunkZ, Collection<? extends Player> players) {
@@ -109,10 +109,7 @@ public class ChunkInfo {
         if (x != other.x) {
             return false;
         }
-        if (z != other.z) {
-            return false;
-        }
-        return true;
+        return z == other.z;
     }
 
     @Override

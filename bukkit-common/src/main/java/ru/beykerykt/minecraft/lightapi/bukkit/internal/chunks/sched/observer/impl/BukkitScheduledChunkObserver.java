@@ -38,7 +38,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundServic
 
 public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
 
-    private IHandler mHandler;
+    private final IHandler mHandler;
 
     public BukkitScheduledChunkObserver(IBukkitPlatformImpl platform, IBackgroundService service, IHandler handler) {
         super(platform, service);

@@ -27,7 +27,7 @@ import java.util.Objects;
 
 public abstract class ChunkData implements IChunkData {
 
-    private String worldName;
+    private final String worldName;
     private int chunkX;
     private int chunkZ;
 

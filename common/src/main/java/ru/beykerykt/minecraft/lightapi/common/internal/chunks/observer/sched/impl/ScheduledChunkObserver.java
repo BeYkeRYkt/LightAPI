@@ -35,10 +35,9 @@ import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundServic
 
 public abstract class ScheduledChunkObserver implements IScheduledChunkObserver {
 
+    private final IBackgroundService mBackgroundService;
+    private final Map<Long, IChunkData> observedChunks = new HashMap<>();
     private IPlatformImpl mPlatformImpl;
-
-    private IBackgroundService mBackgroundService;
-    private Map<Long, IChunkData> observedChunks = new HashMap<>();
 
     public ScheduledChunkObserver(IPlatformImpl platform, IBackgroundService service) {
         this.mPlatformImpl = platform;

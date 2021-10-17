@@ -26,5 +26,5 @@ package ru.beykerykt.lightapi.request;
 @Deprecated
 public interface DataRequest {
 
-    public void process();
+    void process();
 }

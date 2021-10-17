@@ -75,9 +75,7 @@ public class LightStorage {
                 mLightLevels.put(longPos, lightLevel);
             }
         } else {
-            if (mLightLevels.containsKey(longPos)) {
-                mLightLevels.remove(longPos);
-            }
+            mLightLevels.remove(longPos);
         }
     }
 
@@ -134,9 +132,7 @@ public class LightStorage {
         }
 
         int code = mStorageProvider.saveLightLevels(getWorldName(), mLightLevels);
-        if (code != ResultCode.SUCCESS) { // something is wrong ?
-            return code;
-        }
-        return ResultCode.SUCCESS;
+        // something is wrong ?
+        return code;
     }
 }

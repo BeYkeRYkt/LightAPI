@@ -125,10 +125,7 @@ public class BlockPosition {
         if (blockY != other.blockY) {
             return false;
         }
-        if (blockZ != other.blockZ) {
-            return false;
-        }
-        return true;
+        return blockZ == other.blockZ;
     }
 
     @Override

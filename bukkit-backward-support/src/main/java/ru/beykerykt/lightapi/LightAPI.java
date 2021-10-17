@@ -50,7 +50,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 public class LightAPI extends JavaPlugin {
 
     @Deprecated
-    private static BlockFace[] SIDES =
+    private static final BlockFace[] SIDES =
             {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
 
     private static boolean isBackwardEnabled() {
@@ -231,9 +231,7 @@ public class LightAPI extends JavaPlugin {
             // check light
             int newLightLevel = handler.getRawLightLevel(event.getWorld(), event.getX(), event.getY(), event.getZ(),
                     flags);
-            if (newLightLevel >= oldlightlevel) {
-                return true;
-            }
+            return newLightLevel >= oldlightlevel;
         }
         return false;
     }
@@ -280,9 +278,7 @@ public class LightAPI extends JavaPlugin {
             // check light
             int newLightLevel = handler.getRawLightLevel(event.getWorld(), event.getX(), event.getY(), event.getZ(),
                     flags);
-            if (newLightLevel != oldlightlevel) {
-                return true;
-            }
+            return newLightLevel != oldlightlevel;
         }
         return false;
     }

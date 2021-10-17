@@ -54,8 +54,8 @@ import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundServic
 public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension {
 
     private static final String DEFAULT_IMPL_NAME = "craftbukkit";
+    private final BukkitPlugin mPlugin;
     private boolean DEBUG = false;
-    private BukkitPlugin mPlugin;
     private boolean isInit = false;
     private boolean forceLegacy = false;
     private IHandler mHandler;

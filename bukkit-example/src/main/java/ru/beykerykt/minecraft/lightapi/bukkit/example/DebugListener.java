@@ -43,11 +43,11 @@ import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
 
 public class DebugListener implements Listener {
 
-    private Map<Long, Integer> mLightTasks = new HashMap<>();
+    private final Map<Long, Integer> mLightTasks = new HashMap<>();
 
     // testing
-    private LightAPI mAPI;
-    private BukkitPlugin mPlugin;
+    private final LightAPI mAPI;
+    private final BukkitPlugin mPlugin;
 
     public DebugListener(BukkitPlugin plugin) {
         mPlugin = plugin;
