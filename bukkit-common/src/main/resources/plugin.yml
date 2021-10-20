@@ -8,3 +8,6 @@ website: https://github.com/BeYkeRYkt/LightAPI
 commands:
   lightapi:
     description: Main command
+permissions:
+  lightapi.debug:
+    default: false

@@ -205,7 +205,22 @@ public class BukkitPlugin extends JavaPlugin {
                         player.sendMessage(ChatColor.WHITE + "backwards compatibility is enabled");
                     }
                 } else {
-                    log(player, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly ?");
+                    if (args[0] != null) {
+                        switch (args[0]) {
+                            case "debug":
+                                if (sender.hasPermission("lightapi.debug") || sender.isOp()) {
+                                    mImpl.toggleDebug();
+                                } else {
+                                    log(sender, ChatColor.RED + "You don't have permission!");
+                                }
+                                break;
+                            default:
+                                log(player, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly ?");
+                                break;
+                        }
+                    } else {
+                        log(player, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly ?");
+                    }
                 }
             } else if (sender instanceof ConsoleCommandSender) {
                 ConsoleCommandSender console = (ConsoleCommandSender) sender;

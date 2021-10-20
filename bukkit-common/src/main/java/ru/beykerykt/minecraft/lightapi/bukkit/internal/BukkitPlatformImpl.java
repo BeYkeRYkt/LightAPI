@@ -69,6 +69,11 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
         this.mPlugin = plugin;
     }
 
+    public void toggleDebug() {
+        DEBUG = !DEBUG;
+        log("Debug mode is " + (DEBUG ? "en" : "dis") + "abled");
+    }
+
     private FileConfiguration getConfig() {
         return getPlugin().getConfig();
     }
