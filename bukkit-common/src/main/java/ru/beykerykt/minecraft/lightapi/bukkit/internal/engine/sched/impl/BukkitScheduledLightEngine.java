@@ -52,6 +52,8 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     private final IHandler mHandler;
     private int mTaskId = - 1;
 
+    private Object mLock = new Object();
+
     /**
      * @hide
      */
@@ -149,8 +151,8 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
         return getHandler().getLightEngineVersion();
     }
 
-    @Override
-    public int getLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
+    /* @hide */
+    protected int getLightLevelLocked(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
         if (! getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
@@ -159,7 +161,18 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     }
 
     @Override
-    public int setRawLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags) {
+    public int getLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
+        if (getHandler().isMainThread()) {
+            return getLightLevelLocked(worldName, blockX, blockY, blockZ, lightFlags);
+        } else {
+            synchronized (mLock) {
+                return getLightLevelLocked(worldName, blockX, blockY, blockZ, lightFlags);
+            }
+        }
+    }
+
+    /* @hide */
+    private int setRawLightLevelLocked(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags) {
         if (! getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
@@ -168,11 +181,33 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     }
 
     @Override
-    public int recalculateLighting(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
+    public int setRawLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags) {
+        if (getHandler().isMainThread()) {
+            return setRawLightLevelLocked(worldName, blockX, blockY, blockZ, lightLevel, lightFlags);
+        } else {
+            synchronized (mLock) {
+                return setRawLightLevelLocked(worldName, blockX, blockY, blockZ, lightLevel, lightFlags);
+            }
+        }
+    }
+
+    /* @hide */
+    private int recalculateLightingLocked(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
         if (! getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
         World world = Bukkit.getWorld(worldName);
         return getHandler().recalculateLighting(world, blockX, blockY, blockZ, lightFlags);
+    }
+
+    @Override
+    public int recalculateLighting(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
+        if (getHandler().isMainThread()) {
+            return recalculateLightingLocked(worldName, blockX, blockY, blockZ, lightFlags);
+        } else {
+            synchronized (mLock) {
+                return recalculateLightingLocked(worldName, blockX, blockY, blockZ, lightFlags);
+            }
+        }
     }
 }
