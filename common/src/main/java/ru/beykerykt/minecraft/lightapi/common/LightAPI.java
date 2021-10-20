@@ -23,6 +23,8 @@
  */
 package ru.beykerykt.minecraft.lightapi.common;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
@@ -36,6 +38,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.InternalCode;
 import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.IChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightEngine;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
 /**
@@ -118,6 +121,132 @@ public final class LightAPI {
             throw new IllegalStateException("Singleton not yet initialized! Use prepare() !");
         }
         return singleton;
+    }
+
+    @Deprecated
+    public static boolean createLight(String worldName, ru.beykerykt.minecraft.lightapi.common.LightType type,
+            int blockX, int blockY, int blockZ, int lightlevel) {
+        return createLight(worldName, type, blockX, blockY, blockZ, lightlevel, null);
+    }
+
+    @Deprecated
+    public static boolean createLight(String worldName, ru.beykerykt.minecraft.lightapi.common.LightType type,
+            int blockX, int blockY, int blockZ, int lightlevel, LCallback callback) {
+        int lightFlags = LightType.BLOCK_LIGHTING;
+        if (type == ru.beykerykt.minecraft.lightapi.common.LightType.SKY) {
+            lightFlags = LightType.SKY_LIGHTING;
+        }
+        int resultCode = get().setLightLevel(worldName, blockX, blockY, blockZ, lightlevel, lightFlags,
+                EditPolicy.IMMEDIATE, SendPolicy.IMMEDIATE, (requestFlag, resultCode1) -> {
+                    if (callback != null) {
+                        LStage stage = LStage.CREATING;
+                        switch (requestFlag) {
+                            case RequestFlag.EDIT:
+                                stage = LStage.WRITTING;
+                                break;
+                            case RequestFlag.RECALCULATE:
+                                stage = LStage.RECALCULATING;
+                                break;
+                        }
+                        if (resultCode1 == ResultCode.SUCCESS || resultCode1 == ResultCode.MOVED_TO_DEFERRED) {
+                            callback.onSuccess(worldName, type, blockX, blockY, blockZ, lightlevel, stage);
+                        } else {
+                            LReason reason = LReason.UNKNOWN;
+                            switch (resultCode1) {
+                                case ResultCode.RECALCULATE_NO_CHANGES:
+                                    reason = LReason.NO_LIGHT_CHANGES;
+                                    break;
+                            }
+                            callback.onFailed(worldName, type, blockX, blockY, blockZ, lightlevel, stage, reason);
+                        }
+                    }
+                });
+        if (resultCode == ResultCode.SUCCESS) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Deprecated
+    public static boolean deleteLight(String worldName, ru.beykerykt.minecraft.lightapi.common.LightType type,
+            int blockX, int blockY, int blockZ) {
+        return deleteLight(worldName, type, blockX, blockY, blockZ, null);
+    }
+
+    @Deprecated
+    public static boolean deleteLight(String worldName, ru.beykerykt.minecraft.lightapi.common.LightType type,
+            int blockX, int blockY, int blockZ, LCallback callback) {
+        int lightFlags = LightType.BLOCK_LIGHTING;
+        if (type == ru.beykerykt.minecraft.lightapi.common.LightType.SKY) {
+            lightFlags = LightType.SKY_LIGHTING;
+        }
+        int resultCode = get().setLightLevel(worldName, blockX, blockY, blockZ, 0, lightFlags, EditPolicy.IMMEDIATE,
+                SendPolicy.IMMEDIATE, (requestFlag, resultCode1) -> {
+                    if (callback != null) {
+                        LStage stage = LStage.DELETING;
+                        switch (requestFlag) {
+                            case RequestFlag.EDIT:
+                                stage = LStage.WRITTING;
+                                break;
+                            case RequestFlag.RECALCULATE:
+                                stage = LStage.RECALCULATING;
+                                break;
+                        }
+                        if (resultCode1 == ResultCode.SUCCESS || resultCode1 == ResultCode.MOVED_TO_DEFERRED) {
+                            callback.onSuccess(worldName, type, blockX, blockY, blockZ, 0, stage);
+                        } else {
+                            LReason reason = LReason.UNKNOWN;
+                            switch (resultCode1) {
+                                case ResultCode.RECALCULATE_NO_CHANGES:
+                                    reason = LReason.NO_LIGHT_CHANGES;
+                                    break;
+                            }
+                            callback.onFailed(worldName, type, blockX, blockY, blockZ, 0, stage, reason);
+                        }
+                    }
+                });
+        if (resultCode == ResultCode.SUCCESS) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Deprecated
+    public static List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ, int lightlevel) {
+        List<IChunkData> list = new ArrayList<>();
+        // Let's not do this , all right?
+        return list;
+    }
+
+    @Deprecated
+    public static List<IChunkData> collectChunks(String worldName, int blockX, int blockY, int blockZ) {
+        return collectChunks(worldName, blockX, blockY, blockZ, 15);
+    }
+
+    @Deprecated
+    public static void sendChanges(String worldName, int chunkX, int chunkZ, String playerName) {
+    }
+
+    @Deprecated
+    public static void sendChanges(String worldName, int chunkX, int blockY, int chunkZ, String playerName) {
+    }
+
+    @Deprecated
+    public static void sendChanges(IChunkData chunkData, String playerName) {
+    }
+
+    @Deprecated
+    public static void sendChanges(String worldName, int chunkX, int chunkZ) {
+    }
+
+    @Deprecated
+    public static void sendChanges(String worldName, int chunkX, int blockY, int chunkZ) {
+    }
+
+    @Deprecated
+    public static void sendChanges(IChunkData chunkData) {
     }
 
     public boolean isInitialized() {
