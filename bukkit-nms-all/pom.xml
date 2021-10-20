@@ -97,14 +97,6 @@
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
-        <!-- CraftBukkit NMS v1_13_R2 LightAPI -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>lightapi-craftbukkit-nms-v1_13_R2</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <type>jar</type>
-        </dependency>
         <!-- CraftBukkit NMS v1_14_R1 LightAPI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
