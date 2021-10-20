@@ -39,12 +39,12 @@ import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 import ca.spottedleaf.starlight.light.BlockStarLightEngine;
 import ca.spottedleaf.starlight.light.SkyStarLightEngine;
@@ -60,8 +60,8 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
 
     private final int ALL_DIRECTIONS_BITSET = (1 << 6) - 1;
     private final long FLAG_HAS_SIDED_TRANSPARENT_BLOCKS = Long.MIN_VALUE;
-    private final Map<ChunkCoordIntPair, Set<LightPos>> blockQueueMap = Collections.synchronizedMap(new HashMap<>());
-    private final Map<ChunkCoordIntPair, Set<LightPos>> skyQueueMap = Collections.synchronizedMap(new HashMap<>());
+    private final Map<ChunkCoordIntPair, Set<LightPos>> blockQueueMap = new ConcurrentHashMap<>();
+    private final Map<ChunkCoordIntPair, Set<LightPos>> skyQueueMap = new ConcurrentHashMap<>();
     // StarLightInterface
     private Field starInterface;
     private Field starInterface_coordinateOffset;
