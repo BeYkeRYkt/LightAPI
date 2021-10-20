@@ -33,7 +33,7 @@ import java.util.UUID;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.sched.observer.impl.BukkitScheduledChunkObserver;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.observer.sched.impl.BukkitScheduledChunkObserver;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched.impl.BukkitScheduledLightEngine;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandlerFactory;

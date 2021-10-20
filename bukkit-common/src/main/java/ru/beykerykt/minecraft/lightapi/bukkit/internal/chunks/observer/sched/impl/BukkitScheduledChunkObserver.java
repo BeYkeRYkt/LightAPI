@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.sched.observer.impl;
+package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.observer.sched.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
