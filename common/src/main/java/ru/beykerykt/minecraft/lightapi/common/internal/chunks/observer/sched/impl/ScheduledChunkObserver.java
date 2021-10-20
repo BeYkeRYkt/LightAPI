@@ -63,7 +63,6 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
         getPlatformImpl().debug(getClass().getName() + " is shutdown!");
         getBackgroundService().removeRepeat(this);
         observedChunks.clear();
-        mPlatformImpl = null;
     }
 
     private int getDeltaLight(int x, int dx) {

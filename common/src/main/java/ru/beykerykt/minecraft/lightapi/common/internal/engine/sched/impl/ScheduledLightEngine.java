@@ -95,10 +95,7 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
         getPlatformImpl().debug(getClass().getName() + " is shutdown!");
         getBackgroundService().removeRepeat(this);
         lightQueue.clear();
-        lightQueue = null;
         relightQueue.clear();
-        relightQueue = null;
-        mPlatformImpl = null;
     }
 
     @Override
