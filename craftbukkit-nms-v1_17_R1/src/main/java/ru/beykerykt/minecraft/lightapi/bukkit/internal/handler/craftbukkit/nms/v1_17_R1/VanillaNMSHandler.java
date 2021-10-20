@@ -68,7 +68,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 public class VanillaNMSHandler extends BaseNMSHandler {
 
-    private Field lightEngine_ThreadedMailbox;
+    protected Field lightEngine_ThreadedMailbox;
     private Field threadedMailbox_State;
     private Method threadedMailbox_DoLoopStep;
     private Field lightEngineLayer_d;

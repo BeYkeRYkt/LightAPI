@@ -27,6 +27,7 @@ import net.minecraft.core.BlockPosition;
 import net.minecraft.core.SectionPosition;
 import net.minecraft.server.level.LightEngineThreaded;
 import net.minecraft.server.level.WorldServer;
+import net.minecraft.util.thread.ThreadedMailbox;
 import net.minecraft.world.level.ChunkCoordIntPair;
 import net.minecraft.world.level.EnumSkyBlock;
 import net.minecraft.world.level.block.state.BlockBase;
@@ -135,6 +136,26 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
                 ex.printStackTrace();
             }
         });
+    }
+
+    @Override
+    protected void executeSync(LightEngineThreaded lightEngine, Runnable task) {
+        if (isMainThread()) {
+            task.run();
+        } else {
+            try {
+                CompletableFuture<Void> future = new CompletableFuture();
+                ThreadedMailbox<Runnable> threadedMailbox = (ThreadedMailbox<Runnable>) lightEngine_ThreadedMailbox.get(
+                        lightEngine);
+                threadedMailbox.a(() -> {
+                    task.run();
+                    future.complete(null);
+                });
+                future.join();
+            } catch (IllegalAccessException e) {
+                throw toRuntimeException(e);
+            }
+        }
     }
 
     @Override
