@@ -59,7 +59,7 @@ public final class LightAPI {
      * Must be called in onLoad();
      */
     public static void prepare(IPlatformImpl impl) throws Exception {
-        if (singleton == null && impl != null || ! get().isInitialized()) {
+        if (singleton == null && impl != null || !get().isInitialized()) {
             impl.info("Preparing LightAPI...");
             synchronized (LightAPI.class) {
                 if (singleton == null) {
@@ -79,7 +79,7 @@ public final class LightAPI {
      * Must be called in onEnable();
      */
     public static void initialization() throws Exception {
-        if (! get().isInitialized()) {
+        if (!get().isInitialized()) {
             get().log("Initializing LightAPI...");
             synchronized (LightAPI.class) {
                 int initCode = get().getPluginImpl().initialization();

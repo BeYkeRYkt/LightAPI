@@ -93,7 +93,7 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
         checkAndSetDefaults();
         // load specific handler if available
         String specificPkg = getConfig().getString("handler.specific-handler-path");
-        if (specificPkg != null && ! specificPkg.equalsIgnoreCase("none")) {
+        if (specificPkg != null && !specificPkg.equalsIgnoreCase("none")) {
             info("Initial load specific handler");
             mHandler = (IHandler) Class.forName(specificPkg).getConstructor().newInstance();
             info("Custom handler is loaded: " + mHandler.getClass().getName());
@@ -179,7 +179,10 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
 
     @Override
     public void log(String msg) {
-        mPlugin.getServer().getConsoleSender().sendMessage(ChatColor.AQUA + "<LightAPI>: " + ChatColor.WHITE + msg);
+        StringBuilder builder = new StringBuilder(ChatColor.AQUA + "<LightAPI>: ");
+        builder.append(ChatColor.WHITE + msg);
+        mPlugin.getServer().getConsoleSender().sendMessage(builder.toString());
+        //mPlugin.getServer().getConsoleSender().sendMessage(ChatColor.AQUA + "<LightAPI>: " + ChatColor.WHITE + msg);
     }
 
     @Override

@@ -56,7 +56,7 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
 
     @Override
     public IChunkData createChunkData(String worldName, int chunkX, int chunkZ) {
-        if (! getPlatformImpl().isWorldAvailable(worldName)) {
+        if (!getPlatformImpl().isWorldAvailable(worldName)) {
             return null;
         }
         return getHandler().createChunkData(worldName, chunkX, chunkZ);
@@ -70,7 +70,7 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
     @Override
     public List<IChunkData> collectChunkSections(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
             int lightFlags) {
-        if (! getPlatformImpl().isWorldAvailable(worldName)) {
+        if (!getPlatformImpl().isWorldAvailable(worldName)) {
             return new ArrayList<>();
         }
         World world = Bukkit.getWorld(worldName);
@@ -79,7 +79,7 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
 
     @Override
     public int sendChunk(IChunkData data) {
-        if (! getPlatformImpl().isWorldAvailable(data.getWorldName())) {
+        if (!getPlatformImpl().isWorldAvailable(data.getWorldName())) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
         return getHandler().sendChunk(data);

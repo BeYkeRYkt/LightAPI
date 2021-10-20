@@ -28,7 +28,7 @@ public class UnknownNMSVersionException extends ServerModException {
     /**
      * ???
      */
-    private static final long serialVersionUID = - 1927826763790232512L;
+    private static final long serialVersionUID = -1927826763790232512L;
 
     private final String modName;
     private final String nmsVersion;

@@ -48,7 +48,7 @@ public class ChunkUtils {
                     break;
                 }
             }
-            if (! found) {
+            if (!found) {
                 output.add(data);
             }
         }

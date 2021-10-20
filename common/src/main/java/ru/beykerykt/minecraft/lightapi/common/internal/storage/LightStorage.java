@@ -71,7 +71,7 @@ public class LightStorage {
      */
     public void setLightLevel(long longPos, int lightLevel) {
         if (lightLevel > 0) {
-            if (! mLightLevels.containsKey(longPos)) {
+            if (!mLightLevels.containsKey(longPos)) {
                 mLightLevels.put(longPos, lightLevel);
             }
         } else {
@@ -95,8 +95,8 @@ public class LightStorage {
      * N/A
      */
     public int getLightLevel(long longPos) {
-        if (! checkLightLevel(longPos)) {
-            return - 1;
+        if (!checkLightLevel(longPos)) {
+            return -1;
         }
         return mLightLevels.get(longPos);
     }

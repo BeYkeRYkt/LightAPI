@@ -136,7 +136,7 @@ public class SpongeChunkData implements IChunkData {
             if (other.world != null) {
                 return false;
             }
-        } else if (! world.getName().equals(other.world.getName())) {
+        } else if (!world.getName().equals(other.world.getName())) {
             return false;
         }
         if (x != other.x) {

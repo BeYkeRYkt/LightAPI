@@ -95,7 +95,7 @@ public class ChunkInfo {
         if (obj == null) {
             return false;
         }
-        if (! (obj instanceof ChunkInfo)) {
+        if (!(obj instanceof ChunkInfo)) {
             return false;
         }
         ChunkInfo other = (ChunkInfo) obj;
@@ -103,7 +103,7 @@ public class ChunkInfo {
             if (other.world != null) {
                 return false;
             }
-        } else if (! world.getName().equals(other.world.getName())) {
+        } else if (!world.getName().equals(other.world.getName())) {
             return false;
         }
         if (x != other.x) {

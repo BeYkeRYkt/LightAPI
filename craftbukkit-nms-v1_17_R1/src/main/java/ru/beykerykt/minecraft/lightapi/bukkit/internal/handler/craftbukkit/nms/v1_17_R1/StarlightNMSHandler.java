@@ -221,7 +221,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
         final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
-        if (! worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
+        if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
@@ -294,7 +294,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
 
-        if (! worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
+        if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
@@ -330,7 +330,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
         }
 
         // Do not recalculate if no changes!
-        if (! lightEngine.z_()) {
+        if (!lightEngine.z_()) {
             return ResultCode.RECALCULATE_NO_CHANGES;
         }
 

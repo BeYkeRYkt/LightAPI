@@ -65,7 +65,7 @@ public class BukkitPlugin extends JavaPlugin {
         // create config
         try {
             File file = new File(getDataFolder(), "config.yml");
-            if (! file.exists()) {
+            if (!file.exists()) {
                 generateConfig(file);
             }
         } catch (Exception e) {
@@ -121,7 +121,7 @@ public class BukkitPlugin extends JavaPlugin {
 
     private void generateConfig(File file) {
         FileConfiguration fc = getConfig();
-        if (! file.exists()) {
+        if (!file.exists()) {
             fc.set(ConfigurationPath.GENERAL_DEBUG, false);
             fc.set(ConfigurationPath.GENERAL_ENABLE_METRICS, true);
             if (Build.API_VERSION == Build.PREVIEW) { // only for PREVIEW build

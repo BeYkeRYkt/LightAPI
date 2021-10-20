@@ -73,7 +73,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
             Block candidate = block.getRelative(face);
 
-            if (! candidate.getType().isOccluding()) {
+            if (!candidate.getType().isOccluding()) {
                 return candidate;
             }
         }
@@ -81,7 +81,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     private int distanceTo(Chunk from, Chunk to) {
-        if (! from.world.getWorldData().getName().equals(to.world.getWorldData().getName())) {
+        if (!from.world.getWorldData().getName().equals(to.world.getWorldData().getName())) {
             return 100;
         }
         double var2 = to.locX - from.locX;
@@ -103,7 +103,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     private int getDeltaLight(int x, int dx) {
-        return (((x ^ ((- dx >> 4) & 15)) + 1) & (- (dx & 1)));
+        return (((x ^ ((-dx >> 4) & 15)) + 1) & (-(dx & 1)));
     }
 
     private IChunkData createLegacyChunkData(String worldName, int chunkX, int chunkZ, int sectionMaskSky,
@@ -153,7 +153,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
-        if (! worldServer.getChunkProvider().isLoaded(blockX >> 4, blockZ >> 4)) {
+        if (!worldServer.getChunkProvider().isLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
@@ -189,7 +189,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     public int getRawLightLevel(World world, int blockX, int blockY, int blockZ, int lightFlags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
-        int lightlevel = - 1;
+        int lightlevel = -1;
         if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING) && FlagUtils.isFlagSet(lightFlags,
                 LightType.SKY_LIGHTING)) {
             lightlevel = worldServer.getLightLevel(position);
@@ -205,7 +205,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     public int recalculateLighting(World world, int blockX, int blockY, int blockZ, int lightFlags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
 
-        if (! worldServer.getChunkProvider().isLoaded(blockX >> 4, blockZ >> 4)) {
+        if (!worldServer.getChunkProvider().isLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
@@ -254,13 +254,13 @@ public class VanillaNMSHandler extends BaseNMSHandler {
             return list;
         }
 
-        for (int dX = - 1; dX <= 1; dX++) {
+        for (int dX = -1; dX <= 1; dX++) {
             int lightLevelX = finalLightLevel - getDeltaLight(blockX & 15, dX);
             if (lightLevelX > 0) {
-                for (int dZ = - 1; dZ <= 1; dZ++) {
+                for (int dZ = -1; dZ <= 1; dZ++) {
                     int lightLevelZ = lightLevelX - getDeltaLight(blockZ & 15, dZ);
                     if (lightLevelZ > 0) {
-                        for (int dY = - 1; dY <= 1; dY++) {
+                        for (int dY = -1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
                                 if (isValidChunkSection(sectionY)) {
@@ -268,7 +268,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                                     int chunkZ = (blockZ >> 4) + dZ;
 
                                     IChunkData data = searchChunkDataFromList(list, world, chunkX, chunkZ);
-                                    if (! list.contains(data)) {
+                                    if (!list.contains(data)) {
                                         list.add(data);
                                     }
                                     data.markSectionForUpdate(lightFlags, sectionY);

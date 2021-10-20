@@ -151,7 +151,7 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     @Override
     public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags,
             EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback) {
-        if (! getPlatformImpl().isWorldAvailable(worldName)) {
+        if (!getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
         return setLightLevelLocked(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, editPolicy, sendPolicy,

@@ -67,7 +67,7 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
     }
 
     private int getDeltaLight(int x, int dx) {
-        return (((x ^ ((- dx >> 4) & 15)) + 1) & (- (dx & 1)));
+        return (((x ^ ((-dx >> 4) & 15)) + 1) & (-(dx & 1)));
     }
 
     private long chunkCoordToLong(int chunkX, int chunkZ) {
@@ -83,7 +83,7 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
     /* @hide */
     private int notifyUpdateChunksLocked(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
             int lightType) {
-        if (! getPlatformImpl().isWorldAvailable(worldName)) {
+        if (!getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
 
@@ -91,13 +91,13 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
 
         // start watching chunks
         int CHUNK_RADIUS = 1;
-        for (int dX = - CHUNK_RADIUS; dX <= CHUNK_RADIUS; dX++) {
+        for (int dX = -CHUNK_RADIUS; dX <= CHUNK_RADIUS; dX++) {
             int lightLevelX = finalLightLevel - getDeltaLight(blockX & 15, dX);
             if (lightLevelX > 0) {
-                for (int dZ = - CHUNK_RADIUS; dZ <= CHUNK_RADIUS; dZ++) {
+                for (int dZ = -CHUNK_RADIUS; dZ <= CHUNK_RADIUS; dZ++) {
                     int lightLevelZ = lightLevelX - getDeltaLight(blockZ & 15, dZ);
                     if (lightLevelZ > 0) {
-                        for (int dY = - 1; dY <= 1; dY++) {
+                        for (int dY = -1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
                                 if (isValidChunkSection(sectionY)) {

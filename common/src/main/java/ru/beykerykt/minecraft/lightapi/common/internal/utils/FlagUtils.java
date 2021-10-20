@@ -36,7 +36,7 @@ public class FlagUtils {
      * N/A
      */
     public static int removeFlag(int flags, int targetFlag) {
-        return flags &= ~ targetFlag;
+        return flags &= ~targetFlag;
     }
 
     /**

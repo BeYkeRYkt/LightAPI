@@ -85,14 +85,14 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     private int getDeltaLight(int x, int dx) {
-        return (((x ^ ((- dx >> 4) & 15)) + 1) & (- (dx & 1)));
+        return (((x ^ ((-dx >> 4) & 15)) + 1) & (-(dx & 1)));
     }
 
     private void executeSync(LightEngineThreaded lightEngine, Runnable task) {
         try {
             // ##### STEP 1: Pause light engine mailbox to process its tasks. #####
-            ThreadedMailbox<Runnable> threadedMailbox = (ThreadedMailbox<Runnable>) lightEngine_ThreadedMailbox
-                    .get(lightEngine);
+            ThreadedMailbox<Runnable> threadedMailbox = (ThreadedMailbox<Runnable>) lightEngine_ThreadedMailbox.get(
+                    lightEngine);
             // State flags bit mask:
             // 0x0001 - Closing flag (ThreadedMailbox is closing if non zero).
             // 0x0002 - Busy flag (ThreadedMailbox performs a task from queue if non zero).
@@ -126,7 +126,8 @@ public class VanillaNMSHandler extends BaseNMSHandler {
             } finally {
                 // STEP 3: ##### Continue light engine mailbox to process its tasks. #####
                 // Firstly: Clearing busy flag to allow ThreadedMailbox to use it for running light engine tasks.
-                while (!stateFlags.compareAndSet(flags = stateFlags.get(), flags & ~2)) ;
+                while (!stateFlags.compareAndSet(flags = stateFlags.get(), flags & ~2))
+                    ;
                 // Secondly: IMPORTANT! The main loop of ThreadedMailbox was broken. Not completed tasks may still be
                 // in the queue. Therefore, it is important to start the loop again to process tasks from the queue.
                 // Otherwise, the main server thread may be frozen due to tasks stuck in the queue.
@@ -171,8 +172,8 @@ public class VanillaNMSHandler extends BaseNMSHandler {
             lightEngineLayer_c.setAccessible(true);
             lightEngineStorage_d = LightEngineStorage.class.getDeclaredMethod("d");
             lightEngineStorage_d.setAccessible(true);
-            lightEngineGraph_a = LightEngineGraph.class.getDeclaredMethod(
-                    "a", long.class, long.class, int.class, boolean.class);
+            lightEngineGraph_a = LightEngineGraph.class.getDeclaredMethod("a", long.class, long.class, int.class,
+                    boolean.class);
             lightEngineGraph_a.setAccessible(true);
             impl.info("Handler initialization is done");
         } catch (Exception e) {
@@ -226,7 +227,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
         final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
-        if (! worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
+        if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
@@ -270,7 +271,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     @Override
     public int getRawLightLevel(World world, int blockX, int blockY, int blockZ, int flags) {
-        int lightLevel = - 1;
+        int lightLevel = -1;
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
         if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING) && FlagUtils.isFlagSet(flags,
@@ -289,12 +290,12 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
 
-        if (! worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
+        if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
         // Do not recalculate if no changes!
-        if (! lightEngine.a()) {
+        if (!lightEngine.a()) {
             return ResultCode.RECALCULATE_NO_CHANGES;
         }
 
@@ -379,13 +380,13 @@ public class VanillaNMSHandler extends BaseNMSHandler {
             return list;
         }
 
-        for (int dX = - 1; dX <= 1; dX++) {
+        for (int dX = -1; dX <= 1; dX++) {
             int lightLevelX = finalLightLevel - getDeltaLight(blockX & 15, dX);
             if (lightLevelX > 0) {
-                for (int dZ = - 1; dZ <= 1; dZ++) {
+                for (int dZ = -1; dZ <= 1; dZ++) {
                     int lightLevelZ = lightLevelX - getDeltaLight(blockZ & 15, dZ);
                     if (lightLevelZ > 0) {
-                        for (int dY = - 1; dY <= 1; dY++) {
+                        for (int dY = -1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
                                 if (isValidChunkSection(sectionY)) {
@@ -393,7 +394,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                                     int chunkZ = (blockZ >> 4) + dZ;
 
                                     IChunkData data = searchChunkDataFromList(list, world, chunkX, chunkZ);
-                                    if (! list.contains(data)) {
+                                    if (!list.contains(data)) {
                                         list.add(data);
                                     }
                                     data.markSectionForUpdate(lightFlags, sectionY);
@@ -409,7 +410,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
     @Override
     public boolean isValidChunkSection(int sectionY) {
-        return sectionY >= - 1 && sectionY <= 16;
+        return sectionY >= -1 && sectionY <= 16;
     }
 
     @Override

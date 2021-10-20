@@ -72,7 +72,7 @@ public class SpongePlugin {
 
     @Listener
     public void onPlayerChat(MessageChannelEvent.Chat event, @First final Player p) {
-        if (! flag || ! debug) {
+        if (!flag || !debug) {
             return;
         }
         Text message = event.getRawMessage();
@@ -112,7 +112,7 @@ public class SpongePlugin {
 
     @Listener
     public void onRightClick(InteractBlockEvent.Secondary event, @First Player p) {
-        if (! flag || ! debug) {
+        if (!flag || !debug) {
             return;
         }
 
@@ -124,7 +124,7 @@ public class SpongePlugin {
                         prevLoc.getBlockZ())) {
                     for (IChunkData data : LightAPI.collectChunks(world.getName(), prevLoc.getBlockX(),
                             prevLoc.getBlockY(), prevLoc.getBlockZ(), 12 / 2)) {
-                        if (! chunkQueue.contains(data)) {
+                        if (!chunkQueue.contains(data)) {
                             chunkQueue.add(data);
                         }
                     }
@@ -139,11 +139,11 @@ public class SpongePlugin {
                     prevLoc.getBlockZ(), 12)) {
                 for (IChunkData data : LightAPI.collectChunks(world.getName(), prevLoc.getBlockX(), prevLoc.getBlockY(),
                         prevLoc.getBlockZ(), 12 / 2)) {
-                    if (! chunkQueue.contains(data)) {
+                    if (!chunkQueue.contains(data)) {
                         chunkQueue.add(data);
                     }
                 }
-                if (! chunkQueue.isEmpty()) {
+                if (!chunkQueue.isEmpty()) {
                     for (IChunkData data : chunkQueue) {
                         LightAPI.sendChanges(data);
                     }

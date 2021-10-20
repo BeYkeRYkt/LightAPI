@@ -28,7 +28,7 @@ public class UnknownModImplementationException extends ServerModException {
     /**
      * ???
      */
-    private static final long serialVersionUID = - 1754539191843175633L;
+    private static final long serialVersionUID = -1754539191843175633L;
 
     private final String modName;
 

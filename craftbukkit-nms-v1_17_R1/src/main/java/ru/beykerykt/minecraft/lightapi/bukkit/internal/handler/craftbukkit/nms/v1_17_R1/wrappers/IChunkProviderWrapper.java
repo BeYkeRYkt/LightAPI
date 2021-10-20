@@ -129,7 +129,7 @@ public class IChunkProviderWrapper implements ILightAccess, Listener {
                         }
                         return method.invoke(originalChunk, args);
                     });
-            if (res != null && ! mProxiesToOutput.containsKey(chunkCoords)) {
+            if (res != null && !mProxiesToOutput.containsKey(chunkCoords)) {
                 mProxiesToOutput.put(chunkCoords, res);
             }
         }

@@ -50,7 +50,7 @@ public class YAMLStorageProvider implements IStorageProvider {
     public void initialization(IPlatformImpl impl) {
         mImpl = impl;
         customConfigFile = new File(BukkitPlugin.getInstance().getDataFolder(), "storage.yml");
-        if (! customConfigFile.exists()) {
+        if (!customConfigFile.exists()) {
             customConfigFile.getParentFile().mkdirs();
             BukkitPlugin.getInstance().saveResource("storage.yml", false);
         }

@@ -50,7 +50,7 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     private final String CONFIG_MAX_TIME_MS_IN_PER_TICK = CONFIG_TITLE + ".max-time-ms-in-per-tick";
     private final String CONFIG_MAX_ITERATIONS_IN_PER_TICK = CONFIG_TITLE + ".max-iterations-in-per-tick";
     private final IHandler mHandler;
-    private int mTaskId = - 1;
+    private int mTaskId = -1;
 
     private Object mLock = new Object();
 
@@ -135,7 +135,7 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
 
     @Override
     public void onShutdown() {
-        if (mTaskId != - 1) {
+        if (mTaskId != -1) {
             getPlatformImpl().getPlugin().getServer().getScheduler().cancelTask(mTaskId);
         }
         super.onShutdown();
@@ -153,7 +153,7 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
 
     /* @hide */
     protected int getLightLevelLocked(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
-        if (! getPlatformImpl().isWorldAvailable(worldName)) {
+        if (!getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
         World world = Bukkit.getWorld(worldName);
@@ -172,8 +172,9 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     }
 
     /* @hide */
-    private int setRawLightLevelLocked(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags) {
-        if (! getPlatformImpl().isWorldAvailable(worldName)) {
+    private int setRawLightLevelLocked(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
+            int lightFlags) {
+        if (!getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
         World world = Bukkit.getWorld(worldName);
@@ -193,7 +194,7 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
 
     /* @hide */
     private int recalculateLightingLocked(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
-        if (! getPlatformImpl().isWorldAvailable(worldName)) {
+        if (!getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
         World world = Bukkit.getWorld(worldName);

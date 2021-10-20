@@ -74,7 +74,7 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
 
             Location<World> candidate = blockLoc.getRelative(face);
             WorldServer world = (WorldServer) candidate.getExtent();
-            if (! world.getBlockState(
+            if (!world.getBlockState(
                     new BlockPos(candidate.getBlockX(), candidate.getBlockY(), candidate.getBlockZ())).isOpaqueCube()) {
                 return candidate;
             }
@@ -86,7 +86,7 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
     }
 
     private int distanceToSquared(Chunk from, Chunk to) {
-        if (! from.getWorld().getWorldInfo().getWorldName().equals(to.getWorld().getWorldInfo().getWorldName())) {
+        if (!from.getWorld().getWorldInfo().getWorldName().equals(to.getWorld().getWorldInfo().getWorldName())) {
             return 100;
         }
         double var2 = to.x - from.x;
@@ -289,15 +289,15 @@ public class MCP_v1_12_R1 extends SpongeLightHandler {
         }
         List<IChunkData> list = new CopyOnWriteArrayList<IChunkData>();
         WorldServer mcpWorld = (WorldServer) world;
-        for (int dX = - radiusBlocks; dX <= radiusBlocks; dX += radiusBlocks) {
-            for (int dZ = - radiusBlocks; dZ <= radiusBlocks; dZ += radiusBlocks) {
+        for (int dX = -radiusBlocks; dX <= radiusBlocks; dX += radiusBlocks) {
+            for (int dZ = -radiusBlocks; dZ <= radiusBlocks; dZ += radiusBlocks) {
                 int chunkX = (x + dX) >> 4;
                 int chunkZ = (z + dZ) >> 4;
                 if (mcpWorld.getChunkProvider().chunkExists(chunkX, chunkZ)) {
                     Chunk chunk = mcpWorld.getChunkFromChunkCoords(chunkX, chunkZ);
                     if (chunk.needsSaving(false)) {
                         IChunkData cCoord = new SpongeChunkData(world, chunk.x, y, chunk.z, world.getPlayers());
-                        if (! list.contains(cCoord)) {
+                        if (!list.contains(cCoord)) {
                             list.add(cCoord);
                         }
                         chunk.setModified(false);

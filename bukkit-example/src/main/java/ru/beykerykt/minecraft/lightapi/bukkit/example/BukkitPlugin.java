@@ -78,7 +78,7 @@ public class BukkitPlugin extends JavaPlugin {
     private void generateConfig() {
         File file = new File(getDataFolder(), "config.yml");
         FileConfiguration fc = getConfig();
-        if (! file.exists()) {
+        if (!file.exists()) {
             fc.set("debug.offsetY", 1);
             saveConfig();
         }

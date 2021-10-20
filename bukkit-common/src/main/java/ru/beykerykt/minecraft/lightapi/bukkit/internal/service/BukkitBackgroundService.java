@@ -58,7 +58,7 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
     private final List<ITickable> REPEAT_QUEUE = new CopyOnWriteArrayList<>();
     private long maxAliveTimePerTick = 50;
     private long maxTimePerTick = 50;
-    private int taskId = - 1;
+    private int taskId = -1;
     private long lastAliveTime = 0;
     private boolean isServerThrottled;
     private int corePoolSize = 1;
@@ -122,7 +122,7 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
 
     @Override
     public void onShutdown() {
-        if (taskId != - 1) {
+        if (taskId != -1) {
             getPlatformImpl().getPlugin().getServer().getScheduler().cancelTask(taskId);
         }
         if (sch != null) {
@@ -135,7 +135,7 @@ public class BukkitBackgroundService implements IBackgroundService, Runnable {
 
     @Override
     public boolean canExecuteSync() {
-        return ! isServerThrottled;
+        return !isServerThrottled;
     }
 
     @Override

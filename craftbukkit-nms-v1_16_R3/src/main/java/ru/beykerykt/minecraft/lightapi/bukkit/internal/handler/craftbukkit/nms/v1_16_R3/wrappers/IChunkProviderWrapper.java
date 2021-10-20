@@ -76,7 +76,7 @@ public class IChunkProviderWrapper implements ILightAccess, Listener {
         World world = e.getWorld();
         WorldServer worldServer = (WorldServer) getWorld();
 
-        if (! world.getName().equals(worldServer.worldDataServer.getName())) {
+        if (!world.getName().equals(worldServer.worldDataServer.getName())) {
             return;
         }
 
@@ -128,7 +128,7 @@ public class IChunkProviderWrapper implements ILightAccess, Listener {
                         }
                         return method.invoke(originalChunk, args);
                     });
-            if (res != null && ! mProxiesToOutput.containsKey(chunkCoords)) {
+            if (res != null && !mProxiesToOutput.containsKey(chunkCoords)) {
                 mProxiesToOutput.put(chunkCoords, res);
             }
         }
