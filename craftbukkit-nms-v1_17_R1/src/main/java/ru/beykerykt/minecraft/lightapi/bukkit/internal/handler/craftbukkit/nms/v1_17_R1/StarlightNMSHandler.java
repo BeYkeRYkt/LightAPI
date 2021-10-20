@@ -298,6 +298,11 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
             return ResultCode.CHUNK_NOT_LOADED;
         }
 
+        // Do not recalculate if no changes!
+        if (!lightEngine.z_() && blockQueueMap.isEmpty() && skyQueueMap.isEmpty()) {
+            return ResultCode.RECALCULATE_NO_CHANGES;
+        }
+
         try {
             StarLightInterface starLightInterface = (StarLightInterface) starInterface.get(lightEngine);
             Iterator blockIt = blockQueueMap.entrySet().iterator();
@@ -327,11 +332,6 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
-        }
-
-        // Do not recalculate if no changes!
-        if (!lightEngine.z_()) {
-            return ResultCode.RECALCULATE_NO_CHANGES;
         }
 
         executeSync(lightEngine, () -> {
