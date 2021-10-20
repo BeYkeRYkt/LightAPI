@@ -215,11 +215,13 @@ public class BukkitPlugin extends JavaPlugin {
                                 }
                                 break;
                             default:
-                                log(player, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly ?");
+                                log(player, ChatColor.RED
+                                        + "Hmm... This command does not exist. Are you sure write correctly ?");
                                 break;
                         }
                     } else {
-                        log(player, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly ?");
+                        log(player,
+                                ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly ?");
                     }
                 }
             } else if (sender instanceof ConsoleCommandSender) {
@@ -260,7 +262,24 @@ public class BukkitPlugin extends JavaPlugin {
                         console.sendMessage(ChatColor.WHITE + "backwards compatibility is enabled");
                     }
                 } else {
-                    log(console, ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly ?");
+                    if (args[0] != null) {
+                        switch (args[0]) {
+                            case "debug":
+                                if (sender.hasPermission("lightapi.debug") || sender.isOp()) {
+                                    mImpl.toggleDebug();
+                                } else {
+                                    log(sender, ChatColor.RED + "You don't have permission!");
+                                }
+                                break;
+                            default:
+                                log(console, ChatColor.RED
+                                        + "Hmm... This command does not exist. Are you sure write correctly ?");
+                                break;
+                        }
+                    } else {
+                        log(console,
+                                ChatColor.RED + "Hmm... This command does not exist. Are you sure write correctly ?");
+                    }
                 }
             }
         }
