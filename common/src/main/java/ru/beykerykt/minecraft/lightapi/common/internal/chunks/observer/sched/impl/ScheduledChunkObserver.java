@@ -54,14 +54,12 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
 
     @Override
     public void onStart() {
-        getBackgroundService().addToRepeat(this);
         getPlatformImpl().debug(getClass().getName() + " is started!");
     }
 
     @Override
     public void onShutdown() {
         getPlatformImpl().debug(getClass().getName() + " is shutdown!");
-        getBackgroundService().removeRepeat(this);
         observedChunks.clear();
     }
 
