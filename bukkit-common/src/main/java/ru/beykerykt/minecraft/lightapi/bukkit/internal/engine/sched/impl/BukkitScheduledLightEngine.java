@@ -27,6 +27,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
@@ -45,11 +48,14 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
      * CONFIG
      */
     private final String CONFIG_TITLE = getClass().getSimpleName();
-
     private final String CONFIG_RELIGHT_STRATEGY = CONFIG_TITLE + ".relight-strategy";
+    private final String CONFIG_TICK_PERIOD = CONFIG_TITLE + ".tick-period";
     private final String CONFIG_MAX_TIME_MS_IN_PER_TICK = CONFIG_TITLE + ".max-time-ms-in-per-tick";
     private final String CONFIG_MAX_ITERATIONS_IN_PER_TICK = CONFIG_TITLE + ".max-iterations-in-per-tick";
+
     private final IHandler mHandler;
+
+    private ScheduledFuture mScheduledFuture;
     private int mTaskId = -1;
 
     private Object mLock = new Object();
@@ -83,6 +89,10 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
             fc.set(CONFIG_RELIGHT_STRATEGY, RelightPolicy.DEFERRED.name());
             needSave = true;
         }
+        if (fc.getString(CONFIG_TICK_PERIOD) == null) {
+            fc.set(CONFIG_TICK_PERIOD, 1);
+            needSave = true;
+        }
         if (fc.getString(CONFIG_MAX_TIME_MS_IN_PER_TICK) == null) {
             fc.set(CONFIG_MAX_TIME_MS_IN_PER_TICK, 50);
             needSave = true;
@@ -110,10 +120,8 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
             ex.printStackTrace();
         }
 
-        int c_maxIterations = fc.getInt(CONFIG_MAX_ITERATIONS_IN_PER_TICK);
-        int c_maxTimeMsPerTick = fc.getInt(CONFIG_MAX_TIME_MS_IN_PER_TICK);
-        maxRequestCount = c_maxIterations;
-        maxTimeMsPerTick = c_maxTimeMsPerTick;
+        maxRequestCount = fc.getInt(CONFIG_MAX_ITERATIONS_IN_PER_TICK);
+        maxTimeMsPerTick = fc.getInt(CONFIG_MAX_TIME_MS_IN_PER_TICK);
 
         this.mTaskId = getPlatformImpl().getPlugin().getServer().getScheduler().runTaskTimer(
                 getPlatformImpl().getPlugin(), () -> {
@@ -123,8 +131,12 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
         // scheduler
         // TODO: Make config (?)
         IScheduler scheduler = new PriorityScheduler(this,
-                (IScheduledChunkObserver) getPlatformImpl().getChunkObserver(), getBackgroundService());
+                (IScheduledChunkObserver) getPlatformImpl().getChunkObserver(), getBackgroundService(),
+                maxTimeMsPerTick);
         setScheduler(scheduler);
+
+        int period = fc.getInt(CONFIG_TICK_PERIOD);
+        mScheduledFuture = getBackgroundService().scheduleWithFixedDelay(this, 0, 50 * period, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -137,6 +149,9 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     public void onShutdown() {
         if (mTaskId != -1) {
             getPlatformImpl().getPlugin().getServer().getScheduler().cancelTask(mTaskId);
+        }
+        if (mScheduledFuture != null) {
+            mScheduledFuture.cancel(true);
         }
         super.onShutdown();
     }

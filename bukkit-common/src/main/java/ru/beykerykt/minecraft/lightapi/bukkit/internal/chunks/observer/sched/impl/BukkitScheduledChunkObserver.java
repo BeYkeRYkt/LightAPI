@@ -25,9 +25,12 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.observer.sched.im
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
@@ -38,7 +41,15 @@ import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundServic
 
 public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
 
+    /**
+     * CONFIG
+     */
+    private final String CONFIG_TITLE = getClass().getSimpleName();
+
+    private final String CONFIG_TICK_PERIOD = CONFIG_TITLE + ".tick-period";
+
     private final IHandler mHandler;
+    private ScheduledFuture mScheduledFuture;
 
     public BukkitScheduledChunkObserver(IBukkitPlatformImpl platform, IBackgroundService service, IHandler handler) {
         super(platform, service);
@@ -52,6 +63,41 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
     @Override
     protected IBukkitPlatformImpl getPlatformImpl() {
         return (IBukkitPlatformImpl) super.getPlatformImpl();
+    }
+
+    private void checkAndSetDefaults() {
+        boolean needSave = false;
+        FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
+        if (fc.getString(CONFIG_TICK_PERIOD) == null) {
+            fc.set(CONFIG_TICK_PERIOD, 2);
+            needSave = true;
+        }
+
+        if (needSave) {
+            getPlatformImpl().getPlugin().saveConfig();
+        }
+    }
+
+    private void configure() {
+        checkAndSetDefaults();
+
+        FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
+        int period = fc.getInt(CONFIG_TICK_PERIOD);
+        mScheduledFuture = getBackgroundService().scheduleWithFixedDelay(this, 0, 50 * period, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void onStart() {
+        configure();
+        super.onStart();
+    }
+
+    @Override
+    public void onShutdown() {
+        if (mScheduledFuture != null) {
+            mScheduledFuture.cancel(true);
+        }
+        super.onShutdown();
     }
 
     @Override

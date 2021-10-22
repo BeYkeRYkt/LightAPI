@@ -47,12 +47,14 @@ public class PriorityScheduler implements IScheduler {
     private final IScheduledLightEngine mLightEngine;
     private final IScheduledChunkObserver mChunkObserver;
     private final IBackgroundService mBackgroundService;
+    private final long mMaxTimeMsPerTick;
 
     public PriorityScheduler(IScheduledLightEngine lightEngine, IScheduledChunkObserver chunkObserver,
-            IBackgroundService backgroundService) {
+            IBackgroundService backgroundService, long maxTimeMsPerTick) {
         this.mLightEngine = lightEngine;
         this.mChunkObserver = chunkObserver;
         this.mBackgroundService = backgroundService;
+        this.mMaxTimeMsPerTick = maxTimeMsPerTick;
     }
 
     private IScheduledLightEngine getLightEngine() {
@@ -94,7 +96,7 @@ public class PriorityScheduler implements IScheduler {
                     request.addRequestFlag(RequestFlag.COMBINED_SEND);
                 }
 
-                if (getBackgroundService().canExecuteSync()) {
+                if (getBackgroundService().canExecuteSync(mMaxTimeMsPerTick)) {
                     if (getLightEngine().getRelightPolicy() == RelightPolicy.FORWARD) {
                         request.addRequestFlag(RequestFlag.RECALCULATE);
                         newPriority += 1;

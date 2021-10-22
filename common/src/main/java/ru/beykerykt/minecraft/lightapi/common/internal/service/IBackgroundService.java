@@ -23,6 +23,9 @@
  */
 package ru.beykerykt.minecraft.lightapi.common.internal.service;
 
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 public interface IBackgroundService {
 
     /**
@@ -38,7 +41,7 @@ public interface IBackgroundService {
     /**
      * N/A
      */
-    boolean canExecuteSync();
+    boolean canExecuteSync(long maxTime);
 
     /**
      * N/A
@@ -48,25 +51,5 @@ public interface IBackgroundService {
     /**
      * N/A
      */
-    void executeSync(Runnable runnable);
-
-    /**
-     * N/A
-     */
-    void executeAsync(Runnable runnable);
-
-    /**
-     * N/A
-     */
-    void addToQueue(Runnable runnable);
-
-    /**
-     * N/A
-     */
-    void addToRepeat(ITickable tickable);
-
-    /**
-     * N/A
-     */
-    void removeRepeat(ITickable tickable);
+    ScheduledFuture<?> scheduleWithFixedDelay(Runnable runnable, int initialDelay, int delay, TimeUnit unit);
 }

@@ -24,9 +24,8 @@
 package ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched;
 
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.IChunkObserver;
-import ru.beykerykt.minecraft.lightapi.common.internal.service.ITickable;
 
-public interface IScheduledChunkObserver extends IChunkObserver, ITickable {
+public interface IScheduledChunkObserver extends IChunkObserver, Runnable {
 
     /**
      * N/A

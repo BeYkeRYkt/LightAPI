@@ -21,12 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package ru.beykerykt.minecraft.lightapi.common.internal.service;
 
-public interface ITickable {
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
-    /**
-     * N/A
-     */
-    void onTick();
+public abstract class BackgroundService implements IBackgroundService {
+    private ScheduledExecutorService executorService;
+
+    protected void configureExecutorService(int corePoolSize, ThreadFactory namedThreadFactory) {
+        if (executorService == null) {
+            this.executorService = Executors.newScheduledThreadPool(corePoolSize, namedThreadFactory);
+        }
+    }
+
+    protected ScheduledExecutorService getExecutorService() {
+        return executorService;
+    }
+
+    @Override
+    public void onShutdown() {
+        if (executorService != null) {
+            executorService.shutdown();
+        }
+    }
+
+    @Override
+    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable runnable, int initialDelay, int delay, TimeUnit unit) {
+        return getExecutorService().scheduleWithFixedDelay(runnable, initialDelay, delay, unit);
+    }
 }

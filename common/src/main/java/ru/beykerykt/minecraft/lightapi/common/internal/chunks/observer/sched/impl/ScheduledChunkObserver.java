@@ -150,7 +150,7 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
     }
 
     @Override
-    public void onTick() {
+    public void run() {
         synchronized (observedChunks) {
             handleChunksLocked();
         }

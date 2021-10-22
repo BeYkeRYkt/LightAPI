@@ -79,7 +79,7 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     }
 
     protected boolean canExecuteSync() {
-        return getBackgroundService().canExecuteSync() && (penaltyTime < maxTimeMsPerTick);
+        return getBackgroundService().canExecuteSync(maxTimeMsPerTick) && (penaltyTime < maxTimeMsPerTick);
     }
 
     @Override
@@ -265,7 +265,7 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     }
 
     @Override
-    public void onTick() {
+    public void run() {
         synchronized (lightQueue) {
             handleLightQueueLocked();
         }

@@ -24,9 +24,8 @@
 package ru.beykerykt.minecraft.lightapi.common.internal.engine.sched;
 
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightEngine;
-import ru.beykerykt.minecraft.lightapi.common.internal.service.ITickable;
 
-public interface IScheduledLightEngine extends ILightEngine, ITickable {
+public interface IScheduledLightEngine extends ILightEngine, Runnable {
 
     /**
      * N/A
