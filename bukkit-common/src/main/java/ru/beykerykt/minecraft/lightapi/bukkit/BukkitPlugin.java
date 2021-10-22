@@ -129,7 +129,6 @@ public class BukkitPlugin extends JavaPlugin {
             } else {
                 fc.set(ConfigurationPath.GENERAL_FORCE_ENABLE_LEGACY, false);
             }
-            fc.set(ConfigurationPath.GENERAL_SPECIFIC_STORAGE_PROVIDER, "none");
             saveConfig();
         }
     }
