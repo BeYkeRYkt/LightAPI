@@ -137,7 +137,7 @@ public final class LightAPI {
             lightFlags = LightType.SKY_LIGHTING;
         }
         int resultCode = get().setLightLevel(worldName, blockX, blockY, blockZ, lightlevel, lightFlags,
-                EditPolicy.IMMEDIATE, SendPolicy.IMMEDIATE, (requestFlag, resultCode1) -> {
+                EditPolicy.IMMEDIATE, SendPolicy.DEFERRED, (requestFlag, resultCode1) -> {
                     if (callback != null) {
                         LStage stage = LStage.CREATING;
                         switch (requestFlag) {
@@ -182,7 +182,7 @@ public final class LightAPI {
             lightFlags = LightType.SKY_LIGHTING;
         }
         int resultCode = get().setLightLevel(worldName, blockX, blockY, blockZ, 0, lightFlags, EditPolicy.IMMEDIATE,
-                SendPolicy.IMMEDIATE, (requestFlag, resultCode1) -> {
+                SendPolicy.DEFERRED, (requestFlag, resultCode1) -> {
                     if (callback != null) {
                         LStage stage = LStage.DELETING;
                         switch (requestFlag) {
