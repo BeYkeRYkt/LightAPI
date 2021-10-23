@@ -37,7 +37,7 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
 
     private final IBackgroundService mBackgroundService;
     private final Map<Long, IChunkData> observedChunks = new HashMap<>();
-    private IPlatformImpl mPlatformImpl;
+    private final IPlatformImpl mPlatformImpl;
 
     public ScheduledChunkObserver(IPlatformImpl platform, IBackgroundService service) {
         this.mPlatformImpl = platform;

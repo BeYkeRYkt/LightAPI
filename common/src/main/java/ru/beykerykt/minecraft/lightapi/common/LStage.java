@@ -48,7 +48,7 @@ public enum LStage {
 
     private final int id;
 
-    private LStage(int id) {
+    LStage(int id) {
         this.id = id;
     }
 

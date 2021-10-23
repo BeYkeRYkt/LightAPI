@@ -58,7 +58,7 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     private ScheduledFuture mScheduledFuture;
     private int mTaskId = -1;
 
-    private Object mLock = new Object();
+    private final Object mLock = new Object();
 
     /**
      * @hide

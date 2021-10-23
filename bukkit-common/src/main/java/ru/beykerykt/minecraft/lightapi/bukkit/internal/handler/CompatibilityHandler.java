@@ -95,11 +95,7 @@ public class CompatibilityHandler implements IHandler {
 
     @Override
     public boolean isLightingSupported(World world, int lightFlags) {
-        if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
-            return true;
-        } else {
-            return false;
-        }
+        return FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING);
     }
 
     private void setLightBlock(Block block, int finalLightLevel) {

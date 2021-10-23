@@ -161,11 +161,7 @@ public final class LightAPI {
                         }
                     }
                 });
-        if (resultCode == ResultCode.SUCCESS) {
-            return true;
-        } else {
-            return false;
-        }
+        return resultCode == ResultCode.SUCCESS;
     }
 
     @Deprecated
@@ -206,11 +202,7 @@ public final class LightAPI {
                         }
                     }
                 });
-        if (resultCode == ResultCode.SUCCESS) {
-            return true;
-        } else {
-            return false;
-        }
+        return resultCode == ResultCode.SUCCESS;
     }
 
     @Deprecated
