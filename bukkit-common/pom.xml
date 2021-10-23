@@ -127,7 +127,7 @@
         <maven-jar-plugin.version>3.1.2</maven-jar-plugin.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spigot-api.version>1.13.2-R0.1-SNAPSHOT</spigot-api.version>
+        <spigot-api.version>1.17.1-R0.1-SNAPSHOT</spigot-api.version>
     </properties>
 
     <repositories>
