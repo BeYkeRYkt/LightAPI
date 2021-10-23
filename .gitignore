@@ -126,3 +126,4 @@ hs_err_pid*
 */target/
 
 dependency-reduced-pom.xml
+.flattened-pom.xml
