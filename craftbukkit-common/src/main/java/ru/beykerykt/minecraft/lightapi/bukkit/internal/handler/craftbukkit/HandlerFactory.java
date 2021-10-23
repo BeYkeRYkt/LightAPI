@@ -26,7 +26,7 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit;
 import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.Bukkit;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandlerFactory;
 
@@ -46,7 +46,7 @@ public class HandlerFactory implements IHandlerFactory {
     }
 
     @Override
-    public IHandler createHandler(IBukkitPlatformImpl impl) throws Exception {
+    public IHandler createHandler(BukkitPlatformImpl impl) throws Exception {
         IHandler handler = null;
         String serverImplPackage = Bukkit.getServer().getClass().getPackage().getName();
 

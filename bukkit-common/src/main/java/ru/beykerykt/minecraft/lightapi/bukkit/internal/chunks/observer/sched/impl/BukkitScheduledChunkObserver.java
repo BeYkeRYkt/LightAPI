@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
@@ -51,7 +51,7 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
     private final IHandler mHandler;
     private ScheduledFuture mScheduledFuture;
 
-    public BukkitScheduledChunkObserver(IBukkitPlatformImpl platform, IBackgroundService service, IHandler handler) {
+    public BukkitScheduledChunkObserver(BukkitPlatformImpl platform, IBackgroundService service, IHandler handler) {
         super(platform, service);
         this.mHandler = handler;
     }
@@ -61,8 +61,8 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
     }
 
     @Override
-    protected IBukkitPlatformImpl getPlatformImpl() {
-        return (IBukkitPlatformImpl) super.getPlatformImpl();
+    protected BukkitPlatformImpl getPlatformImpl() {
+        return (BukkitPlatformImpl) super.getPlatformImpl();
     }
 
     private void checkAndSetDefaults() {

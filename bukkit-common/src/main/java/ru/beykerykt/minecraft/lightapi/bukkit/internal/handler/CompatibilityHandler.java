@@ -36,10 +36,9 @@ import org.bukkit.event.world.WorldUnloadEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
-import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.BitChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
@@ -51,19 +50,19 @@ public class CompatibilityHandler implements IHandler {
 
     private static final BlockFace[] SIDES =
             {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
-    private IPlatformImpl mPlatform;
+    private BukkitPlatformImpl mPlatform;
 
-    private IPlatformImpl getPlatformImpl() {
+    private BukkitPlatformImpl getPlatformImpl() {
         return mPlatform;
     }
 
     @Override
-    public void onInitialization(IPlatformImpl impl) throws Exception {
+    public void onInitialization(BukkitPlatformImpl impl) throws Exception {
         this.mPlatform = impl;
     }
 
     @Override
-    public void onShutdown(IPlatformImpl impl) {
+    public void onShutdown(BukkitPlatformImpl impl) {
     }
 
     @Override
@@ -140,7 +139,7 @@ public class CompatibilityHandler implements IHandler {
         if (isMainThread()) {
             return setRawLightLevelLocked(world, blockX, blockY, blockZ, lightLevel, lightFlags);
         } else {
-            Bukkit.getScheduler().runTask(BukkitPlugin.getInstance(), () -> {
+            Bukkit.getScheduler().runTask(getPlatformImpl().getPlugin(), () -> {
                 setRawLightLevelLocked(world, blockX, blockY, blockZ, lightLevel, lightFlags);
             });
             return ResultCode.SUCCESS;

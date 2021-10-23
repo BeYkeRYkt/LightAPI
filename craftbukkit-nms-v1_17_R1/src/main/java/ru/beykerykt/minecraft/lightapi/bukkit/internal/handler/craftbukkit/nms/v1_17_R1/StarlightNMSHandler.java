@@ -51,9 +51,9 @@ import ca.spottedleaf.starlight.light.BlockStarLightEngine;
 import ca.spottedleaf.starlight.light.SkyStarLightEngine;
 import ca.spottedleaf.starlight.light.StarLightEngine;
 import ca.spottedleaf.starlight.light.StarLightInterface;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
-import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
@@ -159,7 +159,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
     }
 
     @Override
-    public void onInitialization(IPlatformImpl impl) throws Exception {
+    public void onInitialization(BukkitPlatformImpl impl) throws Exception {
         super.onInitialization(impl);
         try {
             starEngine_setLightLevel = StarLightEngine.class.getDeclaredMethod("setLightLevel", int.class, int.class,

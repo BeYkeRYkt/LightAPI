@@ -48,13 +48,14 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
+import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.InternalCode;
 import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.IChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightEngine;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
-public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension {
+public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
 
     private static final String DEFAULT_IMPL_NAME = "craftbukkit";
     /**
@@ -346,7 +347,6 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
         return mUUID;
     }
 
-    @Override
     public BukkitPlugin getPlugin() {
         return mPlugin;
     }
@@ -354,11 +354,6 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     @Override
     public IHandler getHandler() {
         return mHandler;
-    }
-
-    @Override
-    public boolean isMainThread() {
-        return getHandler().isMainThread();
     }
 
     @Override

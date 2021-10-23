@@ -29,7 +29,7 @@ import org.bukkit.event.world.WorldUnloadEvent;
 
 import java.util.List;
 
-import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
@@ -40,12 +40,12 @@ public interface IHandler {
     /**
      * N/A
      */
-    void onInitialization(IPlatformImpl impl) throws Exception;
+    void onInitialization(BukkitPlatformImpl impl) throws Exception;
 
     /**
      * N/A
      */
-    void onShutdown(IPlatformImpl impl);
+    void onShutdown(BukkitPlatformImpl impl);
 
     /**
      * Platform that is being used

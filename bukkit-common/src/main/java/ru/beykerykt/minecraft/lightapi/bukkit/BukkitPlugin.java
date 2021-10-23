@@ -39,7 +39,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.List;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 
@@ -82,7 +81,7 @@ public class BukkitPlugin extends JavaPlugin {
         HandlerList.unregisterAll(this);
     }
 
-    public IBukkitPlatformImpl getPluginImpl() {
+    public BukkitPlatformImpl getPluginImpl() {
         if (mImpl == null) {
             throw new IllegalStateException("IBukkitPlatformImpl not yet initialized!");
         }

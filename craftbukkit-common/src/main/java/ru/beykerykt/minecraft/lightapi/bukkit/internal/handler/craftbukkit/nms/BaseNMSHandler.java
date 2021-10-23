@@ -23,20 +23,20 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms;
 
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
-import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 
 public abstract class BaseNMSHandler implements IHandler {
 
-    private IPlatformImpl mPlatformImpl;
+    private BukkitPlatformImpl mPlatformImpl;
 
     @Override
-    public void onInitialization(IPlatformImpl impl) throws Exception {
+    public void onInitialization(BukkitPlatformImpl impl) throws Exception {
         this.mPlatformImpl = impl;
     }
 
-    protected IPlatformImpl getPlatformImpl() {
+    protected BukkitPlatformImpl getPlatformImpl() {
         return mPlatformImpl;
     }
 

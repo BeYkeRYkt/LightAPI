@@ -30,7 +30,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.IBukkitPlatformImpl;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightPolicy;
@@ -63,12 +63,12 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     /**
      * @hide
      */
-    public BukkitScheduledLightEngine(IBukkitPlatformImpl pluginImpl, IBackgroundService service, IHandler handler) {
+    public BukkitScheduledLightEngine(BukkitPlatformImpl pluginImpl, IBackgroundService service, IHandler handler) {
         this(pluginImpl, service, RelightPolicy.DEFERRED, handler, 250, 250);
     }
 
-    public BukkitScheduledLightEngine(IBukkitPlatformImpl pluginImpl, IBackgroundService service,
-            RelightPolicy strategy, IHandler handler, int maxRequestCount, int maxTimeMsPerTick) {
+    public BukkitScheduledLightEngine(BukkitPlatformImpl pluginImpl, IBackgroundService service, RelightPolicy strategy,
+            IHandler handler, int maxRequestCount, int maxTimeMsPerTick) {
         super(pluginImpl, service, strategy, maxRequestCount, maxTimeMsPerTick);
         this.mHandler = handler;
     }
@@ -78,8 +78,8 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     }
 
     @Override
-    protected IBukkitPlatformImpl getPlatformImpl() {
-        return (IBukkitPlatformImpl) super.getPlatformImpl();
+    protected BukkitPlatformImpl getPlatformImpl() {
+        return (BukkitPlatformImpl) super.getPlatformImpl();
     }
 
     private void checkAndSetDefaults() {

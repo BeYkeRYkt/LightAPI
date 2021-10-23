@@ -56,11 +56,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.BaseNMSHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.utils.VersionUtil;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
-import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.BitChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
@@ -168,7 +168,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     @Override
-    public void onInitialization(IPlatformImpl impl) throws Exception {
+    public void onInitialization(BukkitPlatformImpl impl) throws Exception {
         super.onInitialization(impl);
         try {
             threadedMailbox_DoLoopStep = ThreadedMailbox.class.getDeclaredMethod(
@@ -193,7 +193,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     @Override
-    public void onShutdown(IPlatformImpl impl) {
+    public void onShutdown(BukkitPlatformImpl impl) {
     }
 
     @Override
