@@ -68,7 +68,7 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
     private void checkAndSetDefaults() {
         boolean needSave = false;
         FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
-        if (fc.getString(CONFIG_TICK_PERIOD) == null) {
+        if (!fc.isSet(CONFIG_TICK_PERIOD)) {
             fc.set(CONFIG_TICK_PERIOD, 2);
             needSave = true;
         }

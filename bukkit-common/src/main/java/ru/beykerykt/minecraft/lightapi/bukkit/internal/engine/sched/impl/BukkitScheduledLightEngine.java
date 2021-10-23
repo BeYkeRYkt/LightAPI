@@ -85,19 +85,19 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     private void checkAndSetDefaults() {
         boolean needSave = false;
         FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
-        if (fc.getString(CONFIG_RELIGHT_STRATEGY) == null) {
+        if (!fc.isSet(CONFIG_RELIGHT_STRATEGY)) {
             fc.set(CONFIG_RELIGHT_STRATEGY, RelightPolicy.DEFERRED.name());
             needSave = true;
         }
-        if (fc.getString(CONFIG_TICK_PERIOD) == null) {
+        if (!fc.isSet(CONFIG_TICK_PERIOD)) {
             fc.set(CONFIG_TICK_PERIOD, 1);
             needSave = true;
         }
-        if (fc.getString(CONFIG_MAX_TIME_MS_IN_PER_TICK) == null) {
+        if (!fc.isSet(CONFIG_MAX_TIME_MS_IN_PER_TICK)) {
             fc.set(CONFIG_MAX_TIME_MS_IN_PER_TICK, 50);
             needSave = true;
         }
-        if (fc.getString(CONFIG_MAX_ITERATIONS_IN_PER_TICK) == null) {
+        if (!fc.isSet(CONFIG_MAX_ITERATIONS_IN_PER_TICK)) {
             fc.set(CONFIG_MAX_ITERATIONS_IN_PER_TICK, 256);
             needSave = true;
         }

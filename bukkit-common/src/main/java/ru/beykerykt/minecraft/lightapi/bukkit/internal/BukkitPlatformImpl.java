@@ -114,11 +114,11 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
 
     private boolean upgradeConfig() {
         boolean needSave = false;
-        if (getConfig().getString("handler.specific-handler-path") != null) {
+        if (getConfig().isSet("handler.specific-handler-path")) {
             getConfig().set("handler.specific-handler-path", null);
             needSave = true;
         }
-        if (getConfig().getString("handler.craftbukkit.factory-path") != null) {
+        if (getConfig().isSet("handler.craftbukkit.factory-path")) {
             getConfig().set("handler.craftbukkit.factory-path", null);
             needSave = true;
         }
@@ -130,15 +130,15 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
 
     private void checkAndSetDefaults() {
         boolean needSave = upgradeConfig();
-        if (getConfig().getString(CONFIG_ENABLE_COMPATIBILITY_MODE) == null) {
+        if (!getConfig().isSet(CONFIG_ENABLE_COMPATIBILITY_MODE)) {
             getConfig().set(CONFIG_ENABLE_COMPATIBILITY_MODE, false);
             needSave = true;
         }
-        if (getConfig().getString(CONFIG_SPECIFIC_HANDLER_PATH) == null) {
+        if (!getConfig().isSet(CONFIG_SPECIFIC_HANDLER_PATH)) {
             getConfig().set(CONFIG_SPECIFIC_HANDLER_PATH, "none");
             needSave = true;
         }
-        if (getConfig().getString(CONFIG_HANDLERS_TITLE + "." + DEFAULT_IMPL_NAME + ".factory-path") == null) {
+        if (!getConfig().isSet(CONFIG_HANDLERS_TITLE + "." + DEFAULT_IMPL_NAME + ".factory-path")) {
             getConfig().set(CONFIG_HANDLERS_TITLE + "." + DEFAULT_IMPL_NAME + ".factory-path",
                     "ru.beykerykt.minecraft.lightapi.bukkit.internal.handler." + DEFAULT_IMPL_NAME + ".HandlerFactory");
             needSave = true;

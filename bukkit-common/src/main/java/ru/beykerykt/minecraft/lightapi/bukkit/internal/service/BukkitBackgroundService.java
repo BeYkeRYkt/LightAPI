@@ -62,15 +62,21 @@ public class BukkitBackgroundService extends BackgroundService {
         return mHandler;
     }
 
-    private void checkAndSetDefaults() {
+    private boolean upgradeConfig() {
         boolean needSave = false;
         FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
-        if (fc.getString(CONFIG_TICK_PERIOD) != null) {
+        if (fc.isSet(CONFIG_TICK_PERIOD)) {
             fc.set(CONFIG_TICK_PERIOD, null);
             needSave = true;
         }
+        return needSave;
+    }
 
-        if (fc.getString(CONFIG_CORE_POOL_SIZE) == null) {
+    private void checkAndSetDefaults() {
+        boolean needSave = upgradeConfig();
+        FileConfiguration fc = getPlatformImpl().getPlugin().getConfig();
+
+        if (!fc.isSet(CONFIG_CORE_POOL_SIZE)) {
             fc.set(CONFIG_CORE_POOL_SIZE, 1);
             needSave = true;
         }
