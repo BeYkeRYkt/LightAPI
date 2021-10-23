@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.BaseNMSHandler;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.utils.VersionUtil;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
@@ -171,7 +172,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         super.onInitialization(impl);
         try {
             threadedMailbox_DoLoopStep = ThreadedMailbox.class.getDeclaredMethod(
-                    Utils.compareBukkitVersionTo("1.17.1") >= 0 ? "h" : "g");
+                    VersionUtil.compareBukkitVersionTo("1.17.1") >= 0 ? "h" : "g");
             threadedMailbox_DoLoopStep.setAccessible(true);
             threadedMailbox_State = ThreadedMailbox.class.getDeclaredField("d");
             threadedMailbox_State.setAccessible(true);

@@ -36,9 +36,11 @@ import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.observer.sched.impl.BukkitScheduledChunkObserver;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched.impl.BukkitScheduledLightEngine;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.CompatibilityHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandlerFactory;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BukkitBackgroundService;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.utils.VersionUtil;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
@@ -61,6 +63,7 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     private final String CONFIG_TITLE = "general";
     private final String CONFIG_DEBUG = CONFIG_TITLE + ".debug";
     private final String CONFIG_ENABLE_METRICS = CONFIG_TITLE + ".enable-metrics";
+    private final String CONFIG_ENABLE_COMPATIBILITY_MODE = CONFIG_TITLE + ".enable-compatibility-mode";
     private final String CONFIG_FORCE_ENABLE_LEGACY = CONFIG_TITLE + ".force-enable-legacy";
     private final String CONFIG_SPECIFIC_HANDLER_PATH = CONFIG_TITLE + ".specific-handler-path";
     private final String CONFIG_HANDLERS_TITLE = CONFIG_TITLE + ".handlers";
@@ -96,6 +99,7 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
             if (!file.exists()) {
                 getConfig().set(CONFIG_DEBUG, false);
                 getConfig().set(CONFIG_ENABLE_METRICS, true);
+                getConfig().set(CONFIG_ENABLE_COMPATIBILITY_MODE, false);
                 if (Build.API_VERSION == Build.PREVIEW) { // only for PREVIEW build
                     getConfig().set(CONFIG_FORCE_ENABLE_LEGACY, true);
                 } else {
@@ -126,6 +130,10 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
 
     private void checkAndSetDefaults() {
         boolean needSave = upgradeConfig();
+        if (getConfig().getString(CONFIG_ENABLE_COMPATIBILITY_MODE) == null) {
+            getConfig().set(CONFIG_ENABLE_COMPATIBILITY_MODE, false);
+            needSave = true;
+        }
         if (getConfig().getString(CONFIG_SPECIFIC_HANDLER_PATH) == null) {
             getConfig().set(CONFIG_SPECIFIC_HANDLER_PATH, "none");
             needSave = true;
@@ -149,6 +157,19 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
             mHandler = (IHandler) Class.forName(specificPkg).getConstructor().newInstance();
             info("Custom handler is loaded: " + mHandler.getClass().getName());
             return;
+        }
+
+        // compatibility mode (1.17+)
+        boolean compatibilityMode = getConfig().getBoolean(CONFIG_ENABLE_COMPATIBILITY_MODE);
+        if (compatibilityMode) {
+            if (VersionUtil.compareBukkitVersionTo("1.17") >= 0) {
+                info("Compatibility mode is enabled");
+                mHandler = new CompatibilityHandler();
+                mHandler.onInitialization(this);
+                return;
+            } else {
+                error("Compatibility mode can only work on versions > 1.17");
+            }
         }
 
         // First, check Bukkit server implementation, since Bukkit is only an API, and there

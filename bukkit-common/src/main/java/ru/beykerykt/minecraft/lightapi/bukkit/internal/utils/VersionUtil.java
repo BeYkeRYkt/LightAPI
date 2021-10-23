@@ -1,6 +1,7 @@
 /*
  * The MIT License (MIT)
  *
+ * Copyright 2021 Qveshn
  * Copyright 2021 Vladimir Mikhailov <beykerykt@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,14 +22,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.v1_17_R1;
+package ru.beykerykt.minecraft.lightapi.bukkit.internal.utils;
 
 import org.bukkit.Bukkit;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Utils {
+public class VersionUtil {
 
     public static String serverVersion() {
         return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
@@ -47,7 +48,7 @@ public class Utils {
     }
 
     private static String paddedVersion(String value) {
-        return Utils.leftPad(value, "\\d+", '0', 8);
+        return VersionUtil.leftPad(value, "\\d+", '0', 8);
     }
 
     private static String paddedBukkitVersion() {

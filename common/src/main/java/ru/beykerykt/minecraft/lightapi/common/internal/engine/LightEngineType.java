@@ -24,7 +24,7 @@
 package ru.beykerykt.minecraft.lightapi.common.internal.engine;
 
 public enum LightEngineType {
-    UNKNOWN(0), VANILLA(1), STARLIGHT(2);
+    UNKNOWN(0), VANILLA(1), STARLIGHT(2), COMPATIBILITY(3);
 
     private final int id;
 
