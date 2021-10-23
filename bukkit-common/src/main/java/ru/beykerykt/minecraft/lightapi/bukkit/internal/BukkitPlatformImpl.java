@@ -114,6 +114,10 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
 
     private boolean upgradeConfig() {
         boolean needSave = false;
+        if (getConfig().isSet("general.specific-storage-provider")) {
+            getConfig().set("general.specific-storage-provider", null);
+            needSave = true;
+        }
         if (getConfig().isSet("handler.specific-handler-path")) {
             getConfig().set("handler.specific-handler-path", null);
             needSave = true;
