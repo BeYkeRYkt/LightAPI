@@ -23,15 +23,16 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal;
 
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.io.File;
 import java.util.UUID;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
-import ru.beykerykt.minecraft.lightapi.bukkit.ConfigurationPath;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.observer.sched.impl.BukkitScheduledChunkObserver;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched.impl.BukkitScheduledLightEngine;
@@ -54,6 +55,16 @@ import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundServic
 public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension {
 
     private static final String DEFAULT_IMPL_NAME = "craftbukkit";
+    /**
+     * CONFIG
+     */
+    private final String CONFIG_TITLE = "general";
+    private final String CONFIG_DEBUG = CONFIG_TITLE + ".debug";
+    private final String CONFIG_ENABLE_METRICS = CONFIG_TITLE + ".enable-metrics";
+    private final String CONFIG_FORCE_ENABLE_LEGACY = CONFIG_TITLE + ".force-enable-legacy";
+    private final String CONFIG_SPECIFIC_HANDLER_PATH = CONFIG_TITLE + ".specific-handler-path";
+    private final String CONFIG_HANDLERS_TITLE = CONFIG_TITLE + ".handlers";
+    private final int BSTATS_ID = 13051;
     private final BukkitPlugin mPlugin;
     private boolean DEBUG = false;
     private boolean isInit = false;
@@ -78,14 +89,49 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
         return getPlugin().getConfig();
     }
 
-    private void checkAndSetDefaults() {
+    private void generateConfig() {
+        // create config
+        try {
+            File file = new File(getPlugin().getDataFolder(), "config.yml");
+            if (!file.exists()) {
+                getConfig().set(CONFIG_DEBUG, false);
+                getConfig().set(CONFIG_ENABLE_METRICS, true);
+                if (Build.API_VERSION == Build.PREVIEW) { // only for PREVIEW build
+                    getConfig().set(CONFIG_FORCE_ENABLE_LEGACY, true);
+                } else {
+                    getConfig().set(CONFIG_FORCE_ENABLE_LEGACY, false);
+                }
+                getPlugin().saveConfig();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean upgradeConfig() {
         boolean needSave = false;
-        if (getConfig().getString("handler.specific-handler-path") == null) {
-            getConfig().set("handler.specific-handler-path", "none");
+        if (getConfig().getString("handler.specific-handler-path") != null) {
+            getConfig().set("handler.specific-handler-path", null);
             needSave = true;
         }
-        if (getConfig().getString("handler." + DEFAULT_IMPL_NAME + ".factory-path") == null) {
-            getConfig().set("handler." + DEFAULT_IMPL_NAME + ".factory-path",
+        if (getConfig().getString("handler.craftbukkit.factory-path") != null) {
+            getConfig().set("handler.craftbukkit.factory-path", null);
+            needSave = true;
+        }
+        if (needSave) {
+            getConfig().set("handler", null);
+        }
+        return needSave;
+    }
+
+    private void checkAndSetDefaults() {
+        boolean needSave = upgradeConfig();
+        if (getConfig().getString(CONFIG_SPECIFIC_HANDLER_PATH) == null) {
+            getConfig().set(CONFIG_SPECIFIC_HANDLER_PATH, "none");
+            needSave = true;
+        }
+        if (getConfig().getString(CONFIG_HANDLERS_TITLE + "." + DEFAULT_IMPL_NAME + ".factory-path") == null) {
+            getConfig().set(CONFIG_HANDLERS_TITLE + "." + DEFAULT_IMPL_NAME + ".factory-path",
                     "ru.beykerykt.minecraft.lightapi.bukkit.internal.handler." + DEFAULT_IMPL_NAME + ".HandlerFactory");
             needSave = true;
         }
@@ -97,7 +143,7 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
     private void initHandler() throws Exception {
         checkAndSetDefaults();
         // load specific handler if available
-        String specificPkg = getConfig().getString("handler.specific-handler-path");
+        String specificPkg = getConfig().getString(CONFIG_SPECIFIC_HANDLER_PATH);
         if (specificPkg != null && !specificPkg.equalsIgnoreCase("none")) {
             info("Initial load specific handler");
             mHandler = (IHandler) Class.forName(specificPkg).getConstructor().newInstance();
@@ -110,31 +156,42 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
         String implName = Bukkit.getName().toLowerCase();
         debug("Server implementation name: " + implName);
 
-        String modFactoryPath = getConfig().getString("handler." + implName + ".factory-path");
+        String modFactoryPath = getConfig().getString(CONFIG_HANDLERS_TITLE + "." + implName + ".factory-path");
         try {
             Class.forName(modFactoryPath);
         } catch (Exception ex) {
             debug("Specific HandlerFactory for " + implName + " is not detected. Switch to default: "
                     + DEFAULT_IMPL_NAME);
             implName = DEFAULT_IMPL_NAME;
-            modFactoryPath = getConfig().getString("handler." + implName + ".factory-path");
+            modFactoryPath = getConfig().getString(CONFIG_HANDLERS_TITLE + "." + implName + ".factory-path");
         }
         IHandlerFactory factory = (IHandlerFactory) Class.forName(modFactoryPath).getConstructor().newInstance();
         mHandler = factory.createHandler(this);
         debug("Handler is loaded: " + mHandler.getClass().getName());
     }
 
+    private void enableMetrics() {
+        boolean enableMetrics = getConfig().getBoolean(CONFIG_ENABLE_METRICS);
+        if (enableMetrics) {
+            Metrics metrics = new Metrics(getPlugin(), BSTATS_ID);
+        }
+        info("Metrics is " + (enableMetrics ? "en" : "dis") + "abled!");
+    }
+
     @Override
     public int prepare() {
+        // general default config
+        generateConfig();
+
         // debug mode
-        this.DEBUG = getConfig().getBoolean(ConfigurationPath.GENERAL_DEBUG);
+        this.DEBUG = getConfig().getBoolean(CONFIG_DEBUG);
         return ResultCode.SUCCESS;
     }
 
     @Override
     public int initialization() {
         // enable force legacy
-        forceLegacy = getConfig().getBoolean(ConfigurationPath.GENERAL_FORCE_ENABLE_LEGACY);
+        forceLegacy = getConfig().getBoolean(CONFIG_FORCE_ENABLE_LEGACY);
         if (forceLegacy) {
             info("Force legacy is enabled");
         }
@@ -164,6 +221,9 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
         mExtension = this;
 
         isInit = true;
+
+        // enable metrics
+        enableMetrics();
         return ResultCode.SUCCESS;
     }
 
@@ -187,7 +247,6 @@ public class BukkitPlatformImpl implements IBukkitPlatformImpl, IBukkitExtension
         StringBuilder builder = new StringBuilder(ChatColor.AQUA + "<LightAPI>: ");
         builder.append(ChatColor.WHITE + msg);
         mPlugin.getServer().getConsoleSender().sendMessage(builder.toString());
-        //mPlugin.getServer().getConsoleSender().sendMessage(ChatColor.AQUA + "<LightAPI>: " + ChatColor.WHITE + msg);
     }
 
     @Override

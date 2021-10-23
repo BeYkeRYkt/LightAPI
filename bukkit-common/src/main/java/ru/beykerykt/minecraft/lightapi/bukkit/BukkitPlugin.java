@@ -28,17 +28,14 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
-import org.bstats.bukkit.Metrics;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.util.List;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
@@ -47,8 +44,6 @@ import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 
 public class BukkitPlugin extends JavaPlugin {
-
-    private static final int BSTATS_ID = 13051;
 
     private static BukkitPlugin plugin = null;
     private static BukkitPlatformImpl mImpl = null;
@@ -61,17 +56,6 @@ public class BukkitPlugin extends JavaPlugin {
     public void onLoad() {
         plugin = this;
         mImpl = new BukkitPlatformImpl(plugin);
-
-        // create config
-        try {
-            File file = new File(getDataFolder(), "config.yml");
-            if (!file.exists()) {
-                generateConfig(file);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         // set server implementation
         try {
             LightAPI.prepare(mImpl);
@@ -90,22 +74,12 @@ public class BukkitPlugin extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        enableMetrics();
     }
 
     @Override
     public void onDisable() {
         LightAPI.shutdown(mImpl);
         HandlerList.unregisterAll(this);
-    }
-
-    private void enableMetrics() {
-        boolean enableMetrics = getConfig().getBoolean(ConfigurationPath.GENERAL_ENABLE_METRICS);
-        if (enableMetrics) {
-            Metrics metrics = new Metrics(this, BSTATS_ID);
-            // TODO: Add custom charts ?
-        }
-        getPluginImpl().info("Metrics is " + (enableMetrics ? "en" : "dis") + "abled!");
     }
 
     public IBukkitPlatformImpl getPluginImpl() {
@@ -117,20 +91,6 @@ public class BukkitPlugin extends JavaPlugin {
 
     public void log(CommandSender sender, String message) {
         sender.sendMessage(ChatColor.AQUA + "<LightAPI>: " + ChatColor.WHITE + message);
-    }
-
-    private void generateConfig(File file) {
-        FileConfiguration fc = getConfig();
-        if (!file.exists()) {
-            fc.set(ConfigurationPath.GENERAL_DEBUG, false);
-            fc.set(ConfigurationPath.GENERAL_ENABLE_METRICS, true);
-            if (Build.API_VERSION == Build.PREVIEW) { // only for PREVIEW build
-                fc.set(ConfigurationPath.GENERAL_FORCE_ENABLE_LEGACY, true);
-            } else {
-                fc.set(ConfigurationPath.GENERAL_FORCE_ENABLE_LEGACY, false);
-            }
-            saveConfig();
-        }
     }
 
     @Override
