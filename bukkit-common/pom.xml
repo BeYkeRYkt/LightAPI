@@ -29,7 +29,7 @@
     <parent>
         <groupId>ru.beykerykt.minecraft</groupId>
         <artifactId>lightapi-parent</artifactId>
-        <version>5.0.0</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>lightapi-bukkit-common</artifactId>
