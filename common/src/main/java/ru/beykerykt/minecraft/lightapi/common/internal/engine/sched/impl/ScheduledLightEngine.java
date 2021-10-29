@@ -45,16 +45,16 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
 
     private final IBackgroundService mBackgroundService;
     private final long TICK_MS = 50;
-    protected long maxTimeMsPerTick;
-    protected int maxRequestCount;
-    protected RelightPolicy mRelightPolicy;
     private final IPlatformImpl mPlatformImpl;
-    private IScheduler mScheduler;
-    private int requestCount = 0;
     private final Queue<Request> lightQueue = new PriorityBlockingQueue<>(10,
             (o1, o2) -> o2.getPriority() - o1.getPriority());
     private final Queue<Request> relightQueue = new PriorityBlockingQueue<>(10,
             (o1, o2) -> o2.getPriority() - o1.getPriority());
+    protected long maxTimeMsPerTick;
+    protected int maxRequestCount;
+    protected RelightPolicy mRelightPolicy;
+    private IScheduler mScheduler;
+    private int requestCount = 0;
     private long penaltyTime = 0;
 
     public ScheduledLightEngine(IPlatformImpl pluginImpl, IBackgroundService service, RelightPolicy strategy) {
@@ -79,7 +79,8 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     }
 
     protected boolean canExecuteSync() {
-        return getBackgroundService().canExecuteSync(maxTimeMsPerTick) && (penaltyTime < maxTimeMsPerTick);
+        return getBackgroundService().canExecuteSync(maxTimeMsPerTick) && (penaltyTime < maxTimeMsPerTick)
+                && getScheduler().canExecute();
     }
 
     @Override
@@ -225,6 +226,9 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     }
 
     private void handleLightQueueLocked() {
+        if (!getScheduler().canExecute()) {
+            return;
+        }
         long startTime = System.currentTimeMillis();
         requestCount = 0;
         while (lightQueue.peek() != null) {
@@ -245,6 +249,9 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     }
 
     private void handleRelightQueueLocked() {
+        if (!getScheduler().canExecute()) {
+            return;
+        }
         long startTime = System.currentTimeMillis();
         requestCount = 0;
         while (relightQueue.peek() != null) {

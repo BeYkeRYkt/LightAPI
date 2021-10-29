@@ -30,5 +30,10 @@ public interface IScheduledChunkObserver extends IChunkObserver, Runnable {
     /**
      * N/A
      */
+    boolean isBusy();
+
+    /**
+     * N/A
+     */
     int notifyUpdateChunks(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags);
 }

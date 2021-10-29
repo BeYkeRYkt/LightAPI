@@ -33,6 +33,11 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 public interface IScheduler {
 
     /**
+     * N/A
+     */
+    boolean canExecute();
+
+    /**
      * Creates requests. The function must return only a request with specific flags.
      */
     Request createRequest(int defaultFlag, String worldName, int blockX, int blockY, int blockZ, int lightLevel,

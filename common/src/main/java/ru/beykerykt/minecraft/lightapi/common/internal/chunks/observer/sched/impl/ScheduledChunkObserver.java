@@ -38,6 +38,7 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
     private final IBackgroundService mBackgroundService;
     private final Map<Long, IChunkData> observedChunks = new HashMap<>();
     private final IPlatformImpl mPlatformImpl;
+    private boolean isBusy = false;
 
     public ScheduledChunkObserver(IPlatformImpl platform, IBackgroundService service) {
         this.mPlatformImpl = platform;
@@ -61,6 +62,11 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
     public void onShutdown() {
         getPlatformImpl().debug(getClass().getName() + " is shutdown!");
         observedChunks.clear();
+    }
+
+    @Override
+    public boolean isBusy() {
+        return isBusy;
     }
 
     private int getDeltaLight(int x, int dx) {
@@ -134,6 +140,7 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
     }
 
     private void handleChunksLocked() {
+        isBusy = true;
         Iterator it = observedChunks.entrySet().iterator();
         if (observedChunks.size() > 0) {
             getPlatformImpl().debug("observedChunks size: " + observedChunks.size());
@@ -147,6 +154,7 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
                 it.remove();
             }
         }
+        isBusy = false;
     }
 
     @Override

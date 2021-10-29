@@ -70,6 +70,11 @@ public class PriorityScheduler implements IScheduler {
     }
 
     @Override
+    public boolean canExecute() {
+        return !getChunkObserver().isBusy();
+    }
+
+    @Override
     public Request createRequest(int defaultFlag, String worldName, int blockX, int blockY, int blockZ, int lightLevel,
             int lightFlags, EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback) {
         int requestFlags = defaultFlag;
