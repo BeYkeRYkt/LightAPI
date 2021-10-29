@@ -84,7 +84,7 @@ public class BukkitLightStorage implements ILightStorage {
                 }
             } else {
                 mSkyLightLevels.remove(longPos);
-                getStorageFile().deleteLightLevel(getWorldName(), longPos, lightFlags);
+                getStorageFile().deleteLightLevel(getWorldName(), longPos, LightFlag.SKY_LIGHTING);
             }
         }
 
@@ -96,7 +96,7 @@ public class BukkitLightStorage implements ILightStorage {
                 }
             } else {
                 mBlockLightLevels.remove(longPos);
-                getStorageFile().deleteLightLevel(getWorldName(), longPos, lightFlags);
+                getStorageFile().deleteLightLevel(getWorldName(), longPos, LightFlag.BLOCK_LIGHTING);
             }
         }
     }
