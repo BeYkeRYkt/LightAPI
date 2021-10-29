@@ -59,7 +59,7 @@ import java.util.stream.Stream;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms.BaseNMSHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IntChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
@@ -212,9 +212,9 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     public boolean isLightingSupported(World world, int lightFlags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
-        if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlags, LightFlag.SKY_LIGHTING)) {
             return lightEngine.a(EnumSkyBlock.SKY) instanceof LightEngineSky;
-        } else if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
+        } else if (FlagUtils.isFlagSet(lightFlags, LightFlag.BLOCK_LIGHTING)) {
             return lightEngine.a(EnumSkyBlock.BLOCK) instanceof LightEngineBlock;
         }
         return false;
@@ -243,8 +243,8 @@ public class VanillaNMSHandler extends BaseNMSHandler {
 
         executeSync(lightEngine, () -> {
             // block lighting
-            if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING)) {
-                if (isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
+            if (FlagUtils.isFlagSet(flags, LightFlag.BLOCK_LIGHTING)) {
+                if (isLightingSupported(world, LightFlag.BLOCK_LIGHTING)) {
                     LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
                     if (finalLightLevel == 0) {
                         leb.a(position);
@@ -260,8 +260,8 @@ public class VanillaNMSHandler extends BaseNMSHandler {
             }
 
             // sky lighting
-            if (FlagUtils.isFlagSet(flags, LightType.SKY_LIGHTING)) {
-                if (isLightingSupported(world, LightType.SKY_LIGHTING)) {
+            if (FlagUtils.isFlagSet(flags, LightFlag.SKY_LIGHTING)) {
+                if (isLightingSupported(world, LightFlag.SKY_LIGHTING)) {
                     LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
                     if (finalLightLevel == 0) {
                         les.a(position);
@@ -284,12 +284,12 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         int lightLevel = -1;
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
-        if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING) && FlagUtils.isFlagSet(flags,
-                LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(flags, LightFlag.BLOCK_LIGHTING) && FlagUtils.isFlagSet(flags,
+                LightFlag.SKY_LIGHTING)) {
             lightLevel = worldServer.getLightLevel(position);
-        } else if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING)) {
+        } else if (FlagUtils.isFlagSet(flags, LightFlag.BLOCK_LIGHTING)) {
             lightLevel = worldServer.getBrightness(EnumSkyBlock.BLOCK, position);
-        } else if (FlagUtils.isFlagSet(flags, LightType.SKY_LIGHTING)) {
+        } else if (FlagUtils.isFlagSet(flags, LightFlag.SKY_LIGHTING)) {
             lightLevel = worldServer.getBrightness(EnumSkyBlock.SKY, position);
         }
         return lightLevel;
@@ -310,10 +310,10 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         }
 
         executeSync(lightEngine, () -> {
-            if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING) && FlagUtils.isFlagSet(flags,
-                    LightType.SKY_LIGHTING)) {
-                if (isLightingSupported(world, LightType.SKY_LIGHTING) && isLightingSupported(world,
-                        LightType.BLOCK_LIGHTING)) {
+            if (FlagUtils.isFlagSet(flags, LightFlag.BLOCK_LIGHTING) && FlagUtils.isFlagSet(flags,
+                    LightFlag.SKY_LIGHTING)) {
+                if (isLightingSupported(world, LightFlag.SKY_LIGHTING) && isLightingSupported(world,
+                        LightFlag.BLOCK_LIGHTING)) {
                     LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
                     LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
 
@@ -328,16 +328,16 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                     }
                 } else {
                     // block lighting
-                    if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING)) {
-                        if (isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
+                    if (FlagUtils.isFlagSet(flags, LightFlag.BLOCK_LIGHTING)) {
+                        if (isLightingSupported(world, LightFlag.BLOCK_LIGHTING)) {
                             LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
                             leb.a(Integer.MAX_VALUE, true, true);
                         }
                     }
 
                     // sky lighting
-                    if (FlagUtils.isFlagSet(flags, LightType.SKY_LIGHTING)) {
-                        if (isLightingSupported(world, LightType.SKY_LIGHTING)) {
+                    if (FlagUtils.isFlagSet(flags, LightFlag.SKY_LIGHTING)) {
+                        if (isLightingSupported(world, LightFlag.SKY_LIGHTING)) {
                             LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
                             les.a(Integer.MAX_VALUE, true, true);
                         }
@@ -345,16 +345,16 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                 }
             } else {
                 // block lighting
-                if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING)) {
-                    if (isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
+                if (FlagUtils.isFlagSet(flags, LightFlag.BLOCK_LIGHTING)) {
+                    if (isLightingSupported(world, LightFlag.BLOCK_LIGHTING)) {
                         LightEngineBlock leb = (LightEngineBlock) lightEngine.a(EnumSkyBlock.BLOCK);
                         leb.a(Integer.MAX_VALUE, true, true);
                     }
                 }
 
                 // sky lighting
-                if (FlagUtils.isFlagSet(flags, LightType.SKY_LIGHTING)) {
-                    if (isLightingSupported(world, LightType.SKY_LIGHTING)) {
+                if (FlagUtils.isFlagSet(flags, LightFlag.SKY_LIGHTING)) {
+                    if (isLightingSupported(world, LightFlag.SKY_LIGHTING)) {
                         LightEngineSky les = (LightEngineSky) lightEngine.a(EnumSkyBlock.SKY);
                         les.a(Integer.MAX_VALUE, true, true);
                     }

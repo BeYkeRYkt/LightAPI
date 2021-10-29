@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.storage.ILightStorage;
 import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageFile;
@@ -77,7 +77,7 @@ public class BukkitLightStorage implements ILightStorage {
     @Override
     public void setLightLevel(long longPos, int lightLevel, int lightFlags) {
         // skylight
-        if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlags, LightFlag.SKY_LIGHTING)) {
             if (lightLevel > 0) {
                 if (!mSkyLightLevels.containsKey(longPos)) {
                     mSkyLightLevels.put(longPos, lightLevel);
@@ -89,7 +89,7 @@ public class BukkitLightStorage implements ILightStorage {
         }
 
         // blocklight
-        if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlags, LightFlag.BLOCK_LIGHTING)) {
             if (lightLevel > 0) {
                 if (!mBlockLightLevels.containsKey(longPos)) {
                     mBlockLightLevels.put(longPos, lightLevel);
@@ -102,9 +102,9 @@ public class BukkitLightStorage implements ILightStorage {
     }
 
     private boolean checkLightLevel(long longPos, int lightFlag) {
-        if (FlagUtils.isFlagSet(lightFlag, LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlag, LightFlag.SKY_LIGHTING)) {
             return mSkyLightLevels.containsKey(longPos);
-        } else if (FlagUtils.isFlagSet(lightFlag, LightType.BLOCK_LIGHTING)) {
+        } else if (FlagUtils.isFlagSet(lightFlag, LightFlag.BLOCK_LIGHTING)) {
             return mBlockLightLevels.containsKey(longPos);
         }
         return false;
@@ -115,9 +115,9 @@ public class BukkitLightStorage implements ILightStorage {
         if (!checkLightLevel(longPos, lightFlag)) {
             return -1;
         }
-        if (FlagUtils.isFlagSet(lightFlag, LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlag, LightFlag.SKY_LIGHTING)) {
             return mSkyLightLevels.get(longPos);
-        } else if (FlagUtils.isFlagSet(lightFlag, LightType.BLOCK_LIGHTING)) {
+        } else if (FlagUtils.isFlagSet(lightFlag, LightFlag.BLOCK_LIGHTING)) {
             return mBlockLightLevels.get(longPos);
         }
         return -1;
@@ -125,9 +125,9 @@ public class BukkitLightStorage implements ILightStorage {
 
     @Override
     public boolean containsChunk(int chunkX, int chunkZ, int lightFlag) {
-        if (FlagUtils.isFlagSet(lightFlag, LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlag, LightFlag.SKY_LIGHTING)) {
             return containsChunk(chunkX, chunkZ, lightFlag, mSkyLightLevels);
-        } else if (FlagUtils.isFlagSet(lightFlag, LightType.BLOCK_LIGHTING)) {
+        } else if (FlagUtils.isFlagSet(lightFlag, LightFlag.BLOCK_LIGHTING)) {
             return containsChunk(chunkX, chunkZ, lightFlag, mBlockLightLevels);
         }
         return getStorageFile().containsChunk(getWorldName(), chunkX, chunkZ, lightFlag);
@@ -154,11 +154,11 @@ public class BukkitLightStorage implements ILightStorage {
         for (Map.Entry<Long, Integer> entry : map.entrySet()) {
             long longPos = entry.getKey();
 
-            if (FlagUtils.isFlagSet(lightFlag, LightType.SKY_LIGHTING)) {
+            if (FlagUtils.isFlagSet(lightFlag, LightFlag.SKY_LIGHTING)) {
                 if (mSkyLightLevels.containsKey(longPos)) {
                     continue;
                 }
-            } else if (FlagUtils.isFlagSet(lightFlag, LightType.BLOCK_LIGHTING)) {
+            } else if (FlagUtils.isFlagSet(lightFlag, LightFlag.BLOCK_LIGHTING)) {
                 if (mBlockLightLevels.containsKey(longPos)) {
                     continue;
                 }
@@ -185,9 +185,9 @@ public class BukkitLightStorage implements ILightStorage {
         getPlatformImpl().debug("unloadLightDataFromChunk(" + chunkX + ", " + chunkZ + ", " + lightFlag + ")");
         getPlatformImpl().debug("pre mSkyLightLevels: " + mSkyLightLevels.size());
         getPlatformImpl().debug("pre mBlockLightLevels: " + mBlockLightLevels.size());
-        if (FlagUtils.isFlagSet(lightFlag, LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlag, LightFlag.SKY_LIGHTING)) {
             unloadLightDataFromChunk(chunkX, chunkZ, lightFlag, mSkyLightLevels);
-        } else if (FlagUtils.isFlagSet(lightFlag, LightType.BLOCK_LIGHTING)) {
+        } else if (FlagUtils.isFlagSet(lightFlag, LightFlag.BLOCK_LIGHTING)) {
             unloadLightDataFromChunk(chunkX, chunkZ, lightFlag, mBlockLightLevels);
         }
         getPlatformImpl().debug("post mSkyLightLevels: " + mSkyLightLevels.size());
@@ -209,11 +209,11 @@ public class BukkitLightStorage implements ILightStorage {
     @Override
     public void saveLightData() {
         if (!mSkyLightLevels.isEmpty()) {
-            saveLightData(mSkyLightLevels, LightType.SKY_LIGHTING);
+            saveLightData(mSkyLightLevels, LightFlag.SKY_LIGHTING);
         }
 
         if (!mBlockLightLevels.isEmpty()) {
-            saveLightData(mBlockLightLevels, LightType.BLOCK_LIGHTING);
+            saveLightData(mBlockLightLevels, LightFlag.BLOCK_LIGHTING);
         }
     }
 

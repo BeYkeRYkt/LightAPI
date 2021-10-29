@@ -42,7 +42,7 @@ import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 
@@ -134,7 +134,7 @@ public class BukkitPlugin extends JavaPlugin {
                 location.getBlockZ(), flag);
         List<IChunkData> chunkList = mHandler.collectChunkSections(location.getWorld(), location.getBlockX(),
                 location.getBlockY(), location.getBlockZ(), lightLevel == 0 ? blockLightLevel : lightLevel,
-                LightType.BLOCK_LIGHTING);
+                LightFlag.BLOCK_LIGHTING);
         // outputChunks.addAll(ChunkUtils.mergeChunks(chunkList));
         outputChunks.addAll(chunkList);
         chunkList.clear();
@@ -142,7 +142,7 @@ public class BukkitPlugin extends JavaPlugin {
 
     private void runBenchmark(Location loc, boolean async, String strategy, int cycleCount) {
         int oldBlockLight = 15;
-        int flag = LightType.BLOCK_LIGHTING | LightType.SKY_LIGHTING;
+        int flag = LightFlag.BLOCK_LIGHTING | LightFlag.SKY_LIGHTING;
 
         Runnable run = () -> {
             long startTime = System.currentTimeMillis();
@@ -195,13 +195,13 @@ public class BukkitPlugin extends JavaPlugin {
                         int val = Integer.parseInt(args[1]);
                         int lightLevel = 15;
                         EditPolicy edit = EditPolicy.valueOf(args[2].toUpperCase());
-                        setLightLevel(player.getLocation(), val, lightLevel, LightType.BLOCK_LIGHTING, edit,
+                        setLightLevel(player.getLocation(), val, lightLevel, LightFlag.BLOCK_LIGHTING, edit,
                                 SendPolicy.IMMEDIATE);
                     } else if (cmd.equals("delete")) {
                         log(player, "Delete light");
                         int val = Integer.parseInt(args[1]);
                         EditPolicy edit = EditPolicy.valueOf(args[2].toUpperCase());
-                        setLightLevel(player.getLocation(), val, 0, LightType.BLOCK_LIGHTING, edit,
+                        setLightLevel(player.getLocation(), val, 0, LightFlag.BLOCK_LIGHTING, edit,
                                 SendPolicy.IMMEDIATE);
                     }
                 } else {

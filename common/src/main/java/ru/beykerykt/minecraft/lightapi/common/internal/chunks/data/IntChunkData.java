@@ -23,7 +23,7 @@
  */
 package ru.beykerykt.minecraft.lightapi.common.internal.chunks.data;
 
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 public class IntChunkData extends ChunkData {
@@ -49,11 +49,11 @@ public class IntChunkData extends ChunkData {
 
     @Override
     public void markSectionForUpdate(int lightFlags, int sectionY) {
-        if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlags, LightFlag.SKY_LIGHTING)) {
             skyLightUpdateBits |= 1 << sectionY + 1;
         }
 
-        if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlags, LightFlag.BLOCK_LIGHTING)) {
             blockLightUpdateBits |= 1 << sectionY + 1;
         }
     }

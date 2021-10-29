@@ -36,7 +36,7 @@ import java.util.Map;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
@@ -58,7 +58,7 @@ public class DebugListener implements Listener {
         Location location = block.getLocation();
         switch (block.getType()) {
             case BEDROCK: {
-                int flags = LightType.BLOCK_LIGHTING;
+                int flags = LightFlag.BLOCK_LIGHTING;
                 EditPolicy editPolicy = EditPolicy.IMMEDIATE;
                 SendPolicy sendPolicy = SendPolicy.IMMEDIATE;
                 mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(),
@@ -69,7 +69,7 @@ public class DebugListener implements Listener {
                 break;
             }
             case REDSTONE_BLOCK: {
-                int flags = LightType.BLOCK_LIGHTING | LightType.USE_STORAGE_PROVIDER;
+                int flags = LightFlag.BLOCK_LIGHTING | LightFlag.USE_STORAGE_PROVIDER;
                 int oldBlockLight = LightAPI.get().getLightLevel(location.getWorld().getName(), location.getBlockX(),
                         location.getBlockY(), location.getBlockZ(), flags);
                 EditPolicy editPolicy = EditPolicy.DEFERRED;
@@ -121,7 +121,7 @@ public class DebugListener implements Listener {
                 break;
             }
             case OBSIDIAN: {
-                int flags = LightType.BLOCK_LIGHTING;
+                int flags = LightFlag.BLOCK_LIGHTING;
                 EditPolicy editPolicy = EditPolicy.FORCE_IMMEDIATE;
                 SendPolicy sendPolicy = SendPolicy.IMMEDIATE;
                 mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(),
@@ -132,7 +132,7 @@ public class DebugListener implements Listener {
                 break;
             }
             case GLASS: {
-                int flags = LightType.SKY_LIGHTING;
+                int flags = LightFlag.SKY_LIGHTING;
                 EditPolicy editPolicy = EditPolicy.IMMEDIATE;
                 SendPolicy sendPolicy = SendPolicy.IMMEDIATE;
                 mAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(),
@@ -143,7 +143,7 @@ public class DebugListener implements Listener {
                 break;
             }
             case REDSTONE_LAMP: {
-                int flags = LightType.BLOCK_LIGHTING;
+                int flags = LightFlag.BLOCK_LIGHTING;
                 long longPos = BlockPosition.asLong(location.getBlockX(), location.getBlockY(), location.getBlockZ());
                 if (mLightTasks.containsKey(longPos)) {
                     int taskId = mLightTasks.get(longPos);

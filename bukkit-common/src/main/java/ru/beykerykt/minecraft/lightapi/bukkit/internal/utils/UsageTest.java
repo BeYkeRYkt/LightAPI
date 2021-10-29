@@ -26,7 +26,7 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal.utils;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.RequestFlag;
@@ -34,7 +34,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.RequestFlag;
 public class UsageTest {
 
     private void setLightLevel(String world, int blockX, int blockY, int blockZ, int lightLevel) {
-        int lightTypeFlags = LightType.BLOCK_LIGHTING;
+        int lightTypeFlags = LightFlag.BLOCK_LIGHTING;
         int oldBlockLight = LightAPI.get().getLightLevel(world, blockX, blockY, blockZ, lightTypeFlags);
         EditPolicy editPolicy = EditPolicy.DEFERRED;
         SendPolicy sendPolicy = SendPolicy.DEFERRED;

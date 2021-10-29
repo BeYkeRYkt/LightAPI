@@ -25,7 +25,7 @@ package ru.beykerykt.minecraft.lightapi.common.internal.chunks.data;
 
 import java.util.BitSet;
 
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 /**
@@ -82,11 +82,11 @@ public class BitChunkData extends ChunkData {
         }
         int l = sectionY - minY;
 
-        if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlags, LightFlag.SKY_LIGHTING)) {
             skyLightUpdateBits.set(l);
         }
 
-        if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlags, LightFlag.BLOCK_LIGHTING)) {
             blockLightUpdateBits.set(l);
         }
     }
@@ -101,7 +101,7 @@ public class BitChunkData extends ChunkData {
     public void setFullSections() {
         // TODO: Mark full sections
         for (int i = getBottomSection(); i < getTopSection(); i++) {
-            markSectionForUpdate(LightType.SKY_LIGHTING | LightType.BLOCK_LIGHTING, i);
+            markSectionForUpdate(LightFlag.SKY_LIGHTING | LightFlag.BLOCK_LIGHTING, i);
         }
     }
 

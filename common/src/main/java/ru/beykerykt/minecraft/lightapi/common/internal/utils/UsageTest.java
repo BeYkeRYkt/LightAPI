@@ -26,7 +26,7 @@ package ru.beykerykt.minecraft.lightapi.common.internal.utils;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 
@@ -80,7 +80,7 @@ public class UsageTest {
     public void test(String world, int blockX, int blockY, int blockZ, int lightLevel) {
         int blockLight = mLightAPI.getLightLevel(world, blockX, blockY, blockZ, lightLevel);
 
-        int lightType = LightType.BLOCK_LIGHTING;
+        int lightType = LightFlag.BLOCK_LIGHTING;
         EditPolicy editPolicy = EditPolicy.DEFERRED;
         SendPolicy sendPolicy = SendPolicy.DEFERRED;
         mLightAPI.setLightLevel(world, blockX, blockY, blockZ, lightLevel, lightType, editPolicy, sendPolicy,

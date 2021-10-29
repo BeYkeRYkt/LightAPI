@@ -53,7 +53,7 @@ import ca.spottedleaf.starlight.light.StarLightEngine;
 import ca.spottedleaf.starlight.light.StarLightInterface;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
@@ -85,7 +85,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
 
     private void addTaskToQueue(WorldServer worldServer, StarLightInterface starLightInterface, StarLightEngine sle,
             ChunkCoordIntPair chunkCoordIntPair, Set<LightPos> lightPoints) {
-        int type = (sle instanceof BlockStarLightEngine) ? LightType.BLOCK_LIGHTING : LightType.SKY_LIGHTING;
+        int type = (sle instanceof BlockStarLightEngine) ? LightFlag.BLOCK_LIGHTING : LightFlag.SKY_LIGHTING;
         scheduleChunkLight(starLightInterface, chunkCoordIntPair, () -> {
             try {
                 int chunkX = chunkCoordIntPair.b;
@@ -206,9 +206,9 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
     public boolean isLightingSupported(World world, int lightFlags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
-        if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlags, LightFlag.SKY_LIGHTING)) {
             return lightEngine.a(EnumSkyBlock.a) != null;
-        } else if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
+        } else if (FlagUtils.isFlagSet(lightFlags, LightFlag.BLOCK_LIGHTING)) {
             return lightEngine.a(EnumSkyBlock.b) != null;
         }
         return false;
@@ -227,8 +227,8 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
 
         executeSync(lightEngine, () -> {
             // block lighting
-            if (FlagUtils.isFlagSet(flags, LightType.BLOCK_LIGHTING)) {
-                if (isLightingSupported(world, LightType.BLOCK_LIGHTING)) {
+            if (FlagUtils.isFlagSet(flags, LightFlag.BLOCK_LIGHTING)) {
+                if (isLightingSupported(world, LightFlag.BLOCK_LIGHTING)) {
                     LightEngineLayerEventListener lele = lightEngine.a(EnumSkyBlock.b);
                     if (finalLightLevel == 0) {
                         try {
@@ -257,8 +257,8 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
             }
 
             // sky lighting
-            if (FlagUtils.isFlagSet(flags, LightType.SKY_LIGHTING)) {
-                if (isLightingSupported(world, LightType.SKY_LIGHTING)) {
+            if (FlagUtils.isFlagSet(flags, LightFlag.SKY_LIGHTING)) {
+                if (isLightingSupported(world, LightFlag.SKY_LIGHTING)) {
                     LightEngineLayerEventListener lele = lightEngine.a(EnumSkyBlock.a);
                     if (finalLightLevel == 0) {
                         try {

@@ -43,7 +43,7 @@ import ru.beykerykt.lightapi.events.SetLightEvent;
 import ru.beykerykt.lightapi.events.UpdateChunkEvent;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 
 @Deprecated
@@ -142,7 +142,7 @@ public class LightAPI extends JavaPlugin {
         IBukkitExtension ext = (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
         IHandler handler = ext.getHandler();
         for (IChunkData newData : handler.collectChunkSections(world, x, y, z, 15,
-                LightType.BLOCK_LIGHTING | LightType.SKY_LIGHTING)) {
+                LightFlag.BLOCK_LIGHTING | LightFlag.SKY_LIGHTING)) {
             handler.sendChunk(newData);
         }
         return true;
@@ -202,11 +202,11 @@ public class LightAPI extends JavaPlugin {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
-        int flags = LightType.NONE;
+        int flags = LightFlag.NONE;
         if (lightType == ru.beykerykt.lightapi.LightType.BLOCK) {
-            flags |= LightType.BLOCK_LIGHTING;
+            flags |= LightFlag.BLOCK_LIGHTING;
         } else if (lightType == ru.beykerykt.lightapi.LightType.SKY) {
-            flags |= LightType.SKY_LIGHTING;
+            flags |= LightFlag.SKY_LIGHTING;
         }
         final SetLightEvent event = new SetLightEvent(world, x, y, z, lightlevel, async);
         Bukkit.getPluginManager().callEvent(event);
@@ -249,11 +249,11 @@ public class LightAPI extends JavaPlugin {
             log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
             return false;
         }
-        int flags = LightType.NONE;
+        int flags = LightFlag.NONE;
         if (lightType == ru.beykerykt.lightapi.LightType.BLOCK) {
-            flags |= LightType.BLOCK_LIGHTING;
+            flags |= LightFlag.BLOCK_LIGHTING;
         } else if (lightType == ru.beykerykt.lightapi.LightType.SKY) {
-            flags |= LightType.SKY_LIGHTING;
+            flags |= LightFlag.SKY_LIGHTING;
         }
         final DeleteLightEvent event = new DeleteLightEvent(world, x, y, z, async);
         Bukkit.getPluginManager().callEvent(event);
@@ -298,9 +298,9 @@ public class LightAPI extends JavaPlugin {
         List<ChunkInfo> list = new CopyOnWriteArrayList<ChunkInfo>();
         IBukkitExtension ext = (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
         IHandler handler = ext.getHandler();
-        int lightTypeNew = LightType.BLOCK_LIGHTING;
+        int lightTypeNew = LightFlag.BLOCK_LIGHTING;
         if (lightType == ru.beykerykt.lightapi.LightType.SKY) {
-            lightTypeNew = LightType.SKY_LIGHTING;
+            lightTypeNew = LightFlag.SKY_LIGHTING;
         }
         for (IChunkData newData : handler.collectChunkSections(world, x, y, z, lightLevel, lightTypeNew)) {
             ChunkInfo info = new ChunkInfo(world, newData.getChunkX(), newData.getChunkZ(), world.getPlayers());
@@ -341,9 +341,9 @@ public class LightAPI extends JavaPlugin {
     public static boolean isSupported(World world, ru.beykerykt.lightapi.LightType type) {
         IBukkitExtension ext = (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
         IHandler handler = ext.getHandler();
-        int flag = LightType.BLOCK_LIGHTING;
+        int flag = LightFlag.BLOCK_LIGHTING;
         if (type == ru.beykerykt.lightapi.LightType.SKY) {
-            flag = LightType.SKY_LIGHTING;
+            flag = LightFlag.SKY_LIGHTING;
         }
         return handler.isLightingSupported(world, flag);
     }

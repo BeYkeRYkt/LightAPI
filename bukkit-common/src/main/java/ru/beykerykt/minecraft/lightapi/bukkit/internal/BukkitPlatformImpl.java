@@ -46,7 +46,7 @@ import ru.beykerykt.minecraft.lightapi.bukkit.internal.utils.VersionUtil;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
@@ -377,7 +377,7 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
 
     @Override
     public int setLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel) {
-        return setLightLevel(world, blockX, blockY, blockZ, lightLevel, LightType.BLOCK_LIGHTING, EditPolicy.DEFERRED,
+        return setLightLevel(world, blockX, blockY, blockZ, lightLevel, LightFlag.BLOCK_LIGHTING, EditPolicy.DEFERRED,
                 SendPolicy.DEFERRED, null);
     }
 

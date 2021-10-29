@@ -23,21 +23,25 @@
  */
 package ru.beykerykt.minecraft.lightapi.common.api.engine;
 
-@Deprecated
-public class LightType {
+public class LightFlag {
 
     /**
      * N/A
      */
-    public static final int NONE = LightFlag.NONE;
+    public static final int NONE = 0;
 
     /**
-     * Light from the blocks (torch, glowstone, etc.)
+     * A flag for editing block light layer
      */
-    public static final int BLOCK_LIGHTING = LightFlag.BLOCK_LIGHTING;
+    public static final int BLOCK_LIGHTING = 1;
 
     /**
-     * Light from sky
+     * A flag for editing sky light layer
      */
-    public static final int SKY_LIGHTING = LightFlag.SKY_LIGHTING;
+    public static final int SKY_LIGHTING = 2;
+
+    /**
+     * A flag for storing the light level in the storage provider
+     */
+    public static final int USE_STORAGE_PROVIDER = 4;
 }

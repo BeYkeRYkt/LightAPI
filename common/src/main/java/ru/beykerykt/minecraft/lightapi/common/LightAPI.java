@@ -29,7 +29,7 @@ import java.util.UUID;
 
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
@@ -132,9 +132,9 @@ public final class LightAPI {
     @Deprecated
     public static boolean createLight(String worldName, ru.beykerykt.minecraft.lightapi.common.LightType type,
             int blockX, int blockY, int blockZ, int lightlevel, LCallback callback) {
-        int lightFlags = LightType.BLOCK_LIGHTING;
+        int lightFlags = LightFlag.BLOCK_LIGHTING;
         if (type == ru.beykerykt.minecraft.lightapi.common.LightType.SKY) {
-            lightFlags = LightType.SKY_LIGHTING;
+            lightFlags = LightFlag.SKY_LIGHTING;
         }
         int resultCode = get().setLightLevel(worldName, blockX, blockY, blockZ, lightlevel, lightFlags,
                 EditPolicy.IMMEDIATE, SendPolicy.DEFERRED, (requestFlag, resultCode1) -> {
@@ -173,9 +173,9 @@ public final class LightAPI {
     @Deprecated
     public static boolean deleteLight(String worldName, ru.beykerykt.minecraft.lightapi.common.LightType type,
             int blockX, int blockY, int blockZ, LCallback callback) {
-        int lightFlags = LightType.BLOCK_LIGHTING;
+        int lightFlags = LightFlag.BLOCK_LIGHTING;
         if (type == ru.beykerykt.minecraft.lightapi.common.LightType.SKY) {
-            lightFlags = LightType.SKY_LIGHTING;
+            lightFlags = LightFlag.SKY_LIGHTING;
         }
         int resultCode = get().setLightLevel(worldName, blockX, blockY, blockZ, 0, lightFlags, EditPolicy.IMMEDIATE,
                 SendPolicy.DEFERRED, (requestFlag, resultCode1) -> {
@@ -314,6 +314,13 @@ public final class LightAPI {
     /**
      * Gets the level of light from given coordinates with specific flags.
      */
+    public int getLightLevel(String worldName, int blockX, int blockY, int blockZ) {
+        return getLightLevel(worldName, blockX, blockY, blockZ, LightFlag.BLOCK_LIGHTING);
+    }
+
+    /**
+     * Gets the level of light from given coordinates with specific flags.
+     */
     public int getLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
         return getLightEngine().getLightLevel(worldName, blockX, blockY, blockZ, lightFlags);
     }
@@ -323,7 +330,7 @@ public final class LightAPI {
      * certain coordinates with the return code result.
      */
     public int setLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightLevel) {
-        return setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, LightType.BLOCK_LIGHTING,
+        return setLightLevel(worldName, blockX, blockY, blockZ, lightLevel, LightFlag.BLOCK_LIGHTING,
                 EditPolicy.DEFERRED, SendPolicy.DEFERRED, null);
     }
 

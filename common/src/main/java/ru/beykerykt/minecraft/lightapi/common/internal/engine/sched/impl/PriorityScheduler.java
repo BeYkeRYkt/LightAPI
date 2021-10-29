@@ -27,7 +27,7 @@ import java.util.List;
 
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
@@ -151,7 +151,7 @@ public class PriorityScheduler implements IScheduler {
             }
 
             if (resultCode == ResultCode.SUCCESS && FlagUtils.isFlagSet(request.getLightFlags(),
-                    LightType.USE_STORAGE_PROVIDER)) {
+                    LightFlag.USE_STORAGE_PROVIDER)) {
                 long longPos = BlockPosition.asLong(request.getBlockX(), request.getBlockY(), request.getBlockZ());
                 getStorageProvider().getLightStorage(request.getWorldName()).setLightLevel(longPos,
                         request.getLightLevel(), request.getLightFlags());

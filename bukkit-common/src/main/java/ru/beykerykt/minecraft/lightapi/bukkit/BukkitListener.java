@@ -38,7 +38,7 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.IScheduledChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.storage.ILightStorage;
 import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
@@ -102,7 +102,7 @@ public class BukkitListener implements Listener {
         Block block = event.getBlock();
         // check all sides
         if (block.getType().isSolid()) {
-            int lightFlags = LightType.BLOCK_LIGHTING;
+            int lightFlags = LightFlag.BLOCK_LIGHTING;
             if (!checkBlock(block.getLocation(), lightFlags, true)) {
                 checkSides(block.getLocation(), lightFlags, false);
             }
@@ -113,7 +113,7 @@ public class BukkitListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         // check all sides
-        int lightFlags = LightType.BLOCK_LIGHTING;
+        int lightFlags = LightFlag.BLOCK_LIGHTING;
         if (!checkBlock(event.getBlock().getLocation(), lightFlags, true)) {
             checkSides(block.getLocation(), lightFlags, false);
         }
@@ -123,7 +123,7 @@ public class BukkitListener implements Listener {
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
         if (event.getEntityType() == EntityType.FALLING_BLOCK) {
             // check all sides
-            int lightFlags = LightType.BLOCK_LIGHTING;
+            int lightFlags = LightFlag.BLOCK_LIGHTING;
             if (!checkBlock(event.getBlock().getLocation(), lightFlags, true)) {
                 checkSides(event.getBlock().getLocation(), lightFlags, false);
             }
@@ -140,11 +140,11 @@ public class BukkitListener implements Listener {
         }
 
         // try to restore light levels
-        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightType.SKY_LIGHTING)) {
-            lightStorage.loadLightDataForChunk(chunk.getX(), chunk.getZ(), LightType.SKY_LIGHTING, true);
+        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING)) {
+            lightStorage.loadLightDataForChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING, true);
         }
-        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightType.BLOCK_LIGHTING)) {
-            lightStorage.loadLightDataForChunk(chunk.getX(), chunk.getZ(), LightType.BLOCK_LIGHTING, true);
+        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING)) {
+            lightStorage.loadLightDataForChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING, true);
         }
     }
 
@@ -158,11 +158,11 @@ public class BukkitListener implements Listener {
             return;
         }
 
-        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightType.SKY_LIGHTING)) {
-            lightStorage.unloadLightDataFromChunk(chunk.getX(), chunk.getZ(), LightType.SKY_LIGHTING);
+        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING)) {
+            lightStorage.unloadLightDataFromChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING);
         }
-        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightType.BLOCK_LIGHTING)) {
-            lightStorage.unloadLightDataFromChunk(chunk.getX(), chunk.getZ(), LightType.BLOCK_LIGHTING);
+        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING)) {
+            lightStorage.unloadLightDataFromChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING);
         }
     }
 }

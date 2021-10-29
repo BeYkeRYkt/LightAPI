@@ -38,7 +38,7 @@ import java.util.List;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
-import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.BitChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
@@ -95,7 +95,7 @@ public class CompatibilityHandler implements IHandler {
 
     @Override
     public boolean isLightingSupported(World world, int lightFlags) {
-        return FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING);
+        return FlagUtils.isFlagSet(lightFlags, LightFlag.BLOCK_LIGHTING);
     }
 
     private void setLightBlock(Block block, int finalLightLevel) {
@@ -144,12 +144,12 @@ public class CompatibilityHandler implements IHandler {
 
     private int getLightFromBlock(Block block, int lightFlags) {
         int lightLevel = -1;
-        if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING) && FlagUtils.isFlagSet(lightFlags,
-                LightType.SKY_LIGHTING)) {
+        if (FlagUtils.isFlagSet(lightFlags, LightFlag.BLOCK_LIGHTING) && FlagUtils.isFlagSet(lightFlags,
+                LightFlag.SKY_LIGHTING)) {
             return block.getLightLevel();
-        } else if (FlagUtils.isFlagSet(lightFlags, LightType.BLOCK_LIGHTING)) {
+        } else if (FlagUtils.isFlagSet(lightFlags, LightFlag.BLOCK_LIGHTING)) {
             return block.getLightFromBlocks();
-        } else if (FlagUtils.isFlagSet(lightFlags, LightType.SKY_LIGHTING)) {
+        } else if (FlagUtils.isFlagSet(lightFlags, LightFlag.SKY_LIGHTING)) {
             return block.getLightFromSky();
         }
         return lightLevel;
