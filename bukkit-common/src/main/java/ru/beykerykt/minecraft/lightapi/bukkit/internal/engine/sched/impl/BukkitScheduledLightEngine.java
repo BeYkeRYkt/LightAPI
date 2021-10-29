@@ -54,11 +54,9 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     private final String CONFIG_MAX_ITERATIONS_IN_PER_TICK = CONFIG_TITLE + ".max-iterations-in-per-tick";
 
     private final IHandler mHandler;
-
+    private final Object mLock = new Object();
     private ScheduledFuture mScheduledFuture;
     private int mTaskId = -1;
-
-    private final Object mLock = new Object();
 
     /**
      * @hide
@@ -132,7 +130,7 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
         // TODO: Make config (?)
         IScheduler scheduler = new PriorityScheduler(this,
                 (IScheduledChunkObserver) getPlatformImpl().getChunkObserver(), getBackgroundService(),
-                maxTimeMsPerTick);
+                maxTimeMsPerTick, getPlatformImpl().getStorageProvider());
         setScheduler(scheduler);
 
         int period = fc.getInt(CONFIG_TICK_PERIOD);

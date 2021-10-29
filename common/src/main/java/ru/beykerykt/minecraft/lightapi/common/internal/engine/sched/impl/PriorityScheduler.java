@@ -27,6 +27,7 @@ import java.util.List;
 
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightType;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
@@ -37,6 +38,8 @@ import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduler;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.Request;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
+import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 /**
@@ -47,14 +50,16 @@ public class PriorityScheduler implements IScheduler {
     private final IScheduledLightEngine mLightEngine;
     private final IScheduledChunkObserver mChunkObserver;
     private final IBackgroundService mBackgroundService;
+    private final IStorageProvider mStorageProvider;
     private final long mMaxTimeMsPerTick;
 
     public PriorityScheduler(IScheduledLightEngine lightEngine, IScheduledChunkObserver chunkObserver,
-            IBackgroundService backgroundService, long maxTimeMsPerTick) {
+            IBackgroundService backgroundService, long maxTimeMsPerTick, IStorageProvider storageProvider) {
         this.mLightEngine = lightEngine;
         this.mChunkObserver = chunkObserver;
         this.mBackgroundService = backgroundService;
         this.mMaxTimeMsPerTick = maxTimeMsPerTick;
+        this.mStorageProvider = storageProvider;
     }
 
     private IScheduledLightEngine getLightEngine() {
@@ -67,6 +72,10 @@ public class PriorityScheduler implements IScheduler {
 
     private IBackgroundService getBackgroundService() {
         return mBackgroundService;
+    }
+
+    private IStorageProvider getStorageProvider() {
+        return mStorageProvider;
     }
 
     @Override
@@ -139,6 +148,13 @@ public class PriorityScheduler implements IScheduler {
                     request.getBlockY(), request.getBlockZ(), request.getLightLevel(), request.getLightFlags());
             if (request.getCallback() != null) {
                 request.getCallback().onResult(RequestFlag.EDIT, resultCode);
+            }
+
+            if (resultCode == ResultCode.SUCCESS && FlagUtils.isFlagSet(request.getLightFlags(),
+                    LightType.USE_STORAGE_PROVIDER)) {
+                long longPos = BlockPosition.asLong(request.getBlockX(), request.getBlockY(), request.getBlockZ());
+                getStorageProvider().getLightStorage(request.getWorldName()).setLightLevel(longPos,
+                        request.getLightLevel(), request.getLightFlags());
             }
         }
         handleRelightRequest(request);

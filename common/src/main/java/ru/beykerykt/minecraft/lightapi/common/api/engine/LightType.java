@@ -39,4 +39,9 @@ public class LightType {
      * Light from sky
      */
     public static final int SKY_LIGHTING = 2;
+
+    /**
+     * Flag for storage light level in StorageProvider
+     */
+    public static final int USE_STORAGE_PROVIDER = 4;
 }

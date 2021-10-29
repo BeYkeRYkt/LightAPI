@@ -69,7 +69,7 @@ public class DebugListener implements Listener {
                 break;
             }
             case REDSTONE_BLOCK: {
-                int flags = LightType.BLOCK_LIGHTING;
+                int flags = LightType.BLOCK_LIGHTING | LightType.USE_STORAGE_PROVIDER;
                 int oldBlockLight = LightAPI.get().getLightLevel(location.getWorld().getName(), location.getBlockX(),
                         location.getBlockY(), location.getBlockZ(), flags);
                 EditPolicy editPolicy = EditPolicy.DEFERRED;
