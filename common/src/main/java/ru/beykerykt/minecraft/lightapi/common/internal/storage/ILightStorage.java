@@ -24,12 +24,7 @@
 
 package ru.beykerykt.minecraft.lightapi.common.internal.storage;
 
-public interface IStorageProvider {
-
-    /**
-     * N/A
-     */
-    void onStart();
+public interface ILightStorage {
 
     /**
      * N/A
@@ -39,5 +34,35 @@ public interface IStorageProvider {
     /**
      * N/A
      */
-    ILightStorage getLightStorage(String worldName);
+    String getWorldName();
+
+    /**
+     * N/A
+     */
+    void setLightLevel(long longPos, int lightLevel, int lightFlags);
+
+    /**
+     * N/A
+     */
+    int getLightLevel(long longPos, int lightFlag);
+
+    /**
+     * N/A
+     */
+    boolean containsChunk(int chunkX, int chunkZ, int lightFlag);
+
+    /**
+     * N/A
+     */
+    void loadLightDataForChunk(int chunkX, int chunkZ, int lightFlag, boolean restore);
+
+    /**
+     * N/A
+     */
+    void unloadLightDataFromChunk(int chunkX, int chunkZ, int lightFlag);
+
+    /**
+     * N/A
+     */
+    void saveLightData();
 }

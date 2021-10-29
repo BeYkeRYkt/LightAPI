@@ -37,18 +37,22 @@ import java.util.Set;
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
-import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageFile;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
+import ru.beykerykt.minecraft.lightapi.common.internal.utils.ChunkUtils;
 
-public class YAMLStorageProvider implements IStorageProvider {
+public class YAMLStorageFile implements IStorageFile {
 
-    private IPlatformImpl mImpl;
+    private IPlatformImpl mPlatform;
     private File customConfigFile;
     private FileConfiguration customConfig;
 
+    public YAMLStorageFile(IPlatformImpl platform) {
+        mPlatform = platform;
+    }
+
     @Override
-    public void initialization(IPlatformImpl impl) {
-        mImpl = impl;
+    public void onStart() {
         customConfigFile = new File(BukkitPlugin.getInstance().getDataFolder(), "storage.yml");
         if (!customConfigFile.exists()) {
             customConfigFile.getParentFile().mkdirs();
@@ -64,7 +68,7 @@ public class YAMLStorageProvider implements IStorageProvider {
     }
 
     @Override
-    public void shutdown() {
+    public void onShutdown() {
         if (customConfig != null) {
             try {
                 customConfig.save(customConfigFile);
@@ -77,52 +81,52 @@ public class YAMLStorageProvider implements IStorageProvider {
     }
 
     @Override
-    public int saveLightLevel(String world, int blockX, int blockY, int blockZ, int lightLevel) {
-        return saveLightLevel(world, BlockPosition.asLong(blockX, blockY, blockZ), lightLevel);
-    }
-
-    @Override
-    public int saveLightLevel(String world, long longPos, int lightLevel) {
-        customConfig.set("worlds." + world + "." + longPos, lightLevel);
+    public int writeLightLevel(String world, long longPos, int lightLevel, int lightFlag) {
+        int chunkX = BlockPosition.unpackLongX(longPos) >> 4;
+        int chunkZ = BlockPosition.unpackLongZ(longPos) >> 4;
+        long chunkKey = ChunkUtils.getChunkKey(chunkX, chunkZ);
+        customConfig.set("worlds." + world + "." + chunkKey + "." + longPos + "." + lightFlag, lightLevel);
         return ResultCode.SUCCESS;
     }
 
     @Override
-    public int saveLightLevels(String world, Map<Long, Integer> map) {
-        for (Map.Entry<Long, Integer> entry : map.entrySet()) {
-            long longPos = entry.getKey();
-            int lightLevel = entry.getValue();
-            customConfig.set("worlds." + world + "." + longPos, lightLevel);
+    public int deleteLightLevel(String world, long longPos, int lightFlag) {
+        int chunkX = BlockPosition.unpackLongX(longPos) >> 4;
+        int chunkZ = BlockPosition.unpackLongZ(longPos) >> 4;
+        long chunkKey = ChunkUtils.getChunkKey(chunkX, chunkZ);
+        customConfig.set("worlds." + world + "." + chunkKey + "." + longPos + "." + lightFlag, null);
+        ConfigurationSection longPosSection = customConfig.getConfigurationSection(
+                "worlds." + world + "." + chunkKey + "." + longPos);
+        if (longPosSection == null || longPosSection.getKeys(false).isEmpty()) {
+            customConfig.set("worlds." + world + "." + chunkKey + "." + longPos, null);
+        }
+        ConfigurationSection chunkSection = customConfig.getConfigurationSection("worlds." + world + "." + chunkKey);
+        if (chunkSection == null || chunkSection.getKeys(false).isEmpty()) {
+            customConfig.set("worlds." + world + "." + chunkKey, null);
         }
         return ResultCode.SUCCESS;
     }
 
     @Override
-    public void loadLightLevel(String world, long longPos, Map<Long, Integer> map) {
-        int lightLevel = customConfig.getInt("worlds." + world + "." + longPos);
-        map.put(longPos, lightLevel);
+    public boolean containsChunk(String world, int chunkX, int chunkZ, int lightFlag) {
+        long chunkKey = ChunkUtils.getChunkKey(chunkX, chunkZ);
+        ConfigurationSection section = customConfig.getConfigurationSection("worlds." + world + "." + chunkKey);
+        return section != null;
     }
 
     @Override
-    public void loadLightLevel(String world, int blockX, int blockY, int blockZ, Map<Long, Integer> map) {
-        long longPos = BlockPosition.asLong(blockX, blockY, blockZ);
-        int lightLevel = customConfig.getInt("worlds." + world + "." + longPos);
-        map.put(longPos, lightLevel);
-    }
-
-    @Override
-    public Map<Long, Integer> loadLightLevels(String world) {
+    public Map<Long, Integer> loadLightDataForChunk(String world, int chunkX, int chunkZ, int lightFlag) {
         Map<Long, Integer> map = new HashMap<>();
-        ConfigurationSection section = customConfig.getConfigurationSection("worlds." + world);
+        long chunkKey = ChunkUtils.getChunkKey(chunkX, chunkZ);
+        ConfigurationSection section = customConfig.getConfigurationSection("worlds." + world + "." + chunkKey);
         if (section == null) {
             return map;
         }
         Set<String> sPos = section.getKeys(false);
         for (String s : sPos) {
             long longPos = Long.parseLong(s);
-            int lightLevel = customConfig.getInt("worlds." + world + "." + s);
+            int lightLevel = customConfig.getInt("worlds." + world + "." + chunkKey + "." + s + "." + lightFlag);
             map.put(longPos, lightLevel);
-            mImpl.debug("longPos: " + longPos + " lightLevel: " + lightLevel);
         }
         return map;
     }

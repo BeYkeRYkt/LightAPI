@@ -40,6 +40,8 @@ import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.CompatibilityHand
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandlerFactory;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BukkitBackgroundService;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.storage.BukkitStorageProvider;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.storage.YAMLStorageFile;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.utils.VersionUtil;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
@@ -54,6 +56,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.IChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightEngine;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
 
 public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
 
@@ -78,6 +81,7 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
     private ILightEngine mLightEngine;
     private IBackgroundService mBackgroundService;
     private IExtension mExtension;
+    private IStorageProvider mStorageProvider;
     private UUID mUUID;
 
     public BukkitPlatformImpl(BukkitPlugin plugin) {
@@ -235,6 +239,10 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
         mBackgroundService = new BukkitBackgroundService(this, getHandler());
         mBackgroundService.onStart();
 
+        // init storage provider
+        mStorageProvider = new BukkitStorageProvider(this, new YAMLStorageFile(this));
+        mStorageProvider.onStart();
+
         // init chunk observer
         mChunkObserver = new BukkitScheduledChunkObserver(this, getBackgroundService(), getHandler());
         mChunkObserver.onStart();
@@ -257,6 +265,7 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
     public void shutdown() {
         mLightEngine.onShutdown();
         mChunkObserver.onShutdown();
+        mStorageProvider.onShutdown();
         mBackgroundService.onShutdown();
         mHandler.onShutdown(this);
         mHandler = null;
@@ -315,6 +324,11 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
     @Override
     public IExtension getExtension() {
         return mExtension;
+    }
+
+    @Override
+    public IStorageProvider getStorageProvider() {
+        return mStorageProvider;
     }
 
     @Override

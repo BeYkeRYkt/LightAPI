@@ -23,47 +23,37 @@
  */
 package ru.beykerykt.minecraft.lightapi.common.internal.storage;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
-import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
+public interface IStorageFile {
 
-public class EmptyStorageProvider implements IStorageProvider {
+    /**
+     * N/A
+     */
+    void onStart();
 
-    @Override
-    public void initialization(IPlatformImpl impl) throws Exception {
-    }
+    /**
+     * N/A
+     */
+    void onShutdown();
 
-    @Override
-    public void shutdown() {
-    }
+    /**
+     * N/A
+     */
+    int writeLightLevel(String world, long longPos, int lightLevel, int lightFlag);
 
-    @Override
-    public int saveLightLevel(String world, int blockX, int blockY, int blockZ, int lightLevel) {
-        return ResultCode.SUCCESS;
-    }
+    /**
+     * N/A
+     */
+    int deleteLightLevel(String world, long longPos, int lightFlag);
 
-    @Override
-    public int saveLightLevel(String world, long longPos, int lightLevel) {
-        return ResultCode.SUCCESS;
-    }
+    /**
+     * N/A
+     */
+    boolean containsChunk(String world, int chunkX, int chunkZ, int lightFlag);
 
-    @Override
-    public int saveLightLevels(String world, Map<Long, Integer> map) {
-        return ResultCode.SUCCESS;
-    }
-
-    @Override
-    public void loadLightLevel(String world, long longPos, Map<Long, Integer> map) {
-    }
-
-    @Override
-    public void loadLightLevel(String world, int blockX, int blockY, int blockZ, Map<Long, Integer> map) {
-    }
-
-    @Override
-    public Map<Long, Integer> loadLightLevels(String world) {
-        return new HashMap<>();
-    }
+    /**
+     * N/A
+     */
+    Map<Long, Integer> loadLightDataForChunk(String world, int chunkX, int chunkZ, int lightFlag);
 }

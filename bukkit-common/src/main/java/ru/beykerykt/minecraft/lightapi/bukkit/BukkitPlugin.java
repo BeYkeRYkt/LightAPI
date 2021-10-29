@@ -73,6 +73,7 @@ public class BukkitPlugin extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+        getServer().getPluginManager().registerEvents(new BukkitListener(this), this);
     }
 
     @Override
@@ -81,7 +82,7 @@ public class BukkitPlugin extends JavaPlugin {
         HandlerList.unregisterAll(this);
     }
 
-    public BukkitPlatformImpl getPluginImpl() {
+    public BukkitPlatformImpl getPlatformImpl() {
         if (mImpl == null) {
             throw new IllegalStateException("IBukkitPlatformImpl not yet initialized!");
         }
@@ -107,9 +108,9 @@ public class BukkitPlugin extends JavaPlugin {
                     player.sendMessage(ChatColor.AQUA + " Current implementation: " + ChatColor.WHITE
                             + Build.CURRENT_IMPLEMENTATION);
                     player.sendMessage(ChatColor.AQUA + " LightEngine type: " + ChatColor.WHITE
-                            + getPluginImpl().getLightEngine().getLightEngineType());
+                            + getPlatformImpl().getLightEngine().getLightEngineType());
                     player.sendMessage(ChatColor.AQUA + " LightEngine version: " + ChatColor.WHITE
-                            + getPluginImpl().getLightEngine().getLightEngineVersion());
+                            + getPlatformImpl().getLightEngine().getLightEngineVersion());
                     player.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
                     player.sendMessage(
                             ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
@@ -159,7 +160,7 @@ public class BukkitPlugin extends JavaPlugin {
                     licensed.addExtra(MIT);
                     player.spigot().sendMessage(licensed);
 
-                    if (getPluginImpl().isBackwardAvailable()) {
+                    if (getPlatformImpl().isBackwardAvailable()) {
                         player.sendMessage(ChatColor.WHITE + "backwards compatibility is enabled");
                     }
                 } else {
@@ -193,9 +194,9 @@ public class BukkitPlugin extends JavaPlugin {
                     console.sendMessage(ChatColor.AQUA + " Current implementation: " + ChatColor.WHITE
                             + Build.CURRENT_IMPLEMENTATION);
                     console.sendMessage(ChatColor.AQUA + " LightEngine type: " + ChatColor.WHITE
-                            + getPluginImpl().getLightEngine().getLightEngineType());
+                            + getPlatformImpl().getLightEngine().getLightEngineType());
                     console.sendMessage(ChatColor.AQUA + " LightEngine version: " + ChatColor.WHITE
-                            + getPluginImpl().getLightEngine().getLightEngineVersion());
+                            + getPlatformImpl().getLightEngine().getLightEngineVersion());
                     console.sendMessage(ChatColor.AQUA + " Server name: " + ChatColor.WHITE + getServer().getName());
                     console.sendMessage(
                             ChatColor.AQUA + " Server version: " + ChatColor.WHITE + getServer().getVersion());
@@ -216,7 +217,7 @@ public class BukkitPlugin extends JavaPlugin {
                     console.sendMessage("");
                     console.sendMessage(ChatColor.WHITE + " Licensed under: " + ChatColor.AQUA + "MIT License");
 
-                    if (getPluginImpl().isBackwardAvailable()) {
+                    if (getPlatformImpl().isBackwardAvailable()) {
                         console.sendMessage(ChatColor.WHITE + "backwards compatibility is enabled");
                     }
                 } else {

@@ -22,22 +22,15 @@
  * SOFTWARE.
  */
 
-package ru.beykerykt.minecraft.lightapi.common.internal.storage;
+package ru.beykerykt.minecraft.lightapi.common.internal.utils;
 
-public interface IStorageProvider {
+public class ChunkUtils {
 
-    /**
-     * N/A
-     */
-    void onStart();
+    public static int getLocalCoord(int coord) {
+        return coord & 15;
+    }
 
-    /**
-     * N/A
-     */
-    void onShutdown();
-
-    /**
-     * N/A
-     */
-    ILightStorage getLightStorage(String worldName);
+    public static long getChunkKey(int chunkX, int chunkZ) {
+        return (long) chunkX & 0xffffffffL | ((long) chunkZ & 0xffffffffL) << 32;
+    }
 }
