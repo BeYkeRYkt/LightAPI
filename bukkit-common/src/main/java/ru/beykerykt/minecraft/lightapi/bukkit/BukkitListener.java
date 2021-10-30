@@ -30,25 +30,29 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
+import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
-import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.IScheduledChunkObserver;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightEngine;
 import ru.beykerykt.minecraft.lightapi.common.internal.storage.ILightStorage;
 import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
-import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
 
 public class BukkitListener implements Listener {
 
     private static final BlockFace[] SIDES =
-            {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
-    private BukkitPlugin mPlugin;
+            {BlockFace.SELF, BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
+                    BlockFace.WEST};
+    private final BukkitPlugin mPlugin;
 
     public BukkitListener(BukkitPlugin plugin) {
         this.mPlugin = plugin;
@@ -58,76 +62,85 @@ public class BukkitListener implements Listener {
         return mPlugin.getPlatformImpl();
     }
 
-    private boolean checkBlock(Location loc, int lightFlags, boolean lightInBlock) {
-        IStorageProvider storageProvider = getPlatformImpl().getStorageProvider();
-        ILightStorage lightStorage = storageProvider.getLightStorage(loc.getWorld().getName());
-        if (lightStorage == null) {
-            return false;
-        }
-        long longPos = BlockPosition.asLong(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        int blockLight = lightStorage.getLightLevel(longPos, lightFlags);
-        getPlatformImpl().debug(
-                "x=" + loc.getBlockX() + " y=" + loc.getBlockY() + " z=" + loc.getBlockZ() + " lightLevel="
-                        + blockLight);
-        if (blockLight != -1) {
-            int serverBlockLight = getPlatformImpl().getLightLevel(loc.getWorld(), loc.getBlockX(), loc.getBlockY(),
-                    loc.getBlockZ(), lightFlags);
-            // Restore the light if the current light level does not match the declared one, or if a block that will
-            // block the light will be placed or broken at the current location in the future.
-            if (blockLight != serverBlockLight || lightInBlock) {
-                getPlatformImpl().setLightLevel(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(),
-                        blockLight);
-            } else {
-                // notify send chunks
-                IScheduledChunkObserver chunkObserver = (IScheduledChunkObserver) getPlatformImpl().getChunkObserver();
-                chunkObserver.notifyUpdateChunks(loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(),
-                        loc.getBlockZ(), blockLight, lightFlags);
-            }
-            return true;
+    private boolean checkBlock(Location loc, int lightFlags) {
+        ILightEngine engine = getPlatformImpl().getLightEngine();
+        int resultCode = engine.checkLight(loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(),
+                lightFlags);
+        switch (resultCode) {
+            case ResultCode.SUCCESS:
+                return true;
         }
         return false;
     }
 
-    private void checkSides(Location loc, int lightFlags, boolean lightInBlock) {
+    private void checkSides(Location loc, int lightFlags) {
         for (BlockFace face : SIDES) {
             Location sideLocation = loc.clone().add(face.getModX(), face.getModY(), face.getModZ());
-            if (checkBlock(sideLocation, lightFlags, lightInBlock)) {
+            if (checkBlock(sideLocation, lightFlags)) {
                 break;
             }
         }
     }
 
     @EventHandler(ignoreCancelled = true)
+    public void onPlayerBucketFill(PlayerBucketFillEvent event) {
+        Block block = event.getBlock();
+        Location loc = block.getLocation();
+        int lightFlags = LightFlag.BLOCK_LIGHTING;
+        getPlatformImpl().getPlugin().getServer().getScheduler().runTaskLater(getPlatformImpl().getPlugin(), () -> {
+            // check all sides
+            checkSides(loc, lightFlags);
+        }, 1);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
+        Block block = event.getBlock();
+        Location loc = block.getLocation();
+        int lightFlags = LightFlag.BLOCK_LIGHTING;
+        getPlatformImpl().getPlugin().getServer().getScheduler().runTaskLater(getPlatformImpl().getPlugin(), () -> {
+            // check all sides
+            checkSides(loc, lightFlags);
+        }, 1);
+    }
+
+    @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
-        // check all sides
+        Location loc = block.getLocation();
+        int lightFlags = LightFlag.BLOCK_LIGHTING;
         if (block.getType().isSolid()) {
-            int lightFlags = LightFlag.BLOCK_LIGHTING;
-            if (!checkBlock(block.getLocation(), lightFlags, true)) {
-                checkSides(block.getLocation(), lightFlags, false);
-            }
+            getPlatformImpl().getPlugin().getServer().getScheduler().runTaskLater(getPlatformImpl().getPlugin(), () -> {
+                // check all sides
+                checkSides(loc, lightFlags);
+            }, 1);
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
-        // check all sides
+        Location loc = block.getLocation();
         int lightFlags = LightFlag.BLOCK_LIGHTING;
-        if (!checkBlock(event.getBlock().getLocation(), lightFlags, true)) {
-            checkSides(block.getLocation(), lightFlags, false);
+        if (block.getType().isSolid()) {
+            getPlatformImpl().getPlugin().getServer().getScheduler().runTaskLater(getPlatformImpl().getPlugin(), () -> {
+                // check all sides
+                checkSides(loc, lightFlags);
+            }, 1);
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-        if (event.getEntityType() == EntityType.FALLING_BLOCK) {
-            // check all sides
-            int lightFlags = LightFlag.BLOCK_LIGHTING;
-            if (!checkBlock(event.getBlock().getLocation(), lightFlags, true)) {
-                checkSides(event.getBlock().getLocation(), lightFlags, false);
+        Block block = event.getBlock();
+        Location loc = block.getLocation();
+        int lightFlags = LightFlag.BLOCK_LIGHTING;
+        getPlatformImpl().getPlugin().getServer().getScheduler().runTaskLater(getPlatformImpl().getPlugin(), () -> {
+            if (event.getEntityType() == EntityType.FALLING_BLOCK) {
+                // check all sides
+                checkSides(event.getBlock().getLocation(), lightFlags);
             }
-        }
+        }, 1);
     }
 
     @EventHandler

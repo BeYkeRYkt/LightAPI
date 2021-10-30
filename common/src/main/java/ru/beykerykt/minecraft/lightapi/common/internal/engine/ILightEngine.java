@@ -58,6 +58,11 @@ public interface ILightEngine {
     RelightPolicy getRelightPolicy();
 
     /**
+     * Checks the light level and restores it if available.
+     */
+    int checkLight(String worldName, int blockX, int blockY, int blockZ, int lightFlags);
+
+    /**
      * Gets the level of light from given coordinates with specific flags.
      */
     int getLightLevel(String worldName, int blockX, int blockY, int blockZ, int lightFlags);

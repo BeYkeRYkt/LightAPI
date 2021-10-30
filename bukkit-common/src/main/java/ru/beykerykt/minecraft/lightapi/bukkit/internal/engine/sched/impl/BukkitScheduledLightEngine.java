@@ -41,6 +41,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduler;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.impl.PriorityScheduler;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.impl.ScheduledLightEngine;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
 
 public class BukkitScheduledLightEngine extends ScheduledLightEngine {
 
@@ -61,13 +62,15 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     /**
      * @hide
      */
-    public BukkitScheduledLightEngine(BukkitPlatformImpl pluginImpl, IBackgroundService service, IHandler handler) {
-        this(pluginImpl, service, RelightPolicy.DEFERRED, handler, 250, 250);
+    public BukkitScheduledLightEngine(BukkitPlatformImpl pluginImpl, IBackgroundService service,
+            IStorageProvider storageProvider, IHandler handler) {
+        this(pluginImpl, service, storageProvider, RelightPolicy.DEFERRED, handler, 250, 250);
     }
 
-    public BukkitScheduledLightEngine(BukkitPlatformImpl pluginImpl, IBackgroundService service, RelightPolicy strategy,
-            IHandler handler, int maxRequestCount, int maxTimeMsPerTick) {
-        super(pluginImpl, service, strategy, maxRequestCount, maxTimeMsPerTick);
+    public BukkitScheduledLightEngine(BukkitPlatformImpl pluginImpl, IBackgroundService service,
+            IStorageProvider storageProvider, RelightPolicy strategy, IHandler handler, int maxRequestCount,
+            int maxTimeMsPerTick) {
+        super(pluginImpl, service, storageProvider, strategy, maxRequestCount, maxTimeMsPerTick);
         this.mHandler = handler;
     }
 

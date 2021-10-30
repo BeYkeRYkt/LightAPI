@@ -37,6 +37,9 @@ import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduler;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.Request;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.ILightStorage;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
+import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
 
 /**
  * Abstract class for scheduled light engines
@@ -52,6 +55,7 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
             (o1, o2) -> o2.getPriority() - o1.getPriority());
     private final Queue<Request> sendQueue = new PriorityBlockingQueue<>(20,
             (o1, o2) -> o2.getPriority() - o1.getPriority());
+    private final IStorageProvider mStorageProvider;
     protected long maxTimeMsPerTick;
     protected int maxRequestCount;
     protected RelightPolicy mRelightPolicy;
@@ -59,14 +63,11 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     private int requestCount = 0;
     private long penaltyTime = 0;
 
-    public ScheduledLightEngine(IPlatformImpl pluginImpl, IBackgroundService service, RelightPolicy strategy) {
-        this(pluginImpl, service, strategy, 250, 50); // with default params
-    }
-
-    public ScheduledLightEngine(IPlatformImpl platformImpl, IBackgroundService service, RelightPolicy strategy,
-            int maxRequestCount, int maxTimeMsPerTick) {
+    public ScheduledLightEngine(IPlatformImpl platformImpl, IBackgroundService service,
+            IStorageProvider storageProvider, RelightPolicy strategy, int maxRequestCount, int maxTimeMsPerTick) {
         this.mPlatformImpl = platformImpl;
         this.mBackgroundService = service;
+        this.mStorageProvider = storageProvider;
         this.mRelightPolicy = strategy;
         this.maxRequestCount = maxRequestCount;
         this.maxTimeMsPerTick = maxTimeMsPerTick;
@@ -74,6 +75,10 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
 
     protected IPlatformImpl getPlatformImpl() {
         return mPlatformImpl;
+    }
+
+    protected IStorageProvider getStorageProvider() {
+        return mStorageProvider;
     }
 
     protected IBackgroundService getBackgroundService() {
@@ -97,11 +102,52 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
         getPlatformImpl().debug(getClass().getName() + " is shutdown!");
         lightQueue.clear();
         relightQueue.clear();
+        sendQueue.clear();
     }
 
     @Override
     public RelightPolicy getRelightPolicy() {
         return mRelightPolicy;
+    }
+
+    /* @hide */
+    private int checkLightLocked(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
+        ILightStorage lightStorage = getStorageProvider().getLightStorage(worldName);
+        if (lightStorage == null) {
+            return ResultCode.FAILED;
+        }
+        long longPos = BlockPosition.asLong(blockX, blockY, blockZ);
+        int blockLight = lightStorage.getLightLevel(longPos, lightFlags);
+        getPlatformImpl().debug(
+                "checkLightLocked: x=" + blockX + " y=" + blockY + " z=" + blockZ + " lightLevel=" + blockLight);
+        if (blockLight == -1) {
+            // no data
+            return ResultCode.FAILED;
+        }
+        int serverBlockLight = getLightLevel(worldName, blockX, blockY, blockZ, lightFlags);
+        // Restore the light if the current light level does not match the declared one
+        if (blockLight > serverBlockLight) {
+            setLightLevel(worldName, blockX, blockY, blockZ, blockLight, lightFlags, EditPolicy.DEFERRED,
+                    SendPolicy.DEFERRED, null);
+        } else if (blockLight == serverBlockLight) {
+            // TODO: Move to scheduler (?)
+            Request request = getScheduler().createEmptyRequest(worldName, blockX, blockY, blockZ, blockLight,
+                    lightFlags, EditPolicy.DEFERRED, SendPolicy.DEFERRED, null);
+            request.addRequestFlag(RequestFlag.COMBINED_SEND);
+            getScheduler().handleSendRequest(request);
+        }
+        return ResultCode.SUCCESS;
+    }
+
+    @Override
+    public int checkLight(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
+        if (getBackgroundService().isMainThread()) {
+            return checkLightLocked(worldName, blockX, blockY, blockZ, lightFlags);
+        } else {
+            synchronized (lightQueue) {
+                return checkLightLocked(worldName, blockX, blockY, blockZ, lightFlags);
+            }
+        }
     }
 
     /* @hide */
@@ -207,6 +253,25 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
         }
     }
 
+    /* @hide */
+    private int notifySendLocked(Request request) {
+        if (request != null) {
+            sendQueue.add(request);
+        }
+        return ResultCode.SUCCESS;
+    }
+
+    @Override
+    public int notifySend(Request request) {
+        if (getBackgroundService().isMainThread()) {
+            return notifySendLocked(request);
+        } else {
+            synchronized (sendQueue) {
+                return notifySendLocked(request);
+            }
+        }
+    }
+
     private void handleLightRequest(Request request) {
         if (getBackgroundService().isMainThread()) {
             getScheduler().handleLightRequest(request);
@@ -223,6 +288,16 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
         } else {
             synchronized (request) {
                 getScheduler().handleRelightRequest(request);
+            }
+        }
+    }
+
+    private void handleSendRequest(Request request) {
+        if (getBackgroundService().isMainThread()) {
+            getScheduler().handleSendRequest(request);
+        } else {
+            synchronized (request) {
+                getScheduler().handleSendRequest(request);
             }
         }
     }
@@ -273,6 +348,29 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
         }
     }
 
+    private void handleSendQueueLocked() {
+        if (!getScheduler().canExecute()) {
+            return;
+        }
+        long startTime = System.currentTimeMillis();
+        requestCount = 0;
+        while (sendQueue.peek() != null) {
+            getPlatformImpl().debug("handleSendQueueLocked()");
+            long time = System.currentTimeMillis() - startTime;
+            if (time > maxTimeMsPerTick) {
+                getPlatformImpl().debug("handleSendQueueLocked: maxRelightTimePerTick is reached (" + time + " ms)");
+                break;
+            }
+            if (requestCount > maxRequestCount) {
+                getPlatformImpl().debug("handleSendQueueLocked: maxRequestCount is reached (" + requestCount + ")");
+                break;
+            }
+            Request request = sendQueue.poll();
+            handleSendRequest(request);
+            requestCount++;
+        }
+    }
+
     @Override
     public void run() {
         synchronized (lightQueue) {
@@ -281,6 +379,10 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
 
         synchronized (relightQueue) {
             handleRelightQueueLocked();
+        }
+
+        synchronized (sendQueue) {
+            handleSendQueueLocked();
         }
     }
 

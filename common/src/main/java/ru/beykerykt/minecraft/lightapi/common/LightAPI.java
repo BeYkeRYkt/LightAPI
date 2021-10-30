@@ -364,6 +364,20 @@ public final class LightAPI {
     }
 
     /**
+     * Checks the light level and restores it if available.
+     */
+    public int checkLight(String worldName, int blockX, int blockY, int blockZ) {
+        return checkLight(worldName, blockX, blockY, blockZ, LightFlag.BLOCK_LIGHTING);
+    }
+
+    /**
+     * Checks the light level and restores it if available.
+     */
+    public int checkLight(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
+        return getLightEngine().checkLight(worldName, blockX, blockY, blockZ, lightFlags);
+    }
+
+    /**
      * Send specific commands for implementation
      */
     public int sendCmd(int cmdId, Object... args) {

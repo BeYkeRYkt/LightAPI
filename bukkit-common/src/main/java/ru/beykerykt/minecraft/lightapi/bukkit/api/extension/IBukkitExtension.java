@@ -36,6 +36,11 @@ public interface IBukkitExtension extends IExtension {
     /**
      * Gets the level of light from given coordinates with specific flags.
      */
+    int getLightLevel(World world, int blockX, int blockY, int blockZ);
+
+    /**
+     * Gets the level of light from given coordinates with specific flags.
+     */
     int getLightLevel(World world, int blockX, int blockY, int blockZ, int lightFlags);
 
     /**

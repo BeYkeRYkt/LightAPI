@@ -37,13 +37,13 @@ import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 public class BukkitLightStorage implements ILightStorage {
 
-    private IPlatformImpl mPlatform;
+    private final IPlatformImpl mPlatform;
 
-    private String mWorldName;
-    private IStorageFile mStorageFile;
+    private final String mWorldName;
+    private final IStorageFile mStorageFile;
 
-    private Map<Long, Integer> mSkyLightLevels = new ConcurrentHashMap();
-    private Map<Long, Integer> mBlockLightLevels = new ConcurrentHashMap<>();
+    private final Map<Long, Integer> mSkyLightLevels = new ConcurrentHashMap();
+    private final Map<Long, Integer> mBlockLightLevels = new ConcurrentHashMap<>();
 
     public BukkitLightStorage(IPlatformImpl platform, String worldName, IStorageFile storageFile) {
         this.mPlatform = platform;

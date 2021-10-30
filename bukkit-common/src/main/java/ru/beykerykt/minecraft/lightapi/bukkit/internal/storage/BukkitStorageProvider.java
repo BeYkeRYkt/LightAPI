@@ -34,9 +34,9 @@ import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
 
 public class BukkitStorageProvider implements IStorageProvider {
 
-    private BukkitPlatformImpl mPlatform;
-    private IStorageFile mStorageFile;
-    private Map<String, ILightStorage> mLightStorageMap = new HashMap<>();
+    private final BukkitPlatformImpl mPlatform;
+    private final IStorageFile mStorageFile;
+    private final Map<String, ILightStorage> mLightStorageMap = new HashMap<>();
 
     public BukkitStorageProvider(BukkitPlatformImpl platform, IStorageFile storageFile) {
         this.mPlatform = platform;

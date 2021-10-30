@@ -40,6 +40,12 @@ public interface IScheduler {
     /**
      * Creates requests. The function must return only a request with specific flags.
      */
+    Request createEmptyRequest(String worldName, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags,
+            EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback);
+
+    /**
+     * Creates requests. The function must return only a request with specific flags.
+     */
     Request createRequest(int defaultFlag, String worldName, int blockX, int blockY, int blockZ, int lightLevel,
             int lightFlags, EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback);
 
@@ -52,4 +58,9 @@ public interface IScheduler {
      * Processes relight requests. The function should only process requests without changes in flags.
      */
     int handleRelightRequest(Request request);
+
+    /**
+     * Processes send requests. The function should only process requests without changes in flags.
+     */
+    int handleSendRequest(Request request);
 }

@@ -26,7 +26,9 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.World;
+import org.bukkit.block.data.type.Light;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
@@ -56,6 +58,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.IChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightEngine;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.ILightStorage;
 import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
 
 public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
@@ -248,7 +251,7 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
         mChunkObserver.onStart();
 
         // init light engine
-        mLightEngine = new BukkitScheduledLightEngine(this, getBackgroundService(), getHandler());
+        mLightEngine = new BukkitScheduledLightEngine(this, getBackgroundService(), getStorageProvider(), getHandler());
         mLightEngine.onStart();
 
         // init extension
@@ -258,6 +261,20 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
 
         // enable metrics
         enableMetrics();
+
+        // try force load light data
+        for (World world: getPlugin().getServer().getWorlds()) {
+            ILightStorage storage = getStorageProvider().getLightStorage(world.getName());
+            for (Chunk chunk: world.getLoadedChunks()) {
+                if (storage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING)) {
+                    storage.loadLightDataForChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING, true);
+                }
+                if (storage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING)) {
+                    storage.loadLightDataForChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING, true);
+                }
+            }
+        }
+
         return ResultCode.SUCCESS;
     }
 
@@ -368,6 +385,11 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
     @Override
     public IHandler getHandler() {
         return mHandler;
+    }
+
+    @Override
+    public int getLightLevel(World world, int blockX, int blockY, int blockZ) {
+        return getLightLevel(world, blockX, blockY, blockZ, LightFlag.BLOCK_LIGHTING);
     }
 
     @Override

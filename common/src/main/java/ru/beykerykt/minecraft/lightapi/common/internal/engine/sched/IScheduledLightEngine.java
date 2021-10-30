@@ -46,4 +46,9 @@ public interface IScheduledLightEngine extends ILightEngine, Runnable {
      * N/A
      */
     int notifyRecalculate(Request request);
+
+    /**
+     * N/A
+     */
+    int notifySend(Request request);
 }

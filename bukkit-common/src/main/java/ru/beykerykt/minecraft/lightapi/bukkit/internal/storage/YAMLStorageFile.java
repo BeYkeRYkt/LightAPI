@@ -43,7 +43,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.utils.ChunkUtils;
 
 public class YAMLStorageFile implements IStorageFile {
 
-    private IPlatformImpl mPlatform;
+    private final IPlatformImpl mPlatform;
     private File customConfigFile;
     private FileConfiguration customConfig;
 

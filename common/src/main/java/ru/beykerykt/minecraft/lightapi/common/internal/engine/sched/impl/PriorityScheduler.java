@@ -84,15 +84,21 @@ public class PriorityScheduler implements IScheduler {
     }
 
     @Override
-    public Request createRequest(int defaultFlag, String worldName, int blockX, int blockY, int blockZ, int lightLevel,
+    public Request createEmptyRequest(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
             int lightFlags, EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback) {
-        int requestFlags = defaultFlag;
-        int priority = Request.DEFAULT_PRIORITY;
         // keep information about old light level
         int oldLightLevel = getLightEngine().getLightLevel(worldName, blockX, blockY, blockZ, lightFlags);
+        return new Request(Request.DEFAULT_PRIORITY, 0, worldName, blockX, blockY, blockZ, oldLightLevel, lightLevel,
+                lightFlags, callback);
+    }
 
-        Request request = new Request(priority, requestFlags, worldName, blockX, blockY, blockZ, oldLightLevel,
-                lightLevel, lightFlags, callback);
+    @Override
+    public Request createRequest(int defaultFlag, String worldName, int blockX, int blockY, int blockZ, int lightLevel,
+            int lightFlags, EditPolicy editPolicy, SendPolicy sendPolicy, ICallback callback) {
+        Request request = createEmptyRequest(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, editPolicy,
+                sendPolicy, callback);
+        request.setPriority(Request.DEFAULT_PRIORITY);
+        request.setRequestFlags(defaultFlag);
 
         switch (editPolicy) {
             case FORCE_IMMEDIATE: {
@@ -150,14 +156,21 @@ public class PriorityScheduler implements IScheduler {
                 request.getCallback().onResult(RequestFlag.EDIT, resultCode);
             }
 
-            if (resultCode == ResultCode.SUCCESS && FlagUtils.isFlagSet(request.getLightFlags(),
-                    LightFlag.USE_STORAGE_PROVIDER)) {
-                long longPos = BlockPosition.asLong(request.getBlockX(), request.getBlockY(), request.getBlockZ());
-                getStorageProvider().getLightStorage(request.getWorldName()).setLightLevel(longPos,
-                        request.getLightLevel(), request.getLightFlags());
+            if (resultCode == ResultCode.SUCCESS) {
+                if (FlagUtils.isFlagSet(request.getLightFlags(), LightFlag.USE_STORAGE_PROVIDER)) {
+                    long longPos = BlockPosition.asLong(request.getBlockX(), request.getBlockY(), request.getBlockZ());
+                    getStorageProvider().getLightStorage(request.getWorldName()).setLightLevel(longPos,
+                            request.getLightLevel(), request.getLightFlags());
+                }
+
+                if (request.getLightLevel() == 0) {
+                    // HAX: If the light is successfully removed, then add an additional flag, since the
+                    // return value of the recalculation may be equal to RECALCULATE_NO_CHANGES.
+                    request.addRequestFlag(RequestFlag.FORCE_SEND);
+                }
+                handleRelightRequest(request);
             }
         }
-        handleRelightRequest(request);
         return ResultCode.SUCCESS;
     }
 
@@ -171,30 +184,12 @@ public class PriorityScheduler implements IScheduler {
                 request.getCallback().onResult(RequestFlag.RECALCULATE, resultCode);
             }
 
-            if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.COMBINED_SEND)) {
-                request.removeRequestFlag(RequestFlag.COMBINED_SEND);
-                resultCode = getChunkObserver().notifyUpdateChunks(request.getWorldName(), request.getBlockX(),
-                        request.getBlockY(), request.getBlockZ(),
-                        Math.max(request.getOldLightLevel(), request.getLightLevel()), request.getLightFlags());
-                if (request.getCallback() != null) {
-                    request.getCallback().onResult(RequestFlag.COMBINED_SEND, resultCode);
-                }
-            } else if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.SEPARATE_SEND)) {
-                request.removeRequestFlag(RequestFlag.SEPARATE_SEND);
-                if (resultCode == ResultCode.SUCCESS || FlagUtils.isFlagSet(request.getRequestFlags(),
-                        RequestFlag.MOVED_TO_FORWARD)) {
-                    // send updated chunks now
-                    List<IChunkData> chunkDataList = getChunkObserver().collectChunkSections(request.getWorldName(),
-                            request.getBlockX(), request.getBlockY(), request.getBlockZ(),
-                            Math.max(request.getOldLightLevel(), request.getLightLevel()), request.getLightFlags());
-                    for (int i = 0; i < chunkDataList.size(); i++) {
-                        IChunkData data = chunkDataList.get(i);
-                        getChunkObserver().sendChunk(data);
-                    }
-
-                    if (request.getCallback() != null) {
-                        request.getCallback().onResult(RequestFlag.SEPARATE_SEND, ResultCode.SUCCESS);
-                    }
+            if (resultCode == ResultCode.SUCCESS || FlagUtils.isFlagSet(request.getRequestFlags(),
+                    RequestFlag.FORCE_SEND)) {
+                if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.COMBINED_SEND)) {
+                    getLightEngine().notifySend(request);
+                } else if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.SEPARATE_SEND)) {
+                    handleSendRequest(request);
                 }
             }
         } else if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.DEFERRED_RECALCULATE)) {
@@ -204,6 +199,34 @@ public class PriorityScheduler implements IScheduler {
             int resultCode = getLightEngine().notifyRecalculate(request);
             if (request.getCallback() != null) {
                 request.getCallback().onResult(RequestFlag.DEFERRED_RECALCULATE, resultCode);
+            }
+        }
+        return ResultCode.SUCCESS;
+    }
+
+    @Override
+    public int handleSendRequest(Request request) {
+        if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.COMBINED_SEND)) {
+            request.removeRequestFlag(RequestFlag.COMBINED_SEND);
+            int resultCode = getChunkObserver().notifyUpdateChunks(request.getWorldName(), request.getBlockX(),
+                    request.getBlockY(), request.getBlockZ(),
+                    Math.max(request.getOldLightLevel(), request.getLightLevel()), request.getLightFlags());
+            if (request.getCallback() != null) {
+                request.getCallback().onResult(RequestFlag.COMBINED_SEND, resultCode);
+            }
+        } else if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.SEPARATE_SEND)) {
+            request.removeRequestFlag(RequestFlag.SEPARATE_SEND);
+            // send updated chunks now
+            List<IChunkData> chunkDataList = getChunkObserver().collectChunkSections(request.getWorldName(),
+                    request.getBlockX(), request.getBlockY(), request.getBlockZ(),
+                    Math.max(request.getOldLightLevel(), request.getLightLevel()), request.getLightFlags());
+            for (int i = 0; i < chunkDataList.size(); i++) {
+                IChunkData data = chunkDataList.get(i);
+                getChunkObserver().sendChunk(data);
+            }
+
+            if (request.getCallback() != null) {
+                request.getCallback().onResult(RequestFlag.SEPARATE_SEND, ResultCode.SUCCESS);
             }
         }
         return ResultCode.SUCCESS;
