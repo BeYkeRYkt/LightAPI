@@ -29,7 +29,6 @@ import ru.beykerykt.minecraft.lightapi.common.api.extension.IExtension;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.IChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightEngine;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
-import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
 
 public interface IPlatformImpl {
 
@@ -102,11 +101,6 @@ public interface IPlatformImpl {
      * N/A
      */
     IChunkObserver getChunkObserver();
-
-    /**
-     * N/A
-     */
-    IStorageProvider getStorageProvider();
 
     /**
      * N/A

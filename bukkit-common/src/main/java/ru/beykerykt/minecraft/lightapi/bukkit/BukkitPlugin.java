@@ -73,7 +73,6 @@ public class BukkitPlugin extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        getServer().getPluginManager().registerEvents(new BukkitListener(this), this);
     }
 
     @Override

@@ -60,6 +60,7 @@ public interface ILightEngine {
     /**
      * Checks the light level and restores it if available.
      */
+    @Deprecated
     int checkLight(String worldName, int blockX, int blockY, int blockZ, int lightFlags);
 
     /**

@@ -43,5 +43,6 @@ public class LightFlag {
     /**
      * A flag for storing the light level in the storage provider
      */
+    @Deprecated
     public static final int USE_STORAGE_PROVIDER = 4;
 }
