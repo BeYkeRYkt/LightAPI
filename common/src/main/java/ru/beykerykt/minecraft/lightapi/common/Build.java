@@ -33,13 +33,14 @@ public class Build {
     /**
      * ONLY FOR PREVIEW BUILD
      */
+    @Deprecated
     public static final int PREVIEW = 0;
 
     /**
      * Public version for users. May change during any changes in the API. The string should change
      * when common 'api' package is changed in from release to release.
      */
-    public static final int API_VERSION = PREVIEW;
+    public static final int API_VERSION = 1;
 
     /**
      * {@link Build#API_VERSION}
@@ -51,7 +52,7 @@ public class Build {
      * Internal version. May change during any changes in the API. The string should change when
      * common 'internal' package is changed from release to release.
      */
-    public static final int INTERNAL_VERSION = PREVIEW;
+    public static final int INTERNAL_VERSION = 1;
     /**
      * Platform that is being used.
      */

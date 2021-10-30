@@ -86,7 +86,7 @@
     </modules>
 
     <properties>
-        <BUILD_NUMBER>PREVIEW_RC3</BUILD_NUMBER>
+        <BUILD_NUMBER>SNAPSHOT</BUILD_NUMBER>
         <SERVER_API>Unknown</SERVER_API>
         <flatten-maven-plugin.version>1.1.0</flatten-maven-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
