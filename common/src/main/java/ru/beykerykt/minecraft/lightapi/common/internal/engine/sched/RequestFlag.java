@@ -53,16 +53,5 @@ public class RequestFlag {
     /**
      * N/A
      */
-    public static final int MOVED_TO_FORWARD = 32;
-
-    /**
-     * N/A
-     */
-    @Deprecated
-    public static final int MOVED_TO_DEFERRED = 64;
-
-    /**
-     * N/A
-     */
-    public static final int FORCE_SEND = 128;
+    public static final int FORCE_SEND = 32;
 }
