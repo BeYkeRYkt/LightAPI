@@ -60,4 +60,9 @@ public class RequestFlag {
      */
     @Deprecated
     public static final int MOVED_TO_DEFERRED = 64;
+
+    /**
+     * N/A
+     */
+    public static final int FORCE_SEND = 128;
 }
