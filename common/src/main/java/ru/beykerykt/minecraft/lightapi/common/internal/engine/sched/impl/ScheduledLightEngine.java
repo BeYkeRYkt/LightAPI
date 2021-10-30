@@ -46,9 +46,11 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     private final IBackgroundService mBackgroundService;
     private final long TICK_MS = 50;
     private final IPlatformImpl mPlatformImpl;
-    private final Queue<Request> lightQueue = new PriorityBlockingQueue<>(10,
+    private final Queue<Request> lightQueue = new PriorityBlockingQueue<>(20,
             (o1, o2) -> o2.getPriority() - o1.getPriority());
-    private final Queue<Request> relightQueue = new PriorityBlockingQueue<>(10,
+    private final Queue<Request> relightQueue = new PriorityBlockingQueue<>(20,
+            (o1, o2) -> o2.getPriority() - o1.getPriority());
+    private final Queue<Request> sendQueue = new PriorityBlockingQueue<>(20,
             (o1, o2) -> o2.getPriority() - o1.getPriority());
     protected long maxTimeMsPerTick;
     protected int maxRequestCount;
