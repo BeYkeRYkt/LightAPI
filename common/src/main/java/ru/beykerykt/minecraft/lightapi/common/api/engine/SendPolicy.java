@@ -40,7 +40,12 @@ public enum SendPolicy {
      * Updated chunks are collected in a common pool after the light level changes. Then they are
      * automatically sent to players at regular intervals.
      */
-    DEFERRED(2);
+    DEFERRED(2),
+
+    /**
+     * Chunks are not collected after the changes are applied.
+     */
+    IGNORE(3);
 
     private final int id;
 
