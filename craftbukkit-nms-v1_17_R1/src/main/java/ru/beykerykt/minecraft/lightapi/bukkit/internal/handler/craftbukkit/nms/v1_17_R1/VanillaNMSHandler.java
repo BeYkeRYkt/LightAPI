@@ -285,7 +285,10 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                 }
             }
         });
-        return ResultCode.SUCCESS;
+        if (lightEngine.z_()) {
+            return ResultCode.SUCCESS;
+        }
+        return ResultCode.FAILED;
     }
 
     @Override

@@ -220,6 +220,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
         final BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
         final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
+        ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(blockX >> 4, blockZ >> 4);
 
         if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
@@ -239,7 +240,6 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
                         }
                     } else if (lele.a(SectionPosition.a(position)) != null) {
                         try {
-                            ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(blockX >> 4, blockZ >> 4);
                             if (blockQueueMap.containsKey(chunkCoordIntPair)) {
                                 Set<LightPos> lightPoints = blockQueueMap.get(chunkCoordIntPair);
                                 lightPoints.add(new LightPos(position, finalLightLevel));
@@ -269,7 +269,6 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
                         }
                     } else if (lele.a(SectionPosition.a(position)) != null) {
                         try {
-                            ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(blockX >> 4, blockZ >> 4);
                             if (skyQueueMap.containsKey(chunkCoordIntPair)) {
                                 Set<LightPos> lightPoints = skyQueueMap.get(chunkCoordIntPair);
                                 lightPoints.add(new LightPos(position, finalLightLevel));
@@ -286,7 +285,16 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
                 }
             }
         });
-        return ResultCode.SUCCESS;
+        Map<ChunkCoordIntPair, Set<LightPos>> targetMap = null;
+        if (FlagUtils.isFlagSet(flags, LightFlag.SKY_LIGHTING)) {
+            targetMap = skyQueueMap;
+        } else if (FlagUtils.isFlagSet(flags, LightFlag.BLOCK_LIGHTING)) {
+            targetMap = blockQueueMap;
+        }
+        if (lightEngine.z_() || targetMap != null && targetMap.containsKey(chunkCoordIntPair)) {
+            return ResultCode.SUCCESS;
+        }
+        return ResultCode.FAILED;
     }
 
     @Override
