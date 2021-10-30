@@ -180,7 +180,8 @@ public class PriorityScheduler implements IScheduler {
         } else if (FlagUtils.isFlagSet(request.getRequestFlags(), RequestFlag.DEFERRED_RECALCULATE)) {
             request.removeRequestFlag(RequestFlag.DEFERRED_RECALCULATE);
             request.addRequestFlag(RequestFlag.RECALCULATE);
-            request.addRequestFlag(RequestFlag.MOVED_TO_FORWARD);
+            // HAX: Add an additional flag, since the return value of the recalculation can be equal to RECALCULATE_NO_CHANGES.
+            request.addRequestFlag(RequestFlag.FORCE_SEND);
             int resultCode = getLightEngine().notifyRecalculate(request);
             if (request.getCallback() != null) {
                 request.getCallback().onResult(RequestFlag.DEFERRED_RECALCULATE, resultCode);
