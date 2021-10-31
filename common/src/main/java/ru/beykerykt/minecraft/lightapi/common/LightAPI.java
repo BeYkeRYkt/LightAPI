@@ -137,7 +137,7 @@ public final class LightAPI {
             lightFlags = LightFlag.SKY_LIGHTING;
         }
         int resultCode = get().setLightLevel(worldName, blockX, blockY, blockZ, lightlevel, lightFlags,
-                EditPolicy.IMMEDIATE, SendPolicy.DEFERRED, (requestFlag, resultCode1) -> {
+                EditPolicy.DEFERRED, SendPolicy.DEFERRED, (requestFlag, resultCode1) -> {
                     if (callback != null) {
                         LStage stage = LStage.CREATING;
                         switch (requestFlag) {
@@ -177,7 +177,7 @@ public final class LightAPI {
         if (type == ru.beykerykt.minecraft.lightapi.common.LightType.SKY) {
             lightFlags = LightFlag.SKY_LIGHTING;
         }
-        int resultCode = get().setLightLevel(worldName, blockX, blockY, blockZ, 0, lightFlags, EditPolicy.IMMEDIATE,
+        int resultCode = get().setLightLevel(worldName, blockX, blockY, blockZ, 0, lightFlags, EditPolicy.DEFERRED,
                 SendPolicy.DEFERRED, (requestFlag, resultCode1) -> {
                     if (callback != null) {
                         LStage stage = LStage.DELETING;
