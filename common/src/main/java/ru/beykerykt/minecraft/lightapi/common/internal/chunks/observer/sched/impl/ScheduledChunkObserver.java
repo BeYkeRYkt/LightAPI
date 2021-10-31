@@ -153,9 +153,13 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
             Map.Entry<Long, IChunkData> pair = (Map.Entry<Long, IChunkData>) it.next();
             IChunkData data = pair.getValue();
             int resultCode = sendChunk(data);
-            if (resultCode == ResultCode.SUCCESS) {
-                data.clearUpdate();
-                it.remove();
+            switch (resultCode) {
+                case ResultCode.SUCCESS:
+                case ResultCode.CHUNK_NOT_LOADED:
+                case ResultCode.WORLD_NOT_AVAILABLE:
+                    data.clearUpdate();
+                    it.remove();
+                    break;
             }
         }
         isBusy = false;
