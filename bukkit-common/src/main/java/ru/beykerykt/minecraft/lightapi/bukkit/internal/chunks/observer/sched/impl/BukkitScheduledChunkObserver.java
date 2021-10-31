@@ -114,6 +114,15 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
     }
 
     @Override
+    public boolean isChunkLoaded(String worldName, int chunkX, int chunkZ) {
+        if (!getPlatformImpl().isWorldAvailable(worldName)) {
+            return false;
+        }
+        World world = Bukkit.getWorld(worldName);
+        return world.isChunkLoaded(chunkX, chunkZ);
+    }
+
+    @Override
     public List<IChunkData> collectChunkSections(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
             int lightFlags) {
         if (!getPlatformImpl().isWorldAvailable(worldName)) {

@@ -386,6 +386,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     @Override
     public List<IChunkData> collectChunkSections(World world, int blockX, int blockY, int blockZ, int lightLevel,
             int lightFlags) {
+        WorldServer worldServer = ((CraftWorld) world).getHandle();
         List<IChunkData> list = Lists.newArrayList();
         int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
 
@@ -399,13 +400,15 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                 for (int dZ = -1; dZ <= 1; dZ++) {
                     int lightLevelZ = lightLevelX - getDeltaLight(blockZ & 15, dZ);
                     if (lightLevelZ > 0) {
+                        int chunkX = (blockX >> 4) + dX;
+                        int chunkZ = (blockZ >> 4) + dZ;
+                        if (!worldServer.getChunkProvider().isChunkLoaded(chunkX, chunkZ)) {
+                            continue;
+                        }
                         for (int dY = -1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
                                 if (isValidChunkSection(sectionY)) {
-                                    int chunkX = (blockX >> 4) + dX;
-                                    int chunkZ = (blockZ >> 4) + dZ;
-
                                     IChunkData data = searchChunkDataFromList(list, world, chunkX, chunkZ);
                                     if (!list.contains(data)) {
                                         list.add(data);
@@ -442,6 +445,9 @@ public class VanillaNMSHandler extends BaseNMSHandler {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
         WorldServer worldServer = ((CraftWorld) world).getHandle();
+        if (!worldServer.getChunkProvider().isChunkLoaded(chunkX, chunkZ)) {
+            return ResultCode.CHUNK_NOT_LOADED;
+        }
         Chunk chunk = worldServer.getChunkAt(chunkX, chunkZ);
         ChunkCoordIntPair chunkCoordIntPair = chunk.getPos();
         Stream<EntityPlayer> stream = worldServer.getChunkProvider().playerChunkMap.a(chunkCoordIntPair, false);

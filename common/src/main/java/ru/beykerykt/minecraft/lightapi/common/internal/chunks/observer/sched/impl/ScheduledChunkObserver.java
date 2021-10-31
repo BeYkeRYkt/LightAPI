@@ -83,6 +83,8 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
 
     public abstract boolean isValidChunkSection(int sectionY);
 
+    public abstract boolean isChunkLoaded(String worldName, int chunkX, int chunkZ);
+
     /* @hide */
     private int notifyUpdateChunksLocked(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
             int lightType) {
@@ -100,14 +102,16 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
                 for (int dZ = -CHUNK_RADIUS; dZ <= CHUNK_RADIUS; dZ++) {
                     int lightLevelZ = lightLevelX - getDeltaLight(blockZ & 15, dZ);
                     if (lightLevelZ > 0) {
+                        int chunkX = (blockX >> 4) + dX;
+                        int chunkZ = (blockZ >> 4) + dZ;
+                        if (!isChunkLoaded(worldName, chunkX, chunkZ)) {
+                            continue;
+                        }
                         for (int dY = -1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
                                 if (isValidChunkSection(sectionY)) {
-                                    int chunkX = (blockX >> 4) + dX;
-                                    int chunkZ = (blockZ >> 4) + dZ;
                                     long chunkCoord = chunkCoordToLong(chunkX, chunkZ);
-
                                     IChunkData data;
                                     if (observedChunks.containsKey(chunkCoord)) {
                                         data = observedChunks.get(chunkCoord);
