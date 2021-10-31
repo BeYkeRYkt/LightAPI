@@ -61,6 +61,7 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
     @Override
     public void onShutdown() {
         getPlatformImpl().debug(getClass().getName() + " is shutdown!");
+        handleChunksLocked();
         observedChunks.clear();
     }
 

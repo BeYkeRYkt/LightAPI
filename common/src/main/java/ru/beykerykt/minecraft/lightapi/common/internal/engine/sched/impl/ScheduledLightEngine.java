@@ -91,6 +91,18 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     @Override
     public void onShutdown() {
         getPlatformImpl().debug(getClass().getName() + " is shutdown!");
+        while (lightQueue.peek() != null) {
+            Request request = lightQueue.poll();
+            handleLightRequest(request);
+        }
+        while (relightQueue.peek() != null) {
+            Request request = relightQueue.poll();
+            handleRelightRequest(request);
+        }
+        while (sendQueue.peek() != null) {
+            Request request = sendQueue.poll();
+            handleSendRequest(request);
+        }
         lightQueue.clear();
         relightQueue.clear();
         sendQueue.clear();
