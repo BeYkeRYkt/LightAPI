@@ -28,7 +28,6 @@ import ru.beykerykt.minecraft.lightapi.common.LightAPI;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
-import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 
 public class UsageTest {
 
@@ -52,34 +51,12 @@ public class UsageTest {
                 // sponge implementation
                 break;
         }
-    }
-
-    public void onLoad() {
-        IPlatformImpl mPluginImpl = null;
-        try {
-            LightAPI.prepare(mPluginImpl);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void onEnable() {
-        try {
-            LightAPI.initialization();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void onDisable() {
-        IPlatformImpl mPluginImpl = null;
-        LightAPI.shutdown(mPluginImpl);
+        int apiVersion = Build.API_VERSION;
+        int internalVersion = Build.INTERNAL_VERSION;
     }
 
     // for clients
     public void test(String world, int blockX, int blockY, int blockZ, int lightLevel) {
-        int blockLight = mLightAPI.getLightLevel(world, blockX, blockY, blockZ, lightLevel);
-
         int lightType = LightFlag.BLOCK_LIGHTING;
         EditPolicy editPolicy = EditPolicy.DEFERRED;
         SendPolicy sendPolicy = SendPolicy.DEFERRED;

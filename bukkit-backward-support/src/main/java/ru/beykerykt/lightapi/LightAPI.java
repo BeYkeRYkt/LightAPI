@@ -53,8 +53,14 @@ public class LightAPI extends JavaPlugin {
             "The package \"ru.beykerykt.lightapi\" is outdated! Switch to the new package \"ru.beykerykt.minecraft.lightapi.*\" or turn on the \"force-enable-legacy\" mode.";
 
     @Deprecated
-    private static final BlockFace[] SIDES =
-            {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+    private static final BlockFace[] SIDES = {
+            BlockFace.UP,
+            BlockFace.DOWN,
+            BlockFace.NORTH,
+            BlockFace.EAST,
+            BlockFace.SOUTH,
+            BlockFace.WEST
+    };
 
     private static boolean isBackwardEnabled() {
         return ((IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension()).isBackwardAvailable();
@@ -298,7 +304,7 @@ public class LightAPI extends JavaPlugin {
             log(Bukkit.getServer().getConsoleSender(), DEPRECATED_MSG);
             return null;
         }
-        List<ChunkInfo> list = new CopyOnWriteArrayList<ChunkInfo>();
+        List<ChunkInfo> list = new CopyOnWriteArrayList<>();
         IBukkitExtension ext = (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
         IHandler handler = ext.getHandler();
         int lightTypeNew = LightFlag.BLOCK_LIGHTING;

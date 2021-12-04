@@ -48,8 +48,14 @@ import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 public class CompatibilityHandler implements IHandler {
 
-    private static final BlockFace[] SIDES =
-            {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+    private static final BlockFace[] SIDES = {
+            BlockFace.UP,
+            BlockFace.DOWN,
+            BlockFace.NORTH,
+            BlockFace.EAST,
+            BlockFace.SOUTH,
+            BlockFace.WEST
+    };
     private BukkitPlatformImpl mPlatform;
 
     private BukkitPlatformImpl getPlatformImpl() {
@@ -113,7 +119,7 @@ public class CompatibilityHandler implements IHandler {
         if (!isLightingSupported(world, lightFlags)) {
             return ResultCode.NOT_IMPLEMENTED;
         }
-        int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
+        int finalLightLevel = lightLevel < 0 ? 0 : Math.min(lightLevel, 15);
         Block block = world.getBlockAt(blockX, blockY, blockZ);
         Material material = block.getType();
 
@@ -135,9 +141,8 @@ public class CompatibilityHandler implements IHandler {
         if (isMainThread()) {
             return setRawLightLevelLocked(world, blockX, blockY, blockZ, lightLevel, lightFlags);
         } else {
-            Bukkit.getScheduler().runTask(getPlatformImpl().getPlugin(), () -> {
-                setRawLightLevelLocked(world, blockX, blockY, blockZ, lightLevel, lightFlags);
-            });
+            Bukkit.getScheduler().runTask(getPlatformImpl().getPlugin(),
+                    () -> setRawLightLevelLocked(world, blockX, blockY, blockZ, lightLevel, lightFlags));
             return ResultCode.SUCCESS;
         }
     }

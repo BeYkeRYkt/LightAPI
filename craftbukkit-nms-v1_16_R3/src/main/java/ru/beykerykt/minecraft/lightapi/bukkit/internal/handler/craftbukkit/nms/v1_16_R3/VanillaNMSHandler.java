@@ -235,7 +235,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
-        final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
+        final int finalLightLevel = lightLevel < 0 ? 0 : Math.min(lightLevel, 15);
 
         if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
@@ -373,8 +373,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     private IChunkData searchChunkDataFromList(List<IChunkData> list, World world, int chunkX, int chunkZ) {
-        for (int i = 0; i < list.size(); i++) {
-            IChunkData data = list.get(i);
+        for (IChunkData data : list) {
             if (data.getWorldName().equals(world.getName()) && data.getChunkX() == chunkX
                     && data.getChunkZ() == chunkZ) {
                 return data;
@@ -388,7 +387,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
             int lightFlags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         List<IChunkData> list = Lists.newArrayList();
-        int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
+        int finalLightLevel = lightLevel < 0 ? 0 : Math.min(lightLevel, 15);
 
         if (world == null) {
             return list;

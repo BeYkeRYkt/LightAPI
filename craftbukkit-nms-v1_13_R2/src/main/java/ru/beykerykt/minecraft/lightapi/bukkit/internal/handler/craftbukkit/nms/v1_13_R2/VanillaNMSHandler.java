@@ -57,8 +57,14 @@ import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 public class VanillaNMSHandler extends BaseNMSHandler {
 
-    private static final BlockFace[] SIDES =
-            {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+    private static final BlockFace[] SIDES = {
+            BlockFace.UP,
+            BlockFace.DOWN,
+            BlockFace.NORTH,
+            BlockFace.EAST,
+            BlockFace.SOUTH,
+            BlockFace.WEST
+    };
 
     public static Block getAdjacentAirBlock(Block block) {
         for (BlockFace face : SIDES) {
@@ -151,7 +157,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     @Override
     public int setRawLightLevel(World world, int blockX, int blockY, int blockZ, int lightLevel, int lightFlags) {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
-        final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
+        final int finalLightLevel = lightLevel < 0 ? 0 : Math.min(lightLevel, 15);
 
         if (!worldServer.getChunkProvider().isLoaded(blockX >> 4, blockZ >> 4)) {
             return ResultCode.CHUNK_NOT_LOADED;
@@ -234,8 +240,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     private IChunkData searchChunkDataFromList(List<IChunkData> list, World world, int chunkX, int chunkZ) {
-        for (int i = 0; i < list.size(); i++) {
-            IChunkData data = list.get(i);
+        for (IChunkData data : list) {
             if (data.getWorldName().equals(world.getName()) && data.getChunkX() == chunkX
                     && data.getChunkZ() == chunkZ) {
                 return data;
@@ -248,7 +253,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     public List<IChunkData> collectChunkSections(World world, int blockX, int blockY, int blockZ, int lightLevel,
             int lightFlags) {
         List<IChunkData> list = Lists.newArrayList();
-        int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
+        int finalLightLevel = lightLevel < 0 ? 0 : Math.min(lightLevel, 15);
 
         if (world == null) {
             return list;

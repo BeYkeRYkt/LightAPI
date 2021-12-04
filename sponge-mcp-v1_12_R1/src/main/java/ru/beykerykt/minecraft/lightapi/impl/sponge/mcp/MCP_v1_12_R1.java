@@ -58,8 +58,14 @@ import ru.beykerykt.minecraft.lightapi.impl.sponge.SpongeLightHandler;
  */
 public class MCP_v1_12_R1 extends SpongeLightHandler {
 
-    private static Direction[] SIDES =
-            {Direction.UP, Direction.DOWN, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+    private static Direction[] SIDES = {
+            Direction.UP,
+            Direction.DOWN,
+            Direction.NORTH,
+            Direction.EAST,
+            Direction.SOUTH,
+            Direction.WEST
+    };
 
     private static Location<World> getAdjacentAirBlock(Location<World> blockLoc) {
         for (Direction face : SIDES) {

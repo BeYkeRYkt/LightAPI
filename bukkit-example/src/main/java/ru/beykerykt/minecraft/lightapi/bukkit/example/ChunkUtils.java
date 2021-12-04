@@ -32,7 +32,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 public class ChunkUtils {
 
     public static List<IChunkData> mergeChunks(List<IChunkData> input) {
-        List<IChunkData> output = new ArrayList<IChunkData>();
+        List<IChunkData> output = new ArrayList<>();
         Iterator<IChunkData> it = input.iterator();
         while (it.hasNext()) {
             IChunkData data = it.next();

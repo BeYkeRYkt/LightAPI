@@ -219,7 +219,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
         WorldServer worldServer = ((CraftWorld) world).getHandle();
         final BlockPosition position = new BlockPosition(blockX, blockY, blockZ);
         final LightEngineThreaded lightEngine = worldServer.getChunkProvider().getLightEngine();
-        final int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
+        final int finalLightLevel = lightLevel < 0 ? 0 : Math.min(lightLevel, 15);
         ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(blockX >> 4, blockZ >> 4);
 
         if (!worldServer.getChunkProvider().isChunkLoaded(blockX >> 4, blockZ >> 4)) {
@@ -336,9 +336,7 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
                 addTaskToQueue(worldServer, starLightInterface, ssle, chunkCoordIntPair, lightPoints);
                 skyIt.remove();
             }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
 
