@@ -118,7 +118,7 @@ public interface IHandler {
     /**
      * N/A
      */
-    boolean isValidChunkSection(int sectionY);
+    boolean isValidChunkSection(World world, int sectionY);
 
     /**
      * N/A

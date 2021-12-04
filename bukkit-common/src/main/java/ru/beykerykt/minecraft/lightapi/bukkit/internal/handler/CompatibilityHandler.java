@@ -199,8 +199,8 @@ public class CompatibilityHandler implements IHandler {
     }
 
     @Override
-    public boolean isValidChunkSection(int sectionY) {
-        return false;
+    public boolean isValidChunkSection(World world, int sectionY) {
+        return true;
     }
 
     @Override

@@ -397,7 +397,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
                         for (int dY = -1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
-                                if (isValidChunkSection(sectionY)) {
+                                if (isValidChunkSection(world, sectionY)) {
                                     IChunkData data = searchChunkDataFromList(list, world, chunkX, chunkZ);
                                     if (!list.contains(data)) {
                                         list.add(data);
@@ -414,7 +414,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     }
 
     @Override
-    public boolean isValidChunkSection(int sectionY) {
+    public boolean isValidChunkSection(World world, int sectionY) {
         return sectionY >= -1 && sectionY <= 16;
     }
 

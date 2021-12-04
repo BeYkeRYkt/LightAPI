@@ -81,7 +81,7 @@ public abstract class ScheduledChunkObserverImpl implements IScheduledChunkObser
 
     protected abstract IChunkData createChunkData(String worldName, int chunkX, int chunkZ);
 
-    protected abstract boolean isValidChunkSection(int sectionY);
+    protected abstract boolean isValidChunkSection(String worldName, int sectionY);
 
     protected abstract boolean isChunkLoaded(String worldName, int chunkX, int chunkZ);
 
@@ -110,7 +110,7 @@ public abstract class ScheduledChunkObserverImpl implements IScheduledChunkObser
                         for (int dY = -1; dY <= 1; dY++) {
                             if (lightLevelZ > getDeltaLight(blockY & 15, dY)) {
                                 int sectionY = (blockY >> 4) + dY;
-                                if (isValidChunkSection(sectionY)) {
+                                if (isValidChunkSection(worldName, sectionY)) {
                                     long chunkCoord = chunkCoordToLong(chunkX, chunkZ);
                                     IChunkData data;
                                     if (observedChunks.containsKey(chunkCoord)) {

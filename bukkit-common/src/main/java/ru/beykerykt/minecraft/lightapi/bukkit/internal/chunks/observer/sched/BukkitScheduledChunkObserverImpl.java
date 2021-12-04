@@ -109,8 +109,12 @@ public class BukkitScheduledChunkObserverImpl extends ScheduledChunkObserverImpl
     }
 
     @Override
-    protected boolean isValidChunkSection(int sectionY) {
-        return getHandler().isValidChunkSection(sectionY);
+    protected boolean isValidChunkSection(String worldName, int sectionY) {
+        if (!getPlatformImpl().isWorldAvailable(worldName)) {
+            return false;
+        }
+        World world = Bukkit.getWorld(worldName);
+        return getHandler().isValidChunkSection(world, sectionY);
     }
 
     @Override
