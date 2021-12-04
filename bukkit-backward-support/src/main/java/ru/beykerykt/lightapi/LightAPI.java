@@ -49,6 +49,9 @@ import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 @Deprecated
 public class LightAPI extends JavaPlugin {
 
+    private static final String DEPRECATED_MSG =
+            "The package \"ru.beykerykt.lightapi\" is outdated! Switch to the new package \"ru.beykerykt.minecraft.lightapi.*\" or turn on the \"force-enable-legacy\" mode.";
+
     @Deprecated
     private static final BlockFace[] SIDES =
             {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
@@ -108,7 +111,7 @@ public class LightAPI extends JavaPlugin {
     @Deprecated
     public static boolean updateChunk(ChunkInfo info) {
         if (!isBackwardEnabled()) {
-            log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
+            log(Bukkit.getServer().getConsoleSender(), DEPRECATED_MSG);
             return false;
         }
         UpdateChunkEvent event = new UpdateChunkEvent(info);
@@ -136,7 +139,7 @@ public class LightAPI extends JavaPlugin {
     @Deprecated
     public static boolean updateChunks(World world, int x, int y, int z, Collection<? extends Player> players) {
         if (!isBackwardEnabled()) {
-            log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
+            log(Bukkit.getServer().getConsoleSender(), DEPRECATED_MSG);
             return false;
         }
         IBukkitExtension ext = (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
@@ -157,7 +160,7 @@ public class LightAPI extends JavaPlugin {
     @Deprecated
     public static boolean updateChunk(World world, int x, int y, int z, Collection<? extends Player> players) {
         if (!isBackwardEnabled()) {
-            log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
+            log(Bukkit.getServer().getConsoleSender(), DEPRECATED_MSG);
             return false;
         }
         IBukkitExtension ext = (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
@@ -199,7 +202,7 @@ public class LightAPI extends JavaPlugin {
     public static boolean createLight(World world, int x, final int y, final int z,
             ru.beykerykt.lightapi.LightType lightType, final int lightlevel, boolean async) {
         if (!isBackwardEnabled()) {
-            log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
+            log(Bukkit.getServer().getConsoleSender(), DEPRECATED_MSG);
             return false;
         }
         int flags = LightFlag.NONE;
@@ -246,7 +249,7 @@ public class LightAPI extends JavaPlugin {
     public static boolean deleteLight(final World world, final int x, final int y, final int z,
             ru.beykerykt.lightapi.LightType lightType, boolean async) {
         if (!isBackwardEnabled()) {
-            log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
+            log(Bukkit.getServer().getConsoleSender(), DEPRECATED_MSG);
             return false;
         }
         int flags = LightFlag.NONE;
@@ -292,7 +295,7 @@ public class LightAPI extends JavaPlugin {
     public static List<ChunkInfo> collectChunks(World world, int x, int y, int z,
             ru.beykerykt.lightapi.LightType lightType, int lightLevel) {
         if (!isBackwardEnabled()) {
-            log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
+            log(Bukkit.getServer().getConsoleSender(), DEPRECATED_MSG);
             return null;
         }
         List<ChunkInfo> list = new CopyOnWriteArrayList<ChunkInfo>();
@@ -318,7 +321,7 @@ public class LightAPI extends JavaPlugin {
     public static boolean updateChunk(ChunkInfo info, ru.beykerykt.lightapi.LightType lightType,
             Collection<? extends Player> players) {
         if (!isBackwardEnabled()) {
-            log(Bukkit.getServer().getConsoleSender(), "Sorry, but now you can not use the old version of the API.");
+            log(Bukkit.getServer().getConsoleSender(), DEPRECATED_MSG);
             return false;
         }
         UpdateChunkEvent event = new UpdateChunkEvent(info);
