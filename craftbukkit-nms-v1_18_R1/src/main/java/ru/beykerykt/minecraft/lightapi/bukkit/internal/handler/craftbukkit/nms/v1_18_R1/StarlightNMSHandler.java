@@ -118,8 +118,8 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
                                         ((blockPos.getX() + (blockPos.getZ() << 6) + (blockPos.getY() << (6 + 6))
                                                 + encodeOffset) & ((1L << (6 + 6 + 16)) - 1)) | (lightLevel & 0xFL) << (
                                                 6 + 6 + 16) | (((long) ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4)) | (
-                                                //blockData.isConditionallyFullOpaque()
-                                                true ? FLAG_HAS_SIDED_TRANSPARENT_BLOCKS : 0));
+                                                blockData.isConditionallyFullOpaque()
+                                                        ? FLAG_HAS_SIDED_TRANSPARENT_BLOCKS : 0));
                             }
                         } finally {
                             it.remove();
