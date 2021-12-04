@@ -77,5 +77,10 @@ public interface IBukkitExtension extends IExtension {
     /**
      * N/A
      */
+    boolean isCompatibilityMode();
+
+    /**
+     * N/A
+     */
     IHandler getHandler();
 }

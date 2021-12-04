@@ -73,6 +73,7 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
     private boolean DEBUG = false;
     private boolean isInit = false;
     private boolean forceLegacy = false;
+    private boolean compatibilityMode = false;
     private IHandler mHandler;
     private IChunkObserver mChunkObserver;
     private ILightEngine mLightEngine;
@@ -165,7 +166,7 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
         }
 
         // compatibility mode (1.17+)
-        boolean compatibilityMode = getConfig().getBoolean(CONFIG_ENABLE_COMPATIBILITY_MODE);
+        compatibilityMode = getConfig().getBoolean(CONFIG_ENABLE_COMPATIBILITY_MODE);
         if (compatibilityMode) {
             if (VersionUtil.compareBukkitVersionTo("1.17") >= 0) {
                 info("Compatibility mode is enabled");
@@ -402,5 +403,10 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
         } catch (ClassNotFoundException ex) {
             return false;
         }
+    }
+
+    @Override
+    public boolean isCompatibilityMode() {
+        return compatibilityMode;
     }
 }
