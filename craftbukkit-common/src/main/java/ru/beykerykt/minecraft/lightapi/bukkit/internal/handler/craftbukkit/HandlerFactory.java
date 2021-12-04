@@ -33,20 +33,31 @@ import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandlerFactory;
 public class HandlerFactory implements IHandlerFactory {
 
     private static final String CRAFTBUKKIT_PKG = "org.bukkit.craftbukkit";
-    private static final String STARLIGHT_ENGINE_PKG = "ca.spottedleaf.starlight.light.StarLightEngine";
+    private static final String[] STARLIGHT_ENGINE_PKG = {
+            "ca.spottedleaf.starlight.light.StarLightEngine",
+            "ca.spottedleaf.starlight.common.light.StarLightEngine"
+    };
+    private BukkitPlatformImpl mPlatformImpl;
+
+    private BukkitPlatformImpl getPlatformImpl() {
+        return mPlatformImpl;
+    }
 
     private boolean isStarlight() {
-        try {
-            Class.forName(STARLIGHT_ENGINE_PKG);
-            return true;
-        } catch (ClassNotFoundException e) {
-            // nothing
+        for (String pkg : STARLIGHT_ENGINE_PKG) {
+            try {
+                Class.forName(pkg);
+                return true;
+            } catch (ClassNotFoundException e) {
+                getPlatformImpl().debug("Class " + pkg + " not found");
+            }
         }
         return false;
     }
 
     @Override
     public IHandler createHandler(BukkitPlatformImpl impl) throws Exception {
+        this.mPlatformImpl = impl;
         IHandler handler = null;
         String serverImplPackage = Bukkit.getServer().getClass().getPackage().getName();
 
