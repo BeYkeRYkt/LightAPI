@@ -31,9 +31,9 @@ import java.util.concurrent.ThreadFactory;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
-import ru.beykerykt.minecraft.lightapi.common.internal.service.BackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.internal.service.BackgroundServiceImpl;
 
-public class BukkitBackgroundService extends BackgroundService {
+public class BukkitBackgroundServiceImpl extends BackgroundServiceImpl {
 
     /**
      * CONFIG
@@ -49,7 +49,7 @@ public class BukkitBackgroundService extends BackgroundService {
     private int taskId = -1;
     private long lastAliveTime = 0;
 
-    public BukkitBackgroundService(BukkitPlatformImpl platform, IHandler handler) {
+    public BukkitBackgroundServiceImpl(BukkitPlatformImpl platform, IHandler handler) {
         mPlatform = platform;
         mHandler = handler;
     }

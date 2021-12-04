@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched.impl;
+package ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -38,11 +38,11 @@ import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.ISc
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineType;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.LightEngineVersion;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduler;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.impl.PriorityScheduler;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.impl.ScheduledLightEngine;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.PriorityScheduler;
+import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.ScheduledLightEngineImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
-public class BukkitScheduledLightEngine extends ScheduledLightEngine {
+public class BukkitScheduledLightEngineImpl extends ScheduledLightEngineImpl {
 
     /**
      * CONFIG
@@ -61,12 +61,12 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
     /**
      * @hide
      */
-    public BukkitScheduledLightEngine(BukkitPlatformImpl pluginImpl, IBackgroundService service, IHandler handler) {
+    public BukkitScheduledLightEngineImpl(BukkitPlatformImpl pluginImpl, IBackgroundService service, IHandler handler) {
         this(pluginImpl, service, RelightPolicy.DEFERRED, handler, 250, 250);
     }
 
-    public BukkitScheduledLightEngine(BukkitPlatformImpl pluginImpl, IBackgroundService service, RelightPolicy strategy,
-            IHandler handler, int maxRequestCount, int maxTimeMsPerTick) {
+    public BukkitScheduledLightEngineImpl(BukkitPlatformImpl pluginImpl, IBackgroundService service,
+            RelightPolicy strategy, IHandler handler, int maxRequestCount, int maxTimeMsPerTick) {
         super(pluginImpl, service, strategy, maxRequestCount, maxTimeMsPerTick);
         this.mHandler = handler;
     }
@@ -122,9 +122,7 @@ public class BukkitScheduledLightEngine extends ScheduledLightEngine {
         maxTimeMsPerTick = fc.getInt(CONFIG_MAX_TIME_MS_IN_PER_TICK);
 
         this.mTaskId = getPlatformImpl().getPlugin().getServer().getScheduler().runTaskTimer(
-                getPlatformImpl().getPlugin(), () -> {
-                    onTickPenaltyTime();
-                }, 0, 1).getTaskId();
+                getPlatformImpl().getPlugin(), this::onTickPenaltyTime, 0, 1).getTaskId();
 
         // scheduler
         // TODO: Make config (?)

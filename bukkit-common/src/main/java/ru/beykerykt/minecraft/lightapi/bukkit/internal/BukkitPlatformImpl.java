@@ -34,12 +34,12 @@ import java.util.UUID;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.BukkitPlugin;
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.observer.sched.impl.BukkitScheduledChunkObserver;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched.impl.BukkitScheduledLightEngine;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.observer.sched.BukkitScheduledChunkObserverImpl;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.engine.sched.BukkitScheduledLightEngineImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.CompatibilityHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandlerFactory;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BukkitBackgroundService;
+import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BukkitBackgroundServiceImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.utils.VersionUtil;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
@@ -232,15 +232,15 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
         }
 
         // init background service
-        mBackgroundService = new BukkitBackgroundService(this, getHandler());
+        mBackgroundService = new BukkitBackgroundServiceImpl(this, getHandler());
         mBackgroundService.onStart();
 
         // init chunk observer
-        mChunkObserver = new BukkitScheduledChunkObserver(this, getBackgroundService(), getHandler());
+        mChunkObserver = new BukkitScheduledChunkObserverImpl(this, getBackgroundService(), getHandler());
         mChunkObserver.onStart();
 
         // init light engine
-        mLightEngine = new BukkitScheduledLightEngine(this, getBackgroundService(), getHandler());
+        mLightEngine = new BukkitScheduledLightEngineImpl(this, getBackgroundService(), getHandler());
         mLightEngine.onStart();
 
         // init extension
@@ -272,7 +272,7 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
     @Override
     public void log(String msg) {
         StringBuilder builder = new StringBuilder(ChatColor.AQUA + "<LightAPI>: ");
-        builder.append(ChatColor.WHITE + msg);
+        builder.append(ChatColor.WHITE).append(msg);
         mPlugin.getServer().getConsoleSender().sendMessage(builder.toString());
     }
 

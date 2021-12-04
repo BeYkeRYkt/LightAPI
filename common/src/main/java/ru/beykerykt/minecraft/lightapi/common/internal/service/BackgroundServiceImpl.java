@@ -30,7 +30,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-public abstract class BackgroundService implements IBackgroundService {
+public abstract class BackgroundServiceImpl implements IBackgroundService {
     private ScheduledExecutorService executorService;
 
     protected void configureExecutorService(int corePoolSize, ThreadFactory namedThreadFactory) {

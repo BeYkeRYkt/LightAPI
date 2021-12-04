@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.impl;
+package ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,17 +30,16 @@ import java.util.Map;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
-import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.IScheduledChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
-public abstract class ScheduledChunkObserver implements IScheduledChunkObserver {
+public abstract class ScheduledChunkObserverImpl implements IScheduledChunkObserver {
 
     private final IBackgroundService mBackgroundService;
     private final Map<Long, IChunkData> observedChunks = new HashMap<>();
     private final IPlatformImpl mPlatformImpl;
     private boolean isBusy = false;
 
-    public ScheduledChunkObserver(IPlatformImpl platform, IBackgroundService service) {
+    public ScheduledChunkObserverImpl(IPlatformImpl platform, IBackgroundService service) {
         this.mPlatformImpl = platform;
         this.mBackgroundService = service;
     }
@@ -80,11 +79,11 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
         return l;
     }
 
-    public abstract IChunkData createChunkData(String worldName, int chunkX, int chunkZ);
+    protected abstract IChunkData createChunkData(String worldName, int chunkX, int chunkZ);
 
-    public abstract boolean isValidChunkSection(int sectionY);
+    protected abstract boolean isValidChunkSection(int sectionY);
 
-    public abstract boolean isChunkLoaded(String worldName, int chunkX, int chunkZ);
+    protected abstract boolean isChunkLoaded(String worldName, int chunkX, int chunkZ);
 
     /* @hide */
     private int notifyUpdateChunksLocked(String worldName, int blockX, int blockY, int blockZ, int lightLevel,
@@ -93,7 +92,7 @@ public abstract class ScheduledChunkObserver implements IScheduledChunkObserver 
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
 
-        int finalLightLevel = lightLevel < 0 ? 0 : lightLevel > 15 ? 15 : lightLevel;
+        int finalLightLevel = lightLevel < 0 ? 0 : Math.min(lightLevel, 15);
 
         // start watching chunks
         int CHUNK_RADIUS = 1;

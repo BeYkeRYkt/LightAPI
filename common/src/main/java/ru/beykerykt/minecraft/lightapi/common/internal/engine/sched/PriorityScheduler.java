@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.impl;
+package ru.beykerykt.minecraft.lightapi.common.internal.engine.sched;
 
 import java.util.List;
 
@@ -32,10 +32,6 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.IScheduledChunkObserver;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduledLightEngine;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduler;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.Request;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
@@ -206,8 +202,7 @@ public class PriorityScheduler implements IScheduler {
             List<IChunkData> chunkDataList = getChunkObserver().collectChunkSections(request.getWorldName(),
                     request.getBlockX(), request.getBlockY(), request.getBlockZ(),
                     Math.max(request.getOldLightLevel(), request.getLightLevel()), request.getLightFlags());
-            for (int i = 0; i < chunkDataList.size(); i++) {
-                IChunkData data = chunkDataList.get(i);
+            for (IChunkData data : chunkDataList) {
                 getChunkObserver().sendChunk(data);
             }
 

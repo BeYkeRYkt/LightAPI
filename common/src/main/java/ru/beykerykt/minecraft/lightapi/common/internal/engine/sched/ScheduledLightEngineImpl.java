@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.impl;
+package ru.beykerykt.minecraft.lightapi.common.internal.engine.sched;
 
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -32,16 +32,12 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduledLightEngine;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduler;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.Request;
-import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.RequestFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
 /**
  * Abstract class for scheduled light engines
  */
-public abstract class ScheduledLightEngine implements IScheduledLightEngine {
+public abstract class ScheduledLightEngineImpl implements IScheduledLightEngine {
 
     private final IBackgroundService mBackgroundService;
     private final long TICK_MS = 50;
@@ -59,7 +55,7 @@ public abstract class ScheduledLightEngine implements IScheduledLightEngine {
     private int requestCount = 0;
     private long penaltyTime = 0;
 
-    public ScheduledLightEngine(IPlatformImpl platformImpl, IBackgroundService service, RelightPolicy strategy,
+    public ScheduledLightEngineImpl(IPlatformImpl platformImpl, IBackgroundService service, RelightPolicy strategy,
             int maxRequestCount, int maxTimeMsPerTick) {
         this.mPlatformImpl = platformImpl;
         this.mBackgroundService = service;

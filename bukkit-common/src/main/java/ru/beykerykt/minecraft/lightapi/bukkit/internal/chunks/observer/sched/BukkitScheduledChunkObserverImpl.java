@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.observer.sched.impl;
+package ru.beykerykt.minecraft.lightapi.bukkit.internal.chunks.observer.sched;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -36,10 +36,10 @@ import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
-import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.impl.ScheduledChunkObserver;
+import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.ScheduledChunkObserverImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
 
-public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
+public class BukkitScheduledChunkObserverImpl extends ScheduledChunkObserverImpl {
 
     /**
      * CONFIG
@@ -51,7 +51,7 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
     private final IHandler mHandler;
     private ScheduledFuture mScheduledFuture;
 
-    public BukkitScheduledChunkObserver(BukkitPlatformImpl platform, IBackgroundService service, IHandler handler) {
+    public BukkitScheduledChunkObserverImpl(BukkitPlatformImpl platform, IBackgroundService service, IHandler handler) {
         super(platform, service);
         this.mHandler = handler;
     }
@@ -101,7 +101,7 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
     }
 
     @Override
-    public IChunkData createChunkData(String worldName, int chunkX, int chunkZ) {
+    protected IChunkData createChunkData(String worldName, int chunkX, int chunkZ) {
         if (!getPlatformImpl().isWorldAvailable(worldName)) {
             return null;
         }
@@ -109,12 +109,12 @@ public class BukkitScheduledChunkObserver extends ScheduledChunkObserver {
     }
 
     @Override
-    public boolean isValidChunkSection(int sectionY) {
+    protected boolean isValidChunkSection(int sectionY) {
         return getHandler().isValidChunkSection(sectionY);
     }
 
     @Override
-    public boolean isChunkLoaded(String worldName, int chunkX, int chunkZ) {
+    protected boolean isChunkLoaded(String worldName, int chunkX, int chunkZ) {
         if (!getPlatformImpl().isWorldAvailable(worldName)) {
             return false;
         }
