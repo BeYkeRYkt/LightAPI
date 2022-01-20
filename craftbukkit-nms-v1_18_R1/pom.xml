@@ -116,11 +116,10 @@
         <!-- PaperMC -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
-            <artifactId>paper</artifactId>
+            <artifactId>paper-server</artifactId>
             <version>${paper.version}</version>
-            <scope>system</scope>
-            <classifier>remapped-mojang</classifier>
-            <systemPath>${project.basedir}/lib/paper-server-1.18-R0.1-SNAPSHOT-mojang-mapped.jar</systemPath>
+            <scope>provided</scope>
+            <classifier>mojang-mapped</classifier>
         </dependency>
         <!-- Spigot API -->
         <dependency>
@@ -135,9 +134,9 @@
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-jar-plugin.version>3.1.2</maven-jar-plugin.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
-        <paper.version>1.18-R0.1-SNAPSHOT</paper.version>
+        <paper.version>1.18.1-R0.1-SNAPSHOT</paper.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <specialsource-maven-plugin.version>1.2.3</specialsource-maven-plugin.version>
-        <spigot-api.version>1.18-R0.1-SNAPSHOT</spigot-api.version>
+        <spigot-api.version>1.18.1-R0.1-SNAPSHOT</spigot-api.version>
     </properties>
 </project>
