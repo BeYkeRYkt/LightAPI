@@ -21,27 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common.api.engine;
 
-public class LightFlag {
+package ru.beykerykt.minecraft.lightapi.common.internal.storage;
+
+public interface IStorageProvider {
 
     /**
      * N/A
      */
-    public static final int NONE = 0;
+    void onStart();
 
     /**
-     * A flag for editing block light layer
+     * N/A
      */
-    public static final int BLOCK_LIGHTING = 1;
+    void onShutdown();
 
     /**
-     * A flag for editing sky light layer
+     * N/A
      */
-    public static final int SKY_LIGHTING = 2;
-
-    /**
-     * A flag for storing the light level in the storage provider
-     */
-    public static final int USE_STORAGE_PROVIDER = 4;
+    ILightStorage getLightStorage(String worldName);
 }

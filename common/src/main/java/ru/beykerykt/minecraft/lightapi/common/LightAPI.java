@@ -366,7 +366,6 @@ public final class LightAPI {
     /**
      * Checks the light level and restores it if available.
      */
-    @Deprecated
     public int checkLight(String worldName, int blockX, int blockY, int blockZ) {
         return checkLight(worldName, blockX, blockY, blockZ, LightFlag.BLOCK_LIGHTING);
     }
@@ -374,7 +373,6 @@ public final class LightAPI {
     /**
      * Checks the light level and restores it if available.
      */
-    @Deprecated
     public int checkLight(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
         return getLightEngine().checkLight(worldName, blockX, blockY, blockZ, lightFlags);
     }

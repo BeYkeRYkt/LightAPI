@@ -33,6 +33,9 @@ import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.ILightStorage;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
+import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
 
 /**
  * Abstract class for scheduled light engines
@@ -48,6 +51,7 @@ public abstract class ScheduledLightEngineImpl implements IScheduledLightEngine 
             (o1, o2) -> o2.getPriority() - o1.getPriority());
     private final Queue<Request> sendQueue = new PriorityBlockingQueue<>(20,
             (o1, o2) -> o2.getPriority() - o1.getPriority());
+    private final IStorageProvider mStorageProvider;
     protected long maxTimeMsPerTick;
     protected int maxRequestCount;
     protected RelightPolicy mRelightPolicy;
@@ -55,13 +59,18 @@ public abstract class ScheduledLightEngineImpl implements IScheduledLightEngine 
     private int requestCount = 0;
     private long penaltyTime = 0;
 
-    public ScheduledLightEngineImpl(IPlatformImpl platformImpl, IBackgroundService service, RelightPolicy strategy,
-            int maxRequestCount, int maxTimeMsPerTick) {
+    public ScheduledLightEngineImpl(IPlatformImpl platformImpl, IBackgroundService service,
+            IStorageProvider storageProvider, RelightPolicy strategy, int maxRequestCount, int maxTimeMsPerTick) {
         this.mPlatformImpl = platformImpl;
         this.mBackgroundService = service;
+        this.mStorageProvider = storageProvider;
         this.mRelightPolicy = strategy;
         this.maxRequestCount = maxRequestCount;
         this.maxTimeMsPerTick = maxTimeMsPerTick;
+    }
+
+    protected IStorageProvider getStorageProvider() {
+        return mStorageProvider;
     }
 
     protected IPlatformImpl getPlatformImpl() {
@@ -111,7 +120,31 @@ public abstract class ScheduledLightEngineImpl implements IScheduledLightEngine 
 
     /* @hide */
     private int checkLightLocked(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
-        return ResultCode.NOT_IMPLEMENTED;
+        ILightStorage lightStorage = getStorageProvider().getLightStorage(worldName);
+        if (lightStorage == null) {
+            return ResultCode.FAILED;
+        }
+        long longPos = BlockPosition.asLong(blockX, blockY, blockZ);
+        int blockLight = lightStorage.getLightLevel(longPos, lightFlags);
+        getPlatformImpl().debug(
+                "checkLightLocked: x=" + blockX + " y=" + blockY + " z=" + blockZ + " lightLevel=" + blockLight);
+        if (blockLight == -1) {
+            // no data
+            return ResultCode.FAILED;
+        }
+        int serverBlockLight = getLightLevel(worldName, blockX, blockY, blockZ, lightFlags);
+        // Restore the light if the current light level does not match the declared one
+        if (blockLight > serverBlockLight) {
+            setLightLevel(worldName, blockX, blockY, blockZ, blockLight, lightFlags, EditPolicy.DEFERRED,
+                    SendPolicy.DEFERRED, null);
+        } else if (blockLight == serverBlockLight) {
+            // TODO: Move to scheduler (?)
+            Request request = getScheduler().createEmptyRequest(worldName, blockX, blockY, blockZ, blockLight,
+                    lightFlags, EditPolicy.DEFERRED, SendPolicy.DEFERRED, null);
+            request.addRequestFlag(RequestFlag.COMBINED_SEND);
+            getScheduler().handleSendRequest(request);
+        }
+        return ResultCode.SUCCESS;
     }
 
     @Override

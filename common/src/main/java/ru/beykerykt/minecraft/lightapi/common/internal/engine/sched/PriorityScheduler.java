@@ -27,12 +27,15 @@ import java.util.List;
 
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.EditPolicy;
+import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.RelightPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.SendPolicy;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.sched.ICallback;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.data.IChunkData;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.sched.IScheduledChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
+import ru.beykerykt.minecraft.lightapi.common.internal.utils.BlockPosition;
 import ru.beykerykt.minecraft.lightapi.common.internal.utils.FlagUtils;
 
 /**
@@ -43,13 +46,15 @@ public class PriorityScheduler implements IScheduler {
     private final IScheduledLightEngine mLightEngine;
     private final IScheduledChunkObserver mChunkObserver;
     private final IBackgroundService mBackgroundService;
+    private final IStorageProvider mStorageProvider;
     private final long mMaxTimeMsPerTick;
 
     public PriorityScheduler(IScheduledLightEngine lightEngine, IScheduledChunkObserver chunkObserver,
-            IBackgroundService backgroundService, long maxTimeMsPerTick) {
+            IBackgroundService backgroundService, IStorageProvider storageProvider, long maxTimeMsPerTick) {
         this.mLightEngine = lightEngine;
         this.mChunkObserver = chunkObserver;
         this.mBackgroundService = backgroundService;
+        this.mStorageProvider = storageProvider;
         this.mMaxTimeMsPerTick = maxTimeMsPerTick;
     }
 
@@ -63,6 +68,10 @@ public class PriorityScheduler implements IScheduler {
 
     private IBackgroundService getBackgroundService() {
         return mBackgroundService;
+    }
+
+    private IStorageProvider getStorageProvider() {
+        return mStorageProvider;
     }
 
     @Override
@@ -144,6 +153,12 @@ public class PriorityScheduler implements IScheduler {
             }
 
             if (resultCode == ResultCode.SUCCESS) {
+                if (FlagUtils.isFlagSet(request.getLightFlags(), LightFlag.USE_STORAGE_PROVIDER)) {
+                    long longPos = BlockPosition.asLong(request.getBlockX(), request.getBlockY(), request.getBlockZ());
+                    getStorageProvider().getLightStorage(request.getWorldName()).setLightLevel(longPos,
+                            request.getLightLevel(), request.getLightFlags());
+                }
+
                 if (request.getLightLevel() == 0) {
                     // HAX: If the light is successfully removed, then add an additional flag, since the
                     // return value of the recalculation may be equal to RECALCULATE_NO_CHANGES.

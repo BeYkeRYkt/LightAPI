@@ -41,6 +41,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.IScheduler;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.PriorityScheduler;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.sched.ScheduledLightEngineImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
+import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
 
 public class BukkitScheduledLightEngineImpl extends ScheduledLightEngineImpl {
 
@@ -61,13 +62,15 @@ public class BukkitScheduledLightEngineImpl extends ScheduledLightEngineImpl {
     /**
      * @hide
      */
-    public BukkitScheduledLightEngineImpl(BukkitPlatformImpl pluginImpl, IBackgroundService service, IHandler handler) {
-        this(pluginImpl, service, RelightPolicy.DEFERRED, handler, 250, 250);
+    public BukkitScheduledLightEngineImpl(BukkitPlatformImpl pluginImpl, IBackgroundService service,
+            IStorageProvider storageProvider, IHandler handler) {
+        this(pluginImpl, service, storageProvider, RelightPolicy.DEFERRED, handler, 250, 250);
     }
 
     public BukkitScheduledLightEngineImpl(BukkitPlatformImpl pluginImpl, IBackgroundService service,
-            RelightPolicy strategy, IHandler handler, int maxRequestCount, int maxTimeMsPerTick) {
-        super(pluginImpl, service, strategy, maxRequestCount, maxTimeMsPerTick);
+            IStorageProvider storageProvider, RelightPolicy strategy, IHandler handler, int maxRequestCount,
+            int maxTimeMsPerTick) {
+        super(pluginImpl, service, storageProvider, strategy, maxRequestCount, maxTimeMsPerTick);
         this.mHandler = handler;
     }
 
@@ -128,8 +131,8 @@ public class BukkitScheduledLightEngineImpl extends ScheduledLightEngineImpl {
         // TODO: Make config (?)
         IScheduler scheduler = new PriorityScheduler(this,
                 (IScheduledChunkObserver) getPlatformImpl().getChunkObserver(), getBackgroundService(),
-                maxTimeMsPerTick);
-        setScheduler(scheduler);
+                getPlatformImpl().getStorageProvider(),
+                maxTimeMsPerTick); setScheduler(scheduler);
 
         int period = fc.getInt(CONFIG_TICK_PERIOD);
         mScheduledFuture = getBackgroundService().scheduleWithFixedDelay(this, 0, 50 * period, TimeUnit.MILLISECONDS);

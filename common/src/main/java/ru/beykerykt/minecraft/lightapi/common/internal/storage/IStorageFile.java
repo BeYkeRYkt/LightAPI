@@ -21,27 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package ru.beykerykt.minecraft.lightapi.common.api.engine;
+package ru.beykerykt.minecraft.lightapi.common.internal.storage;
 
-public class LightFlag {
+import java.util.Map;
+
+public interface IStorageFile {
 
     /**
      * N/A
      */
-    public static final int NONE = 0;
+    void onStart();
 
     /**
-     * A flag for editing block light layer
+     * N/A
      */
-    public static final int BLOCK_LIGHTING = 1;
+    void onShutdown();
 
     /**
-     * A flag for editing sky light layer
+     * N/A
      */
-    public static final int SKY_LIGHTING = 2;
+    int writeLightLevel(String world, long longPos, int lightLevel, int lightFlag);
 
     /**
-     * A flag for storing the light level in the storage provider
+     * N/A
      */
-    public static final int USE_STORAGE_PROVIDER = 4;
+    int deleteLightLevel(String world, long longPos, int lightFlag);
+
+    /**
+     * N/A
+     */
+    boolean containsChunk(String world, int chunkX, int chunkZ, int lightFlag);
+
+    /**
+     * N/A
+     */
+    Map<Long, Integer> loadLightDataForChunk(String world, int chunkX, int chunkZ, int lightFlag);
 }
