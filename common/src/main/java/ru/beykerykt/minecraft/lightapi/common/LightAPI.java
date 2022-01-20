@@ -48,7 +48,7 @@ import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundServic
  */
 public final class LightAPI {
 
-    private static volatile LightAPI singleton;
+    private static LightAPI singleton;
     private final IPlatformImpl mInternal;
 
     private LightAPI(IPlatformImpl internal) {
@@ -62,7 +62,7 @@ public final class LightAPI {
      * Must be called in onLoad();
      */
     public static void prepare(IPlatformImpl impl) throws Exception {
-        if (singleton == null && impl != null || !get().isInitialized()) {
+        if (singleton == null && impl != null) {
             impl.info("Preparing LightAPI...");
             synchronized (LightAPI.class) {
                 if (singleton == null) {
