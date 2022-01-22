@@ -30,23 +30,45 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import ru.beykerykt.minecraft.lightapi.common.internal.IPlatformImpl;
+
 public abstract class BackgroundServiceImpl implements IBackgroundService {
     private ScheduledExecutorService executorService;
+    private IPlatformImpl mPlatform;
+
+    public BackgroundServiceImpl(IPlatformImpl platform) {
+        this.mPlatform = platform;
+    }
+
+    protected IPlatformImpl getPlatformImpl() {
+        return this.mPlatform;
+    }
 
     protected void configureExecutorService(int corePoolSize, ThreadFactory namedThreadFactory) {
-        if (executorService == null) {
+        if (this.executorService == null) {
             this.executorService = Executors.newScheduledThreadPool(corePoolSize, namedThreadFactory);
         }
     }
 
     protected ScheduledExecutorService getExecutorService() {
-        return executorService;
+        return this.executorService;
     }
 
     @Override
     public void onShutdown() {
-        if (executorService != null) {
-            executorService.shutdown();
+        if (getExecutorService() != null) {
+            getExecutorService().shutdown();
+            try {
+                if (!getExecutorService().awaitTermination(10, TimeUnit.SECONDS)) {
+                    getPlatformImpl().info("Still waiting after 10 seconds: Shutdown now.");
+                    getExecutorService().shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                // (Re-)Cancel if current thread also interrupted
+                getExecutorService().shutdownNow();
+                // Preserve interrupt status
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
