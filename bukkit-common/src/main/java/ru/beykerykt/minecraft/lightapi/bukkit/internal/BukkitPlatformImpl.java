@@ -26,7 +26,6 @@ package ru.beykerykt.minecraft.lightapi.bukkit.internal;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -42,7 +41,6 @@ import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandlerFactory;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.service.BukkitBackgroundServiceImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.storage.BukkitStorageProvider;
-import ru.beykerykt.minecraft.lightapi.bukkit.internal.storage.YAMLStorageFile;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.utils.VersionUtil;
 import ru.beykerykt.minecraft.lightapi.common.Build;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
@@ -57,7 +55,6 @@ import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
 import ru.beykerykt.minecraft.lightapi.common.internal.chunks.observer.IChunkObserver;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightEngine;
 import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundService;
-import ru.beykerykt.minecraft.lightapi.common.internal.storage.ILightStorage;
 import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
 
 public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
@@ -243,7 +240,7 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
         mBackgroundService.onStart();
 
         // init storage provider
-        mStorageProvider = new BukkitStorageProvider(this, new YAMLStorageFile(this));
+        mStorageProvider = new BukkitStorageProvider(this);
         mStorageProvider.onStart();
 
         // init chunk observer
@@ -263,26 +260,13 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
         // enable metrics
         enableMetrics();
 
-        // try force load light data
-        for (World world : getPlugin().getServer().getWorlds()) {
-            ILightStorage storage = getStorageProvider().getLightStorage(world.getName());
-            for (Chunk chunk : world.getLoadedChunks()) {
-                if (storage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING)) {
-                    storage.loadLightDataForChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING, true);
-                }
-                if (storage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING)) {
-                    storage.loadLightDataForChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING, true);
-                }
-            }
-        }
-
         return ResultCode.SUCCESS;
     }
 
     @Override
     public void shutdown() {
-        mLightEngine.onShutdown();
         mChunkObserver.onShutdown();
+        mLightEngine.onShutdown();
         mStorageProvider.onShutdown();
         mBackgroundService.onShutdown();
         mHandler.onShutdown(this);

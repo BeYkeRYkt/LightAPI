@@ -49,20 +49,5 @@ public interface ILightStorage {
     /**
      * N/A
      */
-    boolean containsChunk(int chunkX, int chunkZ, int lightFlag);
-
-    /**
-     * N/A
-     */
-    void loadLightDataForChunk(int chunkX, int chunkZ, int lightFlag, boolean restore);
-
-    /**
-     * N/A
-     */
-    void unloadLightDataFromChunk(int chunkX, int chunkZ, int lightFlag);
-
-    /**
-     * N/A
-     */
-    void saveLightData();
+    boolean checkLightLevel(long longPos, int lightFlag);
 }

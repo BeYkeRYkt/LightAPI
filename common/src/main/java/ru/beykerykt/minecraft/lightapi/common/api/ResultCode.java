@@ -72,4 +72,14 @@ public class ResultCode {
      * Chunk is not loaded
      */
     public static final int CHUNK_NOT_LOADED = -7;
+
+    /**
+     * Light storage is not available for current world
+     */
+    public static final int STORAGE_NOT_AVAILABLE = -8;
+
+    /**
+     * Light value from storage is not set
+     */
+    public static final int STORAGE_VALUE_NOT_SET = -9;
 }

@@ -24,7 +24,6 @@
 
 package ru.beykerykt.minecraft.lightapi.bukkit;
 
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -36,15 +35,11 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.api.ResultCode;
 import ru.beykerykt.minecraft.lightapi.common.api.engine.LightFlag;
 import ru.beykerykt.minecraft.lightapi.common.internal.engine.ILightEngine;
-import ru.beykerykt.minecraft.lightapi.common.internal.storage.ILightStorage;
-import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
 
 public class BukkitListener implements Listener {
 
@@ -146,41 +141,5 @@ public class BukkitListener implements Listener {
                 checkSides(event.getBlock().getLocation(), lightFlags);
             }
         }, 1);
-    }
-
-    @EventHandler
-    public void onChunkLoad(ChunkLoadEvent event) {
-        Chunk chunk = event.getChunk();
-        IStorageProvider storageProvider = getPlatformImpl().getStorageProvider();
-        ILightStorage lightStorage = storageProvider.getLightStorage(chunk.getWorld().getName());
-        if (lightStorage == null) {
-            return;
-        }
-
-        // try to restore light levels
-        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING)) {
-            lightStorage.loadLightDataForChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING, true);
-        }
-        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING)) {
-            lightStorage.loadLightDataForChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING, true);
-        }
-    }
-
-    @EventHandler
-    public void onChunkUnload(ChunkUnloadEvent event) {
-        // save light levels and unload chunk data
-        Chunk chunk = event.getChunk();
-        IStorageProvider storageProvider = getPlatformImpl().getStorageProvider();
-        ILightStorage lightStorage = storageProvider.getLightStorage(chunk.getWorld().getName());
-        if (lightStorage == null) {
-            return;
-        }
-
-        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING)) {
-            lightStorage.unloadLightDataFromChunk(chunk.getX(), chunk.getZ(), LightFlag.SKY_LIGHTING);
-        }
-        if (lightStorage.containsChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING)) {
-            lightStorage.unloadLightDataFromChunk(chunk.getX(), chunk.getZ(), LightFlag.BLOCK_LIGHTING);
-        }
     }
 }

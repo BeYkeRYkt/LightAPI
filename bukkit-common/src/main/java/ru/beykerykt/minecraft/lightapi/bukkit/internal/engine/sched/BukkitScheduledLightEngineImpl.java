@@ -131,8 +131,8 @@ public class BukkitScheduledLightEngineImpl extends ScheduledLightEngineImpl {
         // TODO: Make config (?)
         IScheduler scheduler = new PriorityScheduler(this,
                 (IScheduledChunkObserver) getPlatformImpl().getChunkObserver(), getBackgroundService(),
-                getPlatformImpl().getStorageProvider(),
-                maxTimeMsPerTick); setScheduler(scheduler);
+                getPlatformImpl().getStorageProvider(), maxTimeMsPerTick);
+        setScheduler(scheduler);
 
         int period = fc.getInt(CONFIG_TICK_PERIOD);
         mScheduledFuture = getBackgroundService().scheduleWithFixedDelay(this, 0, 50 * period, TimeUnit.MILLISECONDS);

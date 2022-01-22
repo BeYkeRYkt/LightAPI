@@ -29,40 +29,31 @@ import java.util.Map;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.common.internal.storage.ILightStorage;
-import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageFile;
 import ru.beykerykt.minecraft.lightapi.common.internal.storage.IStorageProvider;
 
 public class BukkitStorageProvider implements IStorageProvider {
 
     private final BukkitPlatformImpl mPlatform;
-    private final IStorageFile mStorageFile;
     private final Map<String, ILightStorage> mLightStorageMap = new HashMap<>();
 
-    public BukkitStorageProvider(BukkitPlatformImpl platform, IStorageFile storageFile) {
+    public BukkitStorageProvider(BukkitPlatformImpl platform) {
         this.mPlatform = platform;
-        this.mStorageFile = storageFile;
     }
 
     protected BukkitPlatformImpl getPlatformImpl() {
         return mPlatform;
     }
 
-    protected IStorageFile getStorageFile() {
-        return mStorageFile;
-    }
-
     @Override
     public void onStart() {
-        mStorageFile.onStart();
     }
 
     @Override
     public void onShutdown() {
         for (ILightStorage storage : mLightStorageMap.values()) {
-            storage.saveLightData();
+            storage.onShutdown();
         }
         mLightStorageMap.clear();
-        mStorageFile.onShutdown();
     }
 
     @Override
@@ -78,7 +69,9 @@ public class BukkitStorageProvider implements IStorageProvider {
     }
 
     private void prepareStorage(String worldName) {
-        ILightStorage storage = new BukkitLightStorage(getPlatformImpl(), worldName, getStorageFile());
+        // TODO: Use Bukkit Persistence API
+        //ILightStorage storage = new BukkitTemporaryLightStorage(getPlatformImpl(), worldName);
+        ILightStorage storage = new BukkitPersistentLightStorage(getPlatformImpl(), worldName);
         mLightStorageMap.put(worldName, storage);
     }
 }

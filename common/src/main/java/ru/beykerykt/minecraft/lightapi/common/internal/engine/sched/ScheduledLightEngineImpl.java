@@ -122,7 +122,7 @@ public abstract class ScheduledLightEngineImpl implements IScheduledLightEngine 
     private int checkLightLocked(String worldName, int blockX, int blockY, int blockZ, int lightFlags) {
         ILightStorage lightStorage = getStorageProvider().getLightStorage(worldName);
         if (lightStorage == null) {
-            return ResultCode.FAILED;
+            return ResultCode.STORAGE_NOT_AVAILABLE;
         }
         long longPos = BlockPosition.asLong(blockX, blockY, blockZ);
         int blockLight = lightStorage.getLightLevel(longPos, lightFlags);
@@ -130,19 +130,20 @@ public abstract class ScheduledLightEngineImpl implements IScheduledLightEngine 
                 "checkLightLocked: x=" + blockX + " y=" + blockY + " z=" + blockZ + " lightLevel=" + blockLight);
         if (blockLight == -1) {
             // no data
-            return ResultCode.FAILED;
+            return ResultCode.STORAGE_VALUE_NOT_SET;
         }
         int serverBlockLight = getLightLevel(worldName, blockX, blockY, blockZ, lightFlags);
-        // Restore the light if the current light level does not match the declared one
-        if (blockLight > serverBlockLight) {
-            setLightLevel(worldName, blockX, blockY, blockZ, blockLight, lightFlags, EditPolicy.DEFERRED,
-                    SendPolicy.DEFERRED, null);
-        } else if (blockLight == serverBlockLight) {
-            // TODO: Move to scheduler (?)
+        if (blockLight == serverBlockLight) {
+            // Force re-send chunk update
+            // TODO: Add option for force resend chunks or result code
             Request request = getScheduler().createEmptyRequest(worldName, blockX, blockY, blockZ, blockLight,
                     lightFlags, EditPolicy.DEFERRED, SendPolicy.DEFERRED, null);
             request.addRequestFlag(RequestFlag.COMBINED_SEND);
             getScheduler().handleSendRequest(request);
+        } else if (blockLight > serverBlockLight) {
+            // Try to restore the light if the current light level does not match the declared one
+            setLightLevel(worldName, blockX, blockY, blockZ, blockLight, lightFlags, EditPolicy.DEFERRED,
+                    SendPolicy.DEFERRED, null);
         }
         return ResultCode.SUCCESS;
     }
