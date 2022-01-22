@@ -133,12 +133,11 @@ public class BukkitListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
         Block block = event.getBlock();
-        Location loc = block.getLocation();
         int lightFlags = LightFlag.BLOCK_LIGHTING;
         getPlatformImpl().getPlugin().getServer().getScheduler().runTaskLater(getPlatformImpl().getPlugin(), () -> {
             if (event.getEntityType() == EntityType.FALLING_BLOCK) {
                 // check all sides
-                checkSides(event.getBlock().getLocation(), lightFlags);
+                checkSides(block.getLocation(), lightFlags);
             }
         }, 1);
     }

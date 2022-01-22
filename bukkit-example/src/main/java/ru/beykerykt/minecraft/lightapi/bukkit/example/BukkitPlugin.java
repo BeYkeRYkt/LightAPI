@@ -35,7 +35,6 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import ru.beykerykt.minecraft.lightapi.bukkit.api.extension.IBukkitExtension;
@@ -90,13 +89,18 @@ public class BukkitPlugin extends JavaPlugin {
 
     private void setLightLevel(Location location, int var, int lightLevel, int lightType, EditPolicy editPolicy,
             SendPolicy sendPolicy) {
-        List<IChunkData> chunks = new ArrayList<>();
         switch (var) {
-            case 0: // lightapi
+            case 0: // lightapi interface
             {
+                // Remove light for re-set lightlevel
+                mLightAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(), location.getBlockY(),
+                        location.getBlockZ(), 0, lightType, editPolicy, sendPolicy, null);
                 int code = mLightAPI.setLightLevel(location.getWorld().getName(), location.getBlockX(),
                         location.getBlockY(), location.getBlockZ(), lightLevel, lightType, editPolicy, sendPolicy,
                         null);
+                getLogger().info(
+                        "setLightLevel()- " + " loc: " + location + " var: " + var + " lightLevel: " + lightLevel
+                                + " resultCode: " + code);
                 break;
             }
             case 1: // handler
@@ -122,46 +126,36 @@ public class BukkitPlugin extends JavaPlugin {
         }
     }
 
-    private void setLightLevelManual(Location location, int lightLevel, int flag, List<IChunkData> outputChunks) {
-        // Keep the light level information, as after removing the light source, chunks may not be
-        // updated
-        // correctly.
-        int blockLightLevel = mHandler.getRawLightLevel(location.getWorld(), location.getBlockX(), location.getBlockY(),
-                location.getBlockZ(), flag);
-        mHandler.setRawLightLevel(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(),
-                lightLevel, flag);
-        mHandler.recalculateLighting(location.getWorld(), location.getBlockX(), location.getBlockY(),
-                location.getBlockZ(), flag);
-        List<IChunkData> chunkList = mHandler.collectChunkSections(location.getWorld(), location.getBlockX(),
-                location.getBlockY(), location.getBlockZ(), lightLevel == 0 ? blockLightLevel : lightLevel,
-                LightFlag.BLOCK_LIGHTING);
-        // outputChunks.addAll(ChunkUtils.mergeChunks(chunkList));
-        outputChunks.addAll(chunkList);
-        chunkList.clear();
-    }
-
     private void runBenchmark(Location loc, boolean async, String strategy, int cycleCount) {
         int oldBlockLight = 15;
         int flag = LightFlag.BLOCK_LIGHTING | LightFlag.SKY_LIGHTING;
 
         Runnable run = () -> {
             long startTime = System.currentTimeMillis();
-            if (strategy.equals("IMMEDIATE")) {
-                for (int i = 0; i < cycleCount; i++) {
-                    setLightLevel(loc, 0, oldBlockLight, flag, EditPolicy.IMMEDIATE, SendPolicy.IMMEDIATE);
-                    setLightLevel(loc, 0, 0, flag, EditPolicy.IMMEDIATE, SendPolicy.IMMEDIATE);
-                }
-            } else if (strategy.equals("DEFERRED")) {
-                for (int i = 0; i < cycleCount; i++) {
-                    setLightLevel(loc, 0, oldBlockLight, flag, EditPolicy.DEFERRED, SendPolicy.DEFERRED);
-                    setLightLevel(loc, 0, 0, flag, EditPolicy.DEFERRED, SendPolicy.DEFERRED);
-                }
-            } else if (strategy.equals("FORCE")) {
-                for (int i = 0; i < cycleCount; i++) {
-                    setLightLevel(loc, 0, oldBlockLight, flag, EditPolicy.FORCE_IMMEDIATE, SendPolicy.IMMEDIATE);
-                    setLightLevel(loc, 0, 0, flag, EditPolicy.FORCE_IMMEDIATE, SendPolicy.IMMEDIATE);
-                }
+            EditPolicy editPolicy;
+            SendPolicy sendPolicy;
+
+            switch (strategy) {
+                case "DEFERRED":
+                    editPolicy = EditPolicy.DEFERRED;
+                    sendPolicy = SendPolicy.DEFERRED;
+                    break;
+                case "FORCE_IMMEDIATE":
+                    editPolicy = EditPolicy.FORCE_IMMEDIATE;
+                    sendPolicy = SendPolicy.IMMEDIATE;
+                    break;
+                case "IMMEDIATE":
+                default:
+                    editPolicy = EditPolicy.IMMEDIATE;
+                    sendPolicy = SendPolicy.IMMEDIATE;
+                    break;
             }
+
+            for (int i = 0; i < cycleCount; i++) {
+                setLightLevel(loc, 0, oldBlockLight, flag, editPolicy, sendPolicy);
+                setLightLevel(loc, 0, 0, flag, editPolicy, sendPolicy);
+            }
+
             long endTime = System.currentTimeMillis();
             Bukkit.broadcastMessage("Time: " + (endTime - startTime) + " ms");
         };
@@ -179,34 +173,41 @@ public class BukkitPlugin extends JavaPlugin {
         if (command.getName().equalsIgnoreCase("lighttest")) {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
-                if (args.length == 4) {
+                int argsLength = args.length;
+                if (argsLength > 0) {
                     String cmd = args[0];
                     if (cmd.equals("bench")) {
-                        boolean async = args[1].equals("async");
-                        String strategy = args[2];
-                        int cycle = Integer.parseInt(args[3]);
+                        if (argsLength < 3) {
+                            log(player, ChatColor.RED
+                                    + "lighttest bench (FORCE_IMMEDIATE | IMMEDIATE | DEFERRED) (cycle count) (async)");
+                            return false;
+                        }
+                        String strategy = args[1];
+                        int cycle = Integer.parseInt(args[2]);
+                        boolean async = argsLength > 3 ? args[3].equals("async") : false;
                         log(player, "Start benchmark: " + strategy + " (" + cycle + ")");
                         runBenchmark(player.getLocation(), async, strategy.toUpperCase(), cycle);
-                    }
-                } else if (args.length == 5) {
-                    String cmd = args[0];
-                    if (cmd.equals("create")) {
-                        log(player, "Create light");
-                        int val = Integer.parseInt(args[1]);
-                        int lightLevel = 15;
-                        EditPolicy edit = EditPolicy.valueOf(args[2].toUpperCase());
+                    } else if (cmd.equals("set")) {
+                        if (argsLength < 5) {
+                            log(player, ChatColor.RED
+                                    + "lighttest set (LightLevel: 0 - 15) (0 - LightAPI | 1 - Handler) (FORCE_IMMEDIATE |"
+                                    + " IMMEDIATE | " + "DEFERRED) (MANUAL | IMMEDIATE| DEFERRED)");
+                            return false;
+                        }
+                        log(player, "Set light level");
+                        int lightLevel = Integer.parseInt(args[1]);
+                        int val = Integer.parseInt(args[2]);
+                        EditPolicy edit = EditPolicy.valueOf(args[3].toUpperCase());
+                        SendPolicy sendPolicy = SendPolicy.valueOf(args[4].toUpperCase());
                         setLightLevel(player.getLocation(), val, lightLevel, LightFlag.BLOCK_LIGHTING, edit,
-                                SendPolicy.IMMEDIATE);
-                    } else if (cmd.equals("delete")) {
-                        log(player, "Delete light");
-                        int val = Integer.parseInt(args[1]);
-                        EditPolicy edit = EditPolicy.valueOf(args[2].toUpperCase());
-                        setLightLevel(player.getLocation(), val, 0, LightFlag.BLOCK_LIGHTING, edit,
-                                SendPolicy.IMMEDIATE);
+                                sendPolicy);
+                    } else {
+                        log(player, "lighttest bench (FORCE_IMMEDIATE | IMMEDIATE | DEFERRED) (cycle count) (async)");
+                        log(player, "lighttest set (LightLevel: 0 - 15) (0 - LightAPI | 1 - Handler) (FORCE_IMMEDIATE |"
+                                + " IMMEDIATE | " + "DEFERRED) (MANUAL | IMMEDIATE| DEFERRED)");
                     }
                 } else {
-                    log(player, ChatColor.RED + "lighttest (bench | create | delete) : (0 | 1 | 2) (FORCE_IMMEDIATE |"
-                            + " IMMEDIATE| " + "DEFERRED) : (0 | 1 | 2) (MANUAL | IMMEDIATE| DEFERRED)");
+                    log(player, "(bench | edit)");
                 }
             } else if (sender instanceof ConsoleCommandSender) {
                 // nothing...
