@@ -300,11 +300,11 @@ public class LightAPI extends JavaPlugin {
 
     public static List<ChunkInfo> collectChunks(World world, int x, int y, int z,
             ru.beykerykt.lightapi.LightType lightType, int lightLevel) {
+        List<ChunkInfo> list = new CopyOnWriteArrayList<>();
         if (!isBackwardEnabled()) {
             log(Bukkit.getServer().getConsoleSender(), DEPRECATED_MSG);
-            return null;
+            return list;
         }
-        List<ChunkInfo> list = new CopyOnWriteArrayList<>();
         IBukkitExtension ext = (IBukkitExtension) ru.beykerykt.minecraft.lightapi.common.LightAPI.get().getExtension();
         IHandler handler = ext.getHandler();
         int lightTypeNew = LightFlag.BLOCK_LIGHTING;
