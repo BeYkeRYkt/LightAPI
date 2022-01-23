@@ -29,7 +29,6 @@ import net.minecraft.server.v1_13_R2.BlockPosition;
 import net.minecraft.server.v1_13_R2.Chunk;
 import net.minecraft.server.v1_13_R2.EntityPlayer;
 import net.minecraft.server.v1_13_R2.EnumSkyBlock;
-import net.minecraft.server.v1_13_R2.MinecraftServer;
 import net.minecraft.server.v1_13_R2.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_13_R2.WorldServer;
 
@@ -129,11 +128,6 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     @Override
     public LightEngineVersion getLightEngineVersion() {
         return LightEngineVersion.V1;
-    }
-
-    @Override
-    public boolean isMainThread() {
-        return MinecraftServer.getServer().isMainThread();
     }
 
     @Override

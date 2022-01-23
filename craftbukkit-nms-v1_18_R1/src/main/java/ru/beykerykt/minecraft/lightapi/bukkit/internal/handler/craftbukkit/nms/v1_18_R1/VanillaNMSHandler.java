@@ -28,7 +28,6 @@ import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.game.ClientboundLightUpdatePacket;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ThreadedLevelLightEngine;
@@ -222,11 +221,6 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     @Override
     public LightEngineVersion getLightEngineVersion() {
         return LightEngineVersion.V2;
-    }
-
-    @Override
-    public boolean isMainThread() {
-        return MinecraftServer.getServer().isSameThread();
     }
 
     @Override

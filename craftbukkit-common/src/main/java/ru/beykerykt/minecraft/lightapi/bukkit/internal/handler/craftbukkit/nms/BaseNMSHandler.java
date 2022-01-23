@@ -23,6 +23,8 @@
  */
 package ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.craftbukkit.nms;
 
+import org.bukkit.Bukkit;
+
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.BukkitPlatformImpl;
 import ru.beykerykt.minecraft.lightapi.bukkit.internal.handler.IHandler;
 import ru.beykerykt.minecraft.lightapi.common.internal.PlatformType;
@@ -43,5 +45,10 @@ public abstract class BaseNMSHandler implements IHandler {
     @Override
     public PlatformType getPlatformType() {
         return PlatformType.CRAFTBUKKIT;
+    }
+
+    @Override
+    public boolean isMainThread() {
+        return Bukkit.isPrimaryThread();
     }
 }

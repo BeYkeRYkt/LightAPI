@@ -37,7 +37,6 @@ import net.minecraft.server.v1_16_R3.LightEngineLayer;
 import net.minecraft.server.v1_16_R3.LightEngineSky;
 import net.minecraft.server.v1_16_R3.LightEngineStorage;
 import net.minecraft.server.v1_16_R3.LightEngineThreaded;
-import net.minecraft.server.v1_16_R3.MinecraftServer;
 import net.minecraft.server.v1_16_R3.PacketPlayOutLightUpdate;
 import net.minecraft.server.v1_16_R3.SectionPosition;
 import net.minecraft.server.v1_16_R3.ThreadedMailbox;
@@ -223,11 +222,6 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     @Override
     public LightEngineVersion getLightEngineVersion() {
         return LightEngineVersion.V2;
-    }
-
-    @Override
-    public boolean isMainThread() {
-        return MinecraftServer.getServer().isMainThread();
     }
 
     @Override
