@@ -205,13 +205,13 @@ public class CompatibilityHandler implements IHandler {
 
     @Override
     public int sendChunk(IChunkData data) {
-        getPlatformImpl().error("Not implemented for compatibility mode");
+        getPlatformImpl().debug("sendChunk: Not implemented for compatibility mode");
         return ResultCode.NOT_IMPLEMENTED;
     }
 
     @Override
     public int sendCmd(int cmdId, Object... args) {
-        getPlatformImpl().error("Not implemented for compatibility mode");
+        getPlatformImpl().debug("sendCmd: Not implemented for compatibility mode");
         return ResultCode.NOT_IMPLEMENTED;
     }
 }

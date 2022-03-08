@@ -157,6 +157,7 @@ public abstract class ScheduledChunkObserverImpl implements IScheduledChunkObser
                 case ResultCode.SUCCESS:
                 case ResultCode.CHUNK_NOT_LOADED:
                 case ResultCode.WORLD_NOT_AVAILABLE:
+                case ResultCode.NOT_IMPLEMENTED:
                     data.clearUpdate();
                     it.remove();
                     break;
