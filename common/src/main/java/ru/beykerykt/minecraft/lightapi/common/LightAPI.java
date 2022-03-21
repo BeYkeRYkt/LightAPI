@@ -103,7 +103,8 @@ public final class LightAPI {
      * Must be called in onDisable();
      */
     public static void shutdown(IPlatformImpl impl) {
-        if (get().isInitialized() && get().getPluginImpl().getUUID().equals(impl.getUUID())) {
+        if (!get().isInitialized() || (get().isInitialized() && get().getPluginImpl().getUUID().equals(
+                impl.getUUID()))) {
             get().log("Shutdown LightAPI...");
             synchronized (LightAPI.class) {
                 get().getPluginImpl().shutdown();
