@@ -257,10 +257,18 @@ public class BukkitPlatformImpl implements IPlatformImpl, IBukkitExtension {
 
     @Override
     public void shutdown() {
-        mLightEngine.onShutdown();
-        mChunkObserver.onShutdown();
-        mBackgroundService.onShutdown();
-        mHandler.onShutdown(this);
+        if (mLightEngine != null) {
+            mLightEngine.onShutdown();
+        }
+        if (mChunkObserver != null) {
+            mChunkObserver.onShutdown();
+        }
+        if (mBackgroundService != null) {
+            mBackgroundService.onShutdown();
+        }
+        if (mHandler != null) {
+            mHandler.onShutdown(this);
+        }
         mHandler = null;
         isInit = false;
     }
