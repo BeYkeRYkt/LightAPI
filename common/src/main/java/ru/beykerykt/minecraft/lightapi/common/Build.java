@@ -52,7 +52,7 @@ public class Build {
      * Internal version. May change during any changes in the API. The string should change when
      * common 'internal' package is changed from release to release.
      */
-    public static final int INTERNAL_VERSION = 2;
+    public static final int INTERNAL_VERSION = 3;
     /**
      * Platform that is being used.
      */
