@@ -91,6 +91,10 @@ public class StarlightNMSHandler extends VanillaNMSHandler {
                 int chunkX = chunkCoordIntPair.b;
                 int chunkZ = chunkCoordIntPair.c;
 
+                if (!worldServer.getChunkProvider().isChunkLoaded(chunkX, chunkZ)) {
+                    return;
+                }
+
                 // blocksChangedInChunk -- start
                 // setup cache
                 starEngine_setupCaches.invoke(sle, worldServer.getChunkProvider(), chunkX * 16 + 7, 128,
