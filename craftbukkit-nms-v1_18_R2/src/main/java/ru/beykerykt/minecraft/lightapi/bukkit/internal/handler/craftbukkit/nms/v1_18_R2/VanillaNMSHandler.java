@@ -168,7 +168,7 @@ public class VanillaNMSHandler extends BaseNMSHandler {
     public void onInitialization(BukkitPlatformImpl impl) throws Exception {
         super.onInitialization(impl);
         try {
-            threadedMailbox_DoLoopStep = ProcessorMailbox.class.getDeclaredMethod("h");
+            threadedMailbox_DoLoopStep = ProcessorMailbox.class.getDeclaredMethod("i");
             threadedMailbox_DoLoopStep.setAccessible(true);
             threadedMailbox_State = ProcessorMailbox.class.getDeclaredField("d");
             threadedMailbox_State.setAccessible(true);
