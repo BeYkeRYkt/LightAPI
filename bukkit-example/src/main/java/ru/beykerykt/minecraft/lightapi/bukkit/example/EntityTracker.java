@@ -162,7 +162,7 @@ public class EntityTracker implements Listener {
                 Location lastKnowLocation = lightLocations.get(entityUUID);
                 if (!entityIsAvailable) {
                     removeLightLocs.add(lastKnowLocation);
-                    lightLocations.remove(lastKnowLocation);
+                    lightLocations.remove(entityUUID);
                     mTrackedEntityList.remove(entity);
                     continue;
                 }
@@ -218,9 +218,10 @@ public class EntityTracker implements Listener {
         Entity entity = event.getEntity();
         synchronized (mTrackedEntityList) {
             if (mTrackedEntityList.contains(entity)) {
-                Location lastKnowLocation = lightLocations.get(entity.getUniqueId());
+                UUID uuid = entity.getUniqueId();
+                Location lastKnowLocation = lightLocations.get(uuid);
                 setLightLevel(lastKnowLocation, 0);
-                lightLocations.remove(lastKnowLocation);
+                lightLocations.remove(uuid);
                 mTrackedEntityList.remove(entity);
             }
         }
