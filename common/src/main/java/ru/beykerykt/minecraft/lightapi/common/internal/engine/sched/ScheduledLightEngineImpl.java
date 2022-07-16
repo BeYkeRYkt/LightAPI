@@ -39,15 +39,15 @@ import ru.beykerykt.minecraft.lightapi.common.internal.service.IBackgroundServic
  */
 public abstract class ScheduledLightEngineImpl implements IScheduledLightEngine {
 
+    protected final Queue<Request> lightQueue = new PriorityBlockingQueue<>(20,
+            (o1, o2) -> o2.getPriority() - o1.getPriority());
+    protected final Queue<Request> relightQueue = new PriorityBlockingQueue<>(20,
+            (o1, o2) -> o2.getPriority() - o1.getPriority());
+    protected final Queue<Request> sendQueue = new PriorityBlockingQueue<>(20,
+            (o1, o2) -> o2.getPriority() - o1.getPriority());
     private final IBackgroundService mBackgroundService;
     private final long TICK_MS = 50;
     private final IPlatformImpl mPlatformImpl;
-    private final Queue<Request> lightQueue = new PriorityBlockingQueue<>(20,
-            (o1, o2) -> o2.getPriority() - o1.getPriority());
-    private final Queue<Request> relightQueue = new PriorityBlockingQueue<>(20,
-            (o1, o2) -> o2.getPriority() - o1.getPriority());
-    private final Queue<Request> sendQueue = new PriorityBlockingQueue<>(20,
-            (o1, o2) -> o2.getPriority() - o1.getPriority());
     protected long maxTimeMsPerTick;
     protected int maxRequestCount;
     protected RelightPolicy mRelightPolicy;
@@ -173,8 +173,17 @@ public abstract class ScheduledLightEngineImpl implements IScheduledLightEngine 
         if (!getPlatformImpl().isWorldAvailable(worldName)) {
             return ResultCode.WORLD_NOT_AVAILABLE;
         }
-        return setLightLevelLocked(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, editPolicy, sendPolicy,
-                callback);
+        if (getBackgroundService().isMainThread()) {
+            return setLightLevelLocked(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, editPolicy,
+                    sendPolicy,
+                    callback);
+        } else {
+            synchronized (lightQueue) {
+                return setLightLevelLocked(worldName, blockX, blockY, blockZ, lightLevel, lightFlags, editPolicy,
+                        sendPolicy,
+                        callback);
+            }
+        }
     }
 
     @Override

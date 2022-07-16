@@ -54,7 +54,6 @@ public class BukkitScheduledLightEngineImpl extends ScheduledLightEngineImpl {
     private final String CONFIG_MAX_ITERATIONS_IN_PER_TICK = CONFIG_TITLE + ".max-iterations-in-per-tick";
 
     private final IHandler mHandler;
-    private final Object mLock = new Object();
     private ScheduledFuture mScheduledFuture;
     private int mTaskId = -1;
 
@@ -176,7 +175,7 @@ public class BukkitScheduledLightEngineImpl extends ScheduledLightEngineImpl {
         if (getHandler().isMainThread()) {
             return getLightLevelLocked(worldName, blockX, blockY, blockZ, lightFlags);
         } else {
-            synchronized (mLock) {
+            synchronized (relightQueue) {
                 return getLightLevelLocked(worldName, blockX, blockY, blockZ, lightFlags);
             }
         }
@@ -197,7 +196,7 @@ public class BukkitScheduledLightEngineImpl extends ScheduledLightEngineImpl {
         if (getHandler().isMainThread()) {
             return setRawLightLevelLocked(worldName, blockX, blockY, blockZ, lightLevel, lightFlags);
         } else {
-            synchronized (mLock) {
+            synchronized (lightQueue) {
                 return setRawLightLevelLocked(worldName, blockX, blockY, blockZ, lightLevel, lightFlags);
             }
         }
@@ -217,7 +216,7 @@ public class BukkitScheduledLightEngineImpl extends ScheduledLightEngineImpl {
         if (getHandler().isMainThread()) {
             return recalculateLightingLocked(worldName, blockX, blockY, blockZ, lightFlags);
         } else {
-            synchronized (mLock) {
+            synchronized (relightQueue) {
                 return recalculateLightingLocked(worldName, blockX, blockY, blockZ, lightFlags);
             }
         }
