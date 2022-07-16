@@ -27,11 +27,23 @@ public enum RelightPolicy {
 
     /**
      * Recalculation of world lighting occurs immediately after the change
+     *
+     * - EDIT_LIGHT_LEVEL
+     * - RECALCULATE
+     * - EDIT_LIGHT_LEVEL
+     * - RECALCULATE
+     * - ...
      */
     FORWARD(1),
 
     /**
      * Recalculation of world lighting occurs after edit changes
+     *
+     * - 1'st EDIT_LIGHT_LEVEL
+     * - 2'st EDIT_LIGHT_LEVEL
+     * - 3'st EDIT_LIGHT_LEVEL
+     * - RECALCULATE
+     * - ...
      */
     DEFERRED(2);
 

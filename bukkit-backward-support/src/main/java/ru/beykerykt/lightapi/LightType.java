@@ -25,5 +25,6 @@ package ru.beykerykt.lightapi;
 
 @Deprecated
 public enum LightType {
-    SKY, BLOCK
+    SKY,
+    BLOCK
 }

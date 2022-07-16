@@ -29,7 +29,8 @@ public enum SendPolicy {
      * Updated chunks are collected in a local pool after the light level changes, but are not
      * automatically sent.
      */
-    @Deprecated MANUAL(0),
+    @Deprecated
+    MANUAL(0),
 
     /**
      * Updated chunks are immediately collected and sent to players after the light level changes.

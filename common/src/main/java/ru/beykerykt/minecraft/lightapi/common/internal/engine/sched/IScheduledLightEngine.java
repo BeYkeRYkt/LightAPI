@@ -38,17 +38,17 @@ public interface IScheduledLightEngine extends ILightEngine, Runnable {
     void setScheduler(IScheduler scheduler);
 
     /**
-     * N/A
+     * Tell the engine the task of changing the light level
      */
     int notifyChangeLightLevel(Request request);
 
     /**
-     * N/A
+     * Tell the engine the task of recalculating the light level
      */
     int notifyRecalculate(Request request);
 
     /**
-     * N/A
+     * Tell the engine the task of sending packets
      */
     int notifySend(Request request);
 }
