@@ -50,6 +50,7 @@ public class BukkitPlugin extends JavaPlugin {
     public LightAPI mLightAPI;
     public IHandler mHandler;
     public IBukkitExtension mExtension;
+    private EntityTracker mEntityTracker;
 
     @Override
     public void onLoad() {
@@ -61,12 +62,15 @@ public class BukkitPlugin extends JavaPlugin {
         mLightAPI = LightAPI.get();
         mExtension = (IBukkitExtension) LightAPI.get().getExtension();
         mHandler = mExtension.getHandler();
+        mEntityTracker = new EntityTracker(this);
 
         getServer().getPluginManager().registerEvents(new DebugListener(this), this);
+        mEntityTracker.start();
     }
 
     @Override
     public void onDisable() {
+        mEntityTracker.shutdown();
         HandlerList.unregisterAll(this);
     }
 
@@ -204,13 +208,14 @@ public class BukkitPlugin extends JavaPlugin {
                     } else {
                         log(player, "lighttest bench (FORCE_IMMEDIATE | IMMEDIATE | DEFERRED) (cycle count) (async)");
                         log(player, "lighttest set (LightLevel: 0 - 15) (0 - LightAPI | 1 - Handler) (FORCE_IMMEDIATE |"
-                                + " IMMEDIATE | " + "DEFERRED) (MANUAL | IMMEDIATE| DEFERRED)");
+                                + " IMMEDIATE | " + "DEFERRED) (MANUAL | IMMEDIATE | DEFERRED)");
                     }
                 } else {
-                    log(player, "(bench | edit)");
+                    log(player, "(bench | set)");
                 }
             } else if (sender instanceof ConsoleCommandSender) {
                 // nothing...
+                log(sender, "Not supported.");
             }
         }
         return true;
